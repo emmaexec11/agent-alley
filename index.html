@@ -4,78 +4,142 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Wyld Agent HQ</title>
+<title>Agent Alley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0d1117; --panel:#161b22; --panel2:#1c2330; --border:#2a3140;
-  --txt:#e6e9ef; --dim:#8b96a8; --accent:#A05A3C; --green:#3fb950;
-  --blue:#58a6ff; --amber:#d29922; --purple:#bc8cff; --red:#f85149;
+  --bg:#0A0A0F; --s1:#101018; --s2:#15151f; --s3:#1b1b28;
+  --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.12);
+  --txt:#ECECF4; --dim:#8E8EA3; --faint:#5B5B70;
+  --v:#7C5CFF; --vglow:rgba(124,92,255,.35);
+  --green:#4ade80; --amber:#fbbf24; --red:#f87171;
+  --claude:#e8a860; --grok:#6fc3ff;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--txt);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-header{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--panel);position:sticky;top:0;z-index:5}
-header h1{font-size:17px;font-weight:700;letter-spacing:.3px}
-header .sub{color:var(--dim);font-size:12px}
-header .right{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--dim)}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block}
-.dot.ok{background:var(--green)}
-main{display:grid;grid-template-columns:230px 1fr 300px;gap:0;height:calc(100vh - 53px)}
-@media(max-width:900px){
-  main{grid-template-columns:1fr;height:auto}
-  #board{order:1} #chat{order:2;border-left:none;border-top:1px solid var(--border);height:420px} #org{order:3;border-right:none;border-top:1px solid var(--border)}
-}
-/* org sidebar */
-#org{border-right:1px solid var(--border);overflow-y:auto;padding:14px}
-#org h2{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:10px}
-.dept{margin-bottom:14px}
-.dept>.dname{font-weight:700;font-size:13px;text-transform:capitalize;margin-bottom:5px;color:var(--accent)}
-.role{display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:6px;font-size:12.5px;color:var(--txt)}
-.role:hover{background:var(--panel2)}
-.badge{font-size:9.5px;padding:1px 6px;border-radius:9px;font-weight:700;letter-spacing:.4px}
-.badge.claude{background:#3a2e22;color:#e8a860}
-.badge.grok{background:#22303a;color:#6fc3ff}
-/* board */
-#board{overflow-x:auto;padding:14px;display:flex;gap:12px;align-items:flex-start}
-.col{min-width:215px;flex:1;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px}
-.col h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:9px;display:flex;align-items:center;gap:6px}
-.col h3 .cnt{margin-left:auto;color:var(--dim);font-weight:400}
-.card{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:9px 10px;margin-bottom:8px}
-.card .t{font-weight:600;font-size:13px;margin-bottom:3px}
-.card .m{font-size:11px;color:var(--dim);display:flex;gap:7px;flex-wrap:wrap;align-items:center}
-.card .d{font-size:12px;color:var(--dim);margin-top:5px;white-space:pre-wrap}
-.card .btns{display:flex;gap:6px;margin-top:8px}
-button{cursor:pointer;border:none;border-radius:6px;padding:6px 11px;font-size:12px;font-weight:600;color:#fff}
-.approve{background:var(--green);color:#06130a}
-.sendback{background:transparent;border:1px solid var(--red);color:var(--red)}
-.s-queued h3{color:var(--dim)} .s-working h3{color:var(--blue)} .s-checking h3{color:var(--amber)}
-.s-lead_review h3{color:var(--purple)} .s-ready h3{color:var(--green)}
-.s-approved h3{color:var(--green)} .s-sent_back h3{color:var(--red)}
-/* chat */
-#chat{border-left:1px solid var(--border);display:flex;flex-direction:column}
-#chat h2{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:14px 14px 8px}
-#msgs{flex:1;overflow-y:auto;padding:0 14px 10px;display:flex;flex-direction:column;gap:8px}
-.msg{background:var(--panel2);border-radius:8px;padding:7px 10px;font-size:13px}
-.msg .who{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:2px}
-.msg.me .who{color:var(--blue)}
-.msg .when{color:var(--dim);font-weight:400;float:right;font-size:10px}
-#chatform{display:flex;gap:7px;padding:12px;border-top:1px solid var(--border)}
-#chatform input{flex:1;background:var(--panel2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--txt);font-size:13px}
-#chatform button{background:var(--accent)}
-#keygate{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:50}
-#keygate input{background:var(--panel2);border:1px solid var(--border);border-radius:7px;padding:10px 14px;color:var(--txt);width:300px}
-.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--border);padding:9px 16px;border-radius:8px;font-size:13px;display:none}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font:14px/1.5 Inter,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+.mono{font-family:"JetBrains Mono",monospace}
+
+/* aurora */
+#aurora{position:fixed;top:-220px;left:50%;transform:translateX(-50%);width:1100px;height:520px;pointer-events:none;z-index:0;filter:blur(110px);opacity:.5}
+#aurora::before,#aurora::after{content:"";position:absolute;width:60%;height:70%;border-radius:50%}
+#aurora::before{left:8%;top:10%;background:radial-gradient(circle,#7C5CFF 0%,transparent 70%);animation:drift 16s ease-in-out infinite alternate}
+#aurora::after{right:4%;top:25%;background:radial-gradient(circle,#3b2a8c 0%,transparent 70%);animation:drift 21s ease-in-out infinite alternate-reverse}
+@keyframes drift{to{transform:translate(70px,40px) scale(1.15)}}
+
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;padding:16px 26px;background:rgba(10,10,15,.72);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+header .logo{font-size:17px;font-weight:800;letter-spacing:-.3px}
+header .logo em{font-style:normal;background:linear-gradient(100deg,#a78bfa,#7C5CFF);-webkit-background-clip:text;background-clip:text;color:transparent}
+header .gen{color:var(--faint);font-size:12px}
+header .right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
+.livedot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+.livedot.ok{background:var(--green);box-shadow:0 0 10px rgba(74,222,128,.7)}
+
+main{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:26px;display:grid;gap:18px;
+  grid-template-columns:1fr 1fr 340px;
+  grid-template-areas:"inbox inbox chat" "wings wings chat" "projects projects chat"}
+@media(max-width:1000px){main{grid-template-columns:1fr;grid-template-areas:"inbox" "chat" "wings" "projects";padding:14px}}
+
+.tile{background:var(--s1);border:1px solid var(--line);border-radius:18px;transition:border-color .18s,transform .18s}
+.tile:hover{border-color:var(--line2)}
+h2.sec{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.6px;color:var(--faint);margin-bottom:12px}
+
+/* ── inbox hero ── */
+#inbox{grid-area:inbox;position:relative;overflow:hidden;background:rgba(21,21,31,.6);backdrop-filter:blur(20px);border:1px solid rgba(124,92,255,.28);padding:24px 26px;box-shadow:0 0 44px rgba(124,92,255,.12)}
+#inbox .head{display:flex;align-items:baseline;gap:18px;margin-bottom:16px}
+#inbox .big{font-size:84px;font-weight:800;line-height:.9;letter-spacing:-4px;font-variant-numeric:tabular-nums;background:linear-gradient(170deg,#fff 30%,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
+#inbox .big.zero{background:none;-webkit-text-fill-color:var(--faint)}
+#inbox .cap{font-size:15px;font-weight:600}
+#inbox .cap small{display:block;color:var(--dim);font-weight:400;font-size:12.5px;margin-top:3px}
+.ibcard{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--s2);border:1px solid var(--line);border-radius:13px;padding:13px 15px;margin-top:9px;transition:transform .15s,border-color .15s}
+.ibcard:hover{transform:translateY(-2px);border-color:rgba(124,92,255,.4)}
+.ibcard .tag{font-size:10px;font-weight:700;letter-spacing:.8px;padding:4px 9px;border-radius:7px;white-space:nowrap}
+.tag.launch{background:rgba(124,92,255,.16);color:#b8a3ff;box-shadow:0 0 14px var(--vglow)}
+.tag.stuck{background:rgba(248,113,113,.14);color:var(--red)}
+.ibcard .body{flex:1;min-width:180px}
+.ibcard .t{font-weight:600;font-size:14px}
+.ibcard .sub{color:var(--dim);font-size:12px;margin-top:2px}
+.ibcard .btns{display:flex;gap:8px}
+button{cursor:pointer;border:none;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:700;font-family:inherit;transition:transform .15s,box-shadow .15s}
+button:hover{transform:translateY(-1px)}
+.b-approve{background:linear-gradient(120deg,#8b6cff,#6c4ce0);color:#fff;box-shadow:0 0 16px var(--vglow)}
+.b-back{background:transparent;border:1px solid rgba(248,113,113,.5);color:var(--red)}
+.b-chat{background:var(--s3);color:var(--txt);border:1px solid var(--line2)}
+.allclear{color:var(--dim);font-size:13.5px;padding:6px 2px}
+
+/* ── wings ── */
+#wings{grid-area:wings}
+.wing{margin-bottom:18px}
+.wing-label{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.wing-label .nm{font-size:13px;font-weight:700;letter-spacing:.4px}
+.wing-label .ln{flex:1;height:1px;background:var(--line)}
+.depts{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:12px}
+.dept{padding:15px 16px}
+.dept .dn{font-size:12.5px;font-weight:700;margin-bottom:10px;color:#c9c9d9}
+.agent{display:flex;align-items:flex-start;gap:9px;padding:5px 0;font-size:13px}
+.sdot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex:none}
+.sdot.working{background:var(--green);box-shadow:0 0 8px rgba(74,222,128,.6);animation:pulse 2s infinite}
+.sdot.waiting{background:var(--amber)}
+.sdot.stuck{background:var(--red);box-shadow:0 0 8px rgba(248,113,113,.6);animation:pulse 1.2s infinite}
+.sdot.idle{background:var(--faint)}
+@keyframes pulse{50%{opacity:.45}}
+.agent .an{font-weight:600}
+.agent .ad{color:var(--faint);font-size:11.5px;margin-top:1px}
+
+/* ── projects ── */
+#projects{grid-area:projects}
+.projgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:12px}
+.proj{padding:16px 17px}
+.proj .top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.proj .pt{font-weight:700;font-size:14px;flex:1}
+.pill{font-size:10px;font-weight:700;letter-spacing:.6px;padding:3px 9px;border-radius:99px;text-transform:uppercase}
+.pill.active{background:rgba(74,222,128,.12);color:var(--green)}
+.pill.ready{background:rgba(124,92,255,.16);color:#b8a3ff}
+.pill.launched{background:rgba(255,255,255,.08);color:var(--dim)}
+.pill.parked{background:rgba(251,191,36,.1);color:var(--amber)}
+.proj .pd{color:var(--dim);font-size:12.5px;margin-bottom:11px}
+.strip{display:flex;align-items:center;gap:5px}
+.strip .seg{height:5px;flex:1;border-radius:3px;background:var(--s3)}
+.strip .seg.done{background:linear-gradient(90deg,#7C5CFF,#a78bfa)}
+.strip .lbl{font-size:10.5px;color:var(--faint);margin-left:6px;white-space:nowrap}
+.proj .latest{font-size:11.5px;color:var(--faint);margin-top:9px}
+
+/* ── chat ── */
+#chat{grid-area:chat;display:flex;flex-direction:column;min-height:420px;max-height:calc(100vh - 120px);position:sticky;top:86px}
+@media(max-width:1000px){#chat{position:static;max-height:460px}}
+#chat .ch{padding:15px 17px 8px;font-size:12.5px;font-weight:700}
+#chat .ch small{color:var(--faint);font-weight:400;margin-left:6px}
+#msgs{flex:1;overflow-y:auto;padding:4px 14px 10px;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:88%;border-radius:13px;padding:8px 12px;font-size:13px;background:var(--s2);border:1px solid var(--line);align-self:flex-start}
+.msg.me{align-self:flex-end;background:rgba(124,92,255,.14);border-color:rgba(124,92,255,.3)}
+.msg .who{font-size:10.5px;font-weight:700;color:var(--dim);margin-bottom:2px}
+.msg .who .when{float:right;color:var(--faint);font-weight:400;margin-left:10px}
+#chatform{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
+#chatin{flex:1;background:var(--s2);border:1px solid var(--line2);border-radius:10px;padding:9px 12px;color:var(--txt);font:13px Inter;outline:none}
+#chatin:focus{border-color:var(--v);box-shadow:0 0 0 3px rgba(124,92,255,.15)}
+#chatform button{background:linear-gradient(120deg,#8b6cff,#6c4ce0);color:#fff}
+
+#keygate{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:50}
+#keygate input{background:var(--s2);border:1px solid var(--line2);border-radius:10px;padding:11px 15px;color:var(--txt);width:290px;font:14px Inter}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--s3);border:1px solid rgba(124,92,255,.4);padding:10px 18px;border-radius:11px;font-size:13px;display:none;z-index:40;box-shadow:0 0 24px var(--vglow)}
 </style>
 </head>
 <body>
-<div id="keygate"><div style="font-size:16px;font-weight:700">Wyld Agent HQ</div><input id="keyin" type="password" placeholder="access key"><button style="background:var(--accent)" onclick="saveKey()">Enter</button></div>
+<div id="aurora"></div>
+<div id="keygate"><div style="font-size:19px;font-weight:800">Agent <em style="font-style:normal;color:var(--v)">Alley</em></div><input id="keyin" type="password" placeholder="access key"><button class="b-approve" onclick="saveKey()">Enter</button></div>
 <header>
-  <h1>🏢 Wyld Agent HQ</h1><span class="sub" id="gen"></span>
-  <div class="right"><span id="statdot" class="dot"></span><span id="stattxt">connecting…</span></div>
+  <div class="logo">Agent <em>Alley</em></div>
+  <span class="gen mono" id="gen"></span>
+  <div class="right"><span id="statdot" class="livedot"></span><span id="stattxt">connecting…</span></div>
 </header>
 <main>
-  <nav id="org"><h2>Departments</h2><div id="orgtree"></div></nav>
-  <section id="board"></section>
-  <aside id="chat"><h2>HQ Chat (Emma)</h2><div id="msgs"></div>
+  <section class="tile" id="inbox"></section>
+  <section id="wings"></section>
+  <section id="projects"><h2 class="sec">Projects</h2><div class="projgrid" id="projgrid"></div></section>
+  <aside class="tile" id="chat">
+    <div class="ch">💬 Front Office<small>Emma answers here</small></div>
+    <div id="msgs"></div>
     <form id="chatform" onsubmit="return sendMsg(event)">
       <input id="chatin" placeholder="Message Emma…" autocomplete="off"><button>Send</button>
     </form>
@@ -84,9 +148,12 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 11px;font-size:1
 <div class="toast" id="toast"></div>
 <script>
 const EP = "https://emmalindsay--b46b3528cd8a11f1b2291607ee4eb77e.web.val.run";
-const STAGE_LABELS = {queued:"Queued",working:"Working",checking:"Checker QC",lead_review:"Lead Review",ready:"Ready for Devon",approved:"Approved",sent_back:"Sent Back"};
-const DEPT_NAMES = {ads:"Ads",cs:"CS",images:"Images",outreach:"Outreach"};
-const dn = d => DEPT_NAMES[d]||d;
+const STAGES = ["queued","working","checking","lead_review","ready","approved"];
+const STAGE_LBL = {queued:"Queued",working:"Working",checking:"Checker QC",lead_review:"Lead review",ready:"Ready",approved:"Approved",sent_back:"Sent back"};
+const WING_LBL = {business:"🏢 Business", personal:"🌙 Personal"};
+const DEPT_LBL = {front_office:"Front Office",marketing:"Marketing",customer_care:"Customer Care",creative_studio:"Creative Studio",sales:"Sales",finance:"Finance",health:"Health",life_ops:"Life Ops"};
+const dl = d => DEPT_LBL[d] || d.replace(/_/g," ");
+
 let KEY = localStorage.getItem("ahq_key") || "";
 if (location.hash.startsWith("#k=")) { KEY = location.hash.slice(3); localStorage.setItem("ahq_key", KEY); history.replaceState(null,"",location.pathname); }
 if (!KEY) document.getElementById("keygate").style.display = "flex";
@@ -98,41 +165,58 @@ async function relay(action, params={}, body=null){
   if(!r.ok) throw new Error(r.status);
   return r.json();
 }
-function toast(t){ const el=document.getElementById("toast"); el.textContent=t; el.style.display="block"; setTimeout(()=>el.style.display="none",2500); }
-function esc(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
-function ago(ts){ const d=(Date.now()-new Date(ts+(ts.includes("Z")||ts.includes("+")?"":"-07:00")).getTime())/60000;
+function toast(t){ const el=document.getElementById("toast"); el.textContent=t; el.style.display="block"; setTimeout(()=>el.style.display="none",2600); }
+function esc(s){ return String(s??"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function ago(ts){ if(!ts) return ""; const d=(Date.now()-new Date(ts+(/Z|\+/.test(ts)?"":"-07:00")).getTime())/60000;
   if(d<1)return"now"; if(d<60)return Math.round(d)+"m"; if(d<1440)return Math.round(d/60)+"h"; return Math.round(d/1440)+"d"; }
 
-function renderOrg(org){
-  document.getElementById("orgtree").innerHTML = Object.entries(org).map(([dept,roles])=>`
-    <div class="dept"><div class="dname">${esc(dn(dept))}</div>
-    ${roles.map(r=>`<div class="role">${esc(r.title)}<span class="badge ${r.model}">${r.model==="grok"?"GROK":"CLAUDE"}</span></div>`).join("")}
-    </div>`).join("");
+function renderInbox(jobs, stuckAgents){
+  const ready = jobs.filter(j=>j.stage==="ready");
+  const n = ready.length + stuckAgents.length;
+  const cards = [
+    ...ready.map(j=>`<div class="ibcard"><span class="tag launch">READY TO LAUNCH</span>
+      <div class="body"><div class="t">${esc(j.title)}</div><div class="sub">${esc(dl(j.dept))} · ${ago(j.updated)}${j.detail?` — ${esc(j.detail)}`:""}</div></div>
+      <div class="btns"><button class="b-approve" onclick="decide(${j.id},'approve')">✓ Approve</button><button class="b-back" onclick="decide(${j.id},'send_back')">Send back</button></div></div>`),
+    ...stuckAgents.map(a=>`<div class="ibcard"><span class="tag stuck">STUCK — NEED YOU</span>
+      <div class="body"><div class="t">${esc(a.title)}</div><div class="sub">${esc(a.status_detail)||"Couldn't resolve after escalation"}</div></div>
+      <div class="btns"><button class="b-chat" onclick="askChat('${esc(a.id)}')">Reply in chat</button></div></div>`)
+  ].join("");
+  document.getElementById("inbox").innerHTML = `
+    <div class="head"><div class="big ${n?"":"zero"}">${n}</div>
+      <div class="cap">need${n===1?"s":""} you<small>Everything else is handled — agents working, Emma checking.</small></div></div>
+    ${cards || `<div class="allclear">✨ All clear. Nothing needs your attention right now.</div>`}`;
 }
-function renderBoard(jobs, stages){
-  const pipeline = stages.filter(s=>s!=="approved"&&s!=="sent_back"&&s!=="ready");
-  const show = ["ready", ...pipeline];
-  const done = jobs.filter(j=>j.stage==="approved"||j.stage==="sent_back");
-  const col = s => {
-    const js = jobs.filter(j=>j.stage===s);
-    return `<div class="col s-${s}"><h3>${STAGE_LABELS[s]||s}<span class="cnt">${js.length}</span></h3>
-      ${js.map(j=>`<div class="card"><div class="t">${esc(j.title)}</div>
-        <div class="m"><span>${esc(dn(j.dept))}</span>·<span class="badge ${j.model}">${j.model==="grok"?"GROK":"CLAUDE"}</span>·<span>${ago(j.updated)}</span></div>
-        ${j.detail?`<div class="d">${esc(j.detail)}</div>`:""}
-        ${s==="ready"?`<div class="btns"><button class="approve" onclick="decide(${j.id},'approve')">✓ Approve</button><button class="sendback" onclick="decide(${j.id},'send_back')">↩ Send Back</button></div>`:""}
-      </div>`).join("") || `<div style="color:var(--dim);font-size:12px;padding:4px">—</div>`}
-    </div>`;
-  };
-  document.getElementById("board").innerHTML = show.map(col).join("") +
-    `<div class="col"><h3>Done<span class="cnt">${done.length}</span></h3>${done.slice(0,8).map(j=>
-      `<div class="card" style="opacity:.6"><div class="t">${j.stage==="approved"?"✅":"↩️"} ${esc(j.title)}</div><div class="m">${esc(dn(j.dept))} · ${ago(j.updated)}</div></div>`).join("")}</div>`;
+function renderWings(wings){
+  document.getElementById("wings").innerHTML = Object.entries(wings).map(([w,depts])=>`
+    <div class="wing"><div class="wing-label"><span class="nm">${WING_LBL[w]||esc(w)}</span><span class="ln"></span></div>
+    <div class="depts">${Object.entries(depts).map(([d,agents])=>`
+      <div class="tile dept"><div class="dn">${esc(dl(d))}</div>
+      ${agents.map(a=>`<div class="agent"><span class="sdot ${esc(a.status)}"></span>
+        <div><div class="an">${esc(a.title)}</div>${a.status_detail?`<div class="ad">${esc(a.status_detail)}</div>`:""}</div></div>`).join("")}
+      </div>`).join("")}</div></div>`).join("");
+}
+function renderProjects(projects, jobs){
+  document.getElementById("projgrid").innerHTML = projects.map(p=>{
+    const pj = jobs.filter(j=>j.project_id===p.id);
+    const furthest = Math.max(0, ...pj.map(j=>STAGES.indexOf(j.stage==="sent_back"?"working":j.stage)));
+    const latest = pj[0];
+    return `<div class="tile proj"><div class="top"><div class="pt">${esc(p.title)}</div><span class="pill ${esc(p.status)}">${esc(p.status)}</span></div>
+      <div class="pd">${esc(dl(p.dept))}${p.detail?` — ${esc(p.detail)}`:""}</div>
+      <div class="strip">${STAGES.slice(0,5).map((s,i)=>`<span class="seg ${pj.length&&i<=furthest?"done":""}"></span>`).join("")}<span class="lbl">${pj.length?esc(STAGE_LBL[latest.stage]||latest.stage):"no jobs yet"}</span></div>
+      ${latest?`<div class="latest">↳ ${esc(latest.title)} · ${ago(latest.updated)}</div>`:""}</div>`;
+  }).join("") || `<div style="color:var(--faint)">No projects yet.</div>`;
 }
 async function decide(id, what){
   const note = what==="send_back" ? (prompt("What needs fixing?")||"") : "";
   if(what==="send_back" && !note) return;
   try{ await relay("queue",{},{kind:"decision",payload:{job_id:id,decision:what,note}});
-    toast(what==="approve"?"✅ Approved — Emma will action it":"↩ Sent back with your note"); setTimeout(tick,1500);
+    toast(what==="approve"?"✅ Approved — Emma is actioning it":"↩ Sent back with your note"); setTimeout(tick,1600);
   }catch(e){ toast("Failed — check connection"); }
+}
+function askChat(agentId){
+  const inp=document.getElementById("chatin");
+  inp.value = `About the stuck ${agentId.replace(/_/g," ")}: `;
+  inp.focus(); inp.scrollIntoView({block:"center"});
 }
 async function sendMsg(ev){
   ev.preventDefault();
@@ -143,22 +227,30 @@ async function sendMsg(ev){
 }
 async function loadChat(){
   const r = await relay("poll",{room:"hq",limit:40});
-  const msgs = r.msgs||r.messages||[];
+  const msgs = r.msgs||[];
   document.getElementById("msgs").innerHTML = msgs.map(m=>
     `<div class="msg ${m.sender==="Devon"?"me":""}"><div class="who">${esc(m.sender)}<span class="when">${ago(m.ts)}</span></div>${esc(m.text)}</div>`).join("");
   const el=document.getElementById("msgs"); el.scrollTop=el.scrollHeight;
+}
+function stuckFromWings(wings){
+  const out=[];
+  for(const depts of Object.values(wings)) for(const agents of Object.values(depts))
+    for(const a of agents) if(a.status==="stuck") out.push(a);
+  return out;
 }
 async function tick(){
   if(!KEY) return;
   try{
     const st = await relay("kvget",{key:"state"});
-    const state = st.value || st;
-    renderOrg(state.org||{}); renderBoard(state.jobs||[], state.stages||Object.keys(STAGE_LABELS));
-    document.getElementById("gen").textContent = "updated "+ago(state.generated);
-    document.getElementById("statdot").className="dot ok"; document.getElementById("stattxt").textContent="live";
+    const s = st.value || st;
+    renderInbox(s.jobs||[], stuckFromWings(s.wings||{}));
+    renderWings(s.wings||{});
+    renderProjects(s.projects||[], s.jobs||[]);
+    document.getElementById("gen").textContent = "synced "+ago(s.generated);
+    document.getElementById("statdot").className="livedot ok"; document.getElementById("stattxt").textContent="live";
     loadChat();
   }catch(e){
-    document.getElementById("statdot").className="dot"; document.getElementById("stattxt").textContent="offline";
+    document.getElementById("statdot").className="livedot"; document.getElementById("stattxt").textContent="offline";
     if(String(e).includes("401")||String(e).includes("403")) document.getElementById("keygate").style.display="flex";
   }
 }
