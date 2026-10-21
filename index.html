@@ -142,7 +142,7 @@ button:hover{transform:translateY(-1px)}
 #drag{flex:0 0 14px;cursor:col-resize;position:relative}
 #drag::after{content:"";position:absolute;left:5px;top:12%;bottom:12%;width:3px;border-radius:2px;background:var(--line);transition:background .15s}
 #drag:hover::after,#drag.on::after{background:var(--v);box-shadow:0 0 10px var(--vglow)}
-#chat{flex:0 0 var(--chatw);display:flex;flex-direction:column;position:sticky;top:76px;height:calc(100vh - 100px);min-height:380px}
+#chat{flex:0 0 var(--chatw);width:var(--chatw);min-width:0;display:flex;flex-direction:column;position:sticky;top:76px;height:calc(100vh - 100px);min-height:380px}
 #chat .ch{padding:15px 17px 8px;font-size:12.5px;font-weight:700}
 #chat .ch small{color:var(--faint);font-weight:400;margin-left:6px}
 .ch svg{width:15px;height:15px;vertical-align:-3px;margin-right:5px;filter:drop-shadow(0 0 5px rgba(124,92,255,.5))}
@@ -160,6 +160,25 @@ button:hover{transform:translateY(-1px)}
 .cav{position:relative;flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:var(--s2);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center}
 .cav svg{width:52%;height:52%}
 .cav .cimg{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover}
+#goalscard{margin:10px 14px 14px;border:1px solid color-mix(in srgb,#22d3ee 22%,transparent);border-radius:14px;background:color-mix(in srgb,#22d3ee 4%,transparent);padding:10px 12px}
+#goalscard:empty{display:none}
+.ghead{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.ghead svg{width:14px;height:14px}
+.ghead small{color:var(--faint);font-weight:400;margin-left:2px}
+.gpct{margin-left:auto;font-size:13px}
+.gpct.ok,.gv.ok{color:#34d399}.gpct.warn,.gv.warn{color:#f59e0b}
+.grow{display:flex;align-items:center;gap:8px;padding:5px 2px;cursor:pointer;font-size:12px}
+.grow:hover{background:rgba(255,255,255,.03);border-radius:8px}
+.gic{width:18px;text-align:center;flex:0 0 18px}
+.gnm{flex:0 0 108px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gbar{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden}
+.gbar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,#22d3ee,#34d399)}
+.gbar i.low{background:linear-gradient(90deg,#f59e0b,#f87171)}
+.gv{flex:0 0 30px;text-align:right;font-weight:700;font-size:11.5px}
+.gdet{padding:2px 8px 8px 28px;font-size:11.5px;color:var(--faint)}
+.gll{margin:2px 0}
+.gitem{display:flex;justify-content:space-between;gap:10px;padding:2px 0}
+.gitem em{font-style:normal;opacity:.55;font-size:10px}
 .ch .chav{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:-6px;margin-right:7px;border:1px solid var(--line2)}
 .cav .sdot{position:absolute;bottom:-1px;right:-1px;width:11px;height:11px;border-radius:50%;border:2px solid var(--s1)}
 .sdot.working{background:var(--green)}.sdot.waiting{background:var(--amber)}.sdot.stuck{background:var(--red)}.sdot.idle{background:var(--faint)}
@@ -247,6 +266,7 @@ button:hover{transform:translateY(-1px)}
       <div id="crumb"></div>
       <div id="cluster"><svg id="clines"></svg><div id="cnodes"></div></div>
       <div class="hint" id="chint">click a cluster to open it · click an agent to talk to them</div>
+      <div id="goalscard"></div>
     </section>
     <section class="tile" id="projectstab"><div id="projwrap"></div></section>
   </div>
@@ -667,9 +687,29 @@ function stuckFromWings(wings){
     localStorage.setItem("ahq_chatw", parseInt(getComputedStyle(document.documentElement).getPropertyValue("--chatw"))); renderCluster(); });
 })();
 
+let GOALS=null, goalsOpen={};
+function renderGoals(){
+  const el=document.getElementById("goalscard");
+  if(!GOALS||!GOALS.cats){ el.innerHTML=""; return; }
+  let h=`<div class="ghead">${icon("star","igC")}Goals<small>personal</small><span class="gpct ${GOALS.overall>=80?"ok":"warn"}">${GOALS.overall}%</span></div>`;
+  for(const c of GOALS.cats){
+    h+=`<div class="grow" onclick="goalsOpen['${esc(c.id)}']=!goalsOpen['${esc(c.id)}'];renderGoals()">
+      <span class="gic">${esc(c.icon)}</span><span class="gnm">${esc(c.name)}</span>
+      <span class="gbar"><i class="${c.pct<80?"low":""}" style="width:${c.pct}%"></i></span>
+      <span class="gv ${c.pct>=80?"ok":"warn"}">${c.pct}</span></div>`;
+    if(goalsOpen[c.id]){
+      h+=`<div class="gdet">`;
+      if(c.lag) h+=`<div class="gll">🎯 ${esc(c.lag)}</div>`;
+      if(c.lead) h+=`<div class="gll">⚡ ${esc(c.lead)}</div>`;
+      h+=c.items.map(i=>`<div class="gitem"><span>${esc(i.name)}${i.opt?" <em>optional</em>":""}</span><span class="${i.pct>=80?"ok":"warn"}">${i.pct}%</span></div>`).join("")+`</div>`;
+    }
+  }
+  el.innerHTML=h;
+}
 async function tick(){
   if(!KEY) return;
   try{
+    relay("kvget",{key:"goals"}).then(g=>{ GOALS=g.value||null; renderGoals(); }).catch(()=>{});
     const st = await relay("kvget",{key:"state"});
     const s = st.value || st;
     ORG = s.wings||{};
