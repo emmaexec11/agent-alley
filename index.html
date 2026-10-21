@@ -533,7 +533,7 @@ function updateChatHead(){
     const nm = chatTarget ? chatTarget.nm : "Emma";
     const sub = chatTarget ? "direct line" : "Front Office";
     const aid = chatTarget ? chatTarget.id : "emma";
-    h.innerHTML = `<img class="chav" src="avatars/${esc(aid)}.jpg" alt="" onerror="this.remove()">${esc(nm)}<small>${sub}</small><span id="chatback">‹ all chats</span>`;
+    h.innerHTML = `<img class="chav" src="avatars/${esc(aid)}.jpg?v=2" alt="" onerror="this.remove()">${esc(nm)}<small>${sub}</small><span id="chatback">‹ all chats</span>`;
     document.getElementById("chatback").onclick = showList;
     document.getElementById("chatin").placeholder = chatTarget ? `Message ${chatTarget.nm}…` : "Message Emma…";
   }
@@ -571,7 +571,7 @@ function renderChatList(){
   });
   const row = (id, nm, sub, av, clr, status, last) => `
     <div class="crow" onclick="${id==="emma"?"openEmmaChat()":`askChat('${esc(id)}')`}">
-      <div class="cav" style="border-color:color-mix(in srgb,${clr.c} 55%,transparent)">${av}<img class="cimg" src="avatars/${esc(id)}.jpg" alt="" onerror="this.remove()">${status?`<span class="sdot ${status}"></span>`:""}</div>
+      <div class="cav" style="border-color:color-mix(in srgb,${clr.c} 55%,transparent)">${av}<img class="cimg" src="avatars/${esc(id)}.jpg?v=2" alt="" onerror="this.remove()">${status?`<span class="sdot ${status}"></span>`:""}</div>
       <div class="cbody"><div class="cn">${esc(nm)}<span class="cwhen">${last?ago(last.ts):""}</span></div>
       <div class="cprev">${esc(last?preview(last, id==="emma"?null:id):sub)}</div></div>
     </div>`;
