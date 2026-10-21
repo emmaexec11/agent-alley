@@ -20,7 +20,10 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:10px;font-siz
 .dot{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block}
 .dot.ok{background:var(--green)}
 main{display:grid;grid-template-columns:230px 1fr 300px;gap:0;height:calc(100vh - 53px)}
-@media(max-width:900px){main{grid-template-columns:1fr;height:auto}}
+@media(max-width:900px){
+  main{grid-template-columns:1fr;height:auto}
+  #board{order:1} #chat{order:2;border-left:none;border-top:1px solid var(--border);height:420px} #org{order:3;border-right:none;border-top:1px solid var(--border)}
+}
 /* org sidebar */
 #org{border-right:1px solid var(--border);overflow-y:auto;padding:14px}
 #org h2{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:10px}
