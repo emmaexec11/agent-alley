@@ -99,6 +99,14 @@ button:hover{transform:translateY(-1px)}
 .ring.waiting{border-color:var(--amber)}
 .ring.stuck{border-color:var(--red);animation:pulse 1.2s infinite}
 .hint{font-size:11px;color:var(--faint);text-align:center;padding:2px 0 4px}
+@media(max-width:600px){
+  .cnode.hub .orb{width:82px;height:82px;font-size:28px}
+  .cnode.wingn .orb{width:68px;height:68px;font-size:24px}
+  .cnode.deptn .orb{width:58px;height:58px;font-size:21px}
+  .cnode.agentn .orb{width:50px;height:50px;font-size:19px}
+  .cnode .nm{font-size:11px;max-width:90px}
+  .cnode .sub{display:none}
+}
 
 /* ── projects ── */
 #projects{grid-area:projects}
@@ -260,9 +268,10 @@ function renderCluster(){
     `${i?'<span class="sep">›</span>':""}<span class="c ${fn?"":"cur"}" data-i="${i}">${esc(t)}</span>`).join("");
   document.querySelectorAll("#crumb .c").forEach((el,idx)=>{ const fn=crumb[idx][1]; if(fn) el.onclick=fn; });
   C.appendChild(mkNode(center,cx,cy));
-  const R=Math.min(W,H)/2-62;
+  const R=Math.min(W,H)/2-(W<600?48:62);
   children.forEach((ch,i)=>{
-    const ang=(-90+i*360/children.length)*Math.PI/180;
+    const start = children.length===2 ? 180 : -90;
+    const ang=(start+i*360/children.length)*Math.PI/180;
     const x=cx+R*Math.cos(ang), y=cy+(R-14)*Math.sin(ang);
     ch.delay=i*45;
     S.innerHTML+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"/>`;
