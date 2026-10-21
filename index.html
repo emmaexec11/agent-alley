@@ -153,6 +153,19 @@ button:hover{transform:translateY(-1px)}
 .msg.me{align-self:flex-end;background:rgba(124,92,255,.14);border-color:rgba(124,92,255,.3)}
 .msg .who{font-size:10.5px;font-weight:700;color:var(--dim);margin-bottom:2px}
 .msg .who .when{float:right;color:var(--faint);font-weight:400;margin-left:10px}
+/* ── chat list (Telegram-style) ── */
+#chatlist{flex:1;overflow-y:auto;display:none}
+.crow{display:flex;align-items:center;gap:11px;padding:10px 15px;cursor:pointer;border-bottom:1px solid var(--line);transition:background .12s}
+.crow:hover{background:var(--s2)}
+.cav{position:relative;flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:var(--s2);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center}
+.cav svg{width:52%;height:52%}
+.cav .sdot{position:absolute;bottom:-1px;right:-1px;width:11px;height:11px;border-radius:50%;border:2px solid var(--s1)}
+.sdot.working{background:var(--green)}.sdot.waiting{background:var(--amber)}.sdot.stuck{background:var(--red)}.sdot.idle{background:var(--faint)}
+.crow .cbody{flex:1;min-width:0}
+.crow .cn{display:flex;align-items:baseline;gap:8px;font-size:13.5px;font-weight:700}
+.crow .cn .cwhen{margin-left:auto;font-size:10.5px;color:var(--faint);font-weight:400}
+.crow .cprev{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.clsec{font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--faint);padding:10px 15px 4px}
 .att{margin-top:6px}
 .att img{max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--line2);display:block}
 .att a{display:inline-flex;align-items:center;gap:6px;color:#b8a3ff;background:var(--s3);border:1px solid var(--line2);border-radius:9px;padding:6px 11px;font-size:12px;text-decoration:none}
@@ -238,6 +251,7 @@ button:hover{transform:translateY(-1px)}
   <div id="drag"></div>
   <aside class="tile" id="chat">
     <div class="ch" id="chathead">Front Office<small>Emma answers here</small></div>
+    <div id="chatlist"></div>
     <div id="msgs"></div>
     <div id="attprev"></div>
     <form id="chatform" onsubmit="return sendMsg(event)">
@@ -264,10 +278,9 @@ const dl = d => DEPT_LBL[d] || d.replace(/_/g," ");
 /* ── wing colour system: business green, personal purple, extras cycle ── */
 const WING_CLR = {
   business:{c:"#34d399",glow:"rgba(52,211,153,.4)",g:"igG"},
-  personal:{c:"#a78bfa",glow:"rgba(167,139,250,.42)",g:"igV"}
+  personal:{c:"#22d3ee",glow:"rgba(34,211,238,.42)",g:"igC"}
 };
 const EXTRA_CLR = [
-  {c:"#22d3ee",glow:"rgba(34,211,238,.4)",g:"igC"},
   {c:"#fbbf24",glow:"rgba(251,191,36,.4)",g:"igA"},
   {c:"#f472b6",glow:"rgba(244,114,182,.4)",g:"igP"}
 ];
@@ -464,30 +477,81 @@ async function decide(id, what){
   }catch(e){ toast("Failed — check connection"); }
 }
 
-/* ── chat (Emma by default; click an agent for a direct line) ── */
-let chatTarget = null;
+/* ── chat (Telegram-style: list of conversations → conversation) ── */
+let chatTarget = null, chatView = "list", ALLMSGS = [];
+function applyChatView(){
+  const list = chatView==="list";
+  document.getElementById("chatlist").style.display = list?"block":"none";
+  document.getElementById("msgs").style.display = list?"none":"flex";
+  document.getElementById("chatform").style.display = list?"none":"flex";
+  document.getElementById("attprev").style.display = (!list && pendingFile)?"flex":"none";
+  updateChatHead();
+}
+function showList(){ chatView="list"; chatTarget=null; applyChatView(); renderChatList(); }
 function openAgentChat(a){
   chatTarget = (a.id==="emma") ? null : {id:a.id, nm:shortName(a.title)};
-  updateChatHead(); loadChat();
+  chatView="conv"; applyChatView(); renderConv();
   if(window.innerWidth<=1000) setTab("chat");
-  const inp=document.getElementById("chatin"); inp.focus();
+  document.getElementById("chatin").focus();
 }
+function openEmmaChat(){ openAgentChat({id:"emma", title:"Emma"}); }
 function updateChatHead(){
   const h=document.getElementById("chathead");
-  if(chatTarget){
-    h.innerHTML = `${icon("chat")}${esc(chatTarget.nm)}<small>direct line</small><span id="chatback">↩ back to Emma</span>`;
-    document.getElementById("chatback").onclick = ()=>{ chatTarget=null; updateChatHead(); loadChat(); };
+  if(chatView==="list"){
+    h.innerHTML = `${icon("chat")}Chats<small>Emma + your agents</small>`;
   } else {
-    h.innerHTML = `${icon("chat")}Front Office<small>Emma answers here</small>`;
+    const nm = chatTarget ? chatTarget.nm : "Emma";
+    const sub = chatTarget ? "direct line" : "Front Office";
+    h.innerHTML = `${icon("chat")}${esc(nm)}<small>${sub}</small><span id="chatback">‹ all chats</span>`;
+    document.getElementById("chatback").onclick = showList;
+    document.getElementById("chatin").placeholder = chatTarget ? `Message ${chatTarget.nm}…` : "Message Emma…";
   }
-  document.getElementById("chatin").placeholder = chatTarget ? `Message ${chatTarget.nm}…` : "Message Emma…";
 }
 function askChat(agentId){
   let found=null;
   for(const depts of Object.values(ORG)) for(const agents of Object.values(depts))
     for(const a of agents) if(a.id===agentId) found=a;
   if(found) openAgentChat(found);
-  else { if(window.innerWidth<=1000) setTab("chat"); const inp=document.getElementById("chatin"); inp.value=`About the stuck ${agentId.replace(/_/g," ")}: `; inp.focus(); }
+  else { openEmmaChat(); const inp=document.getElementById("chatin"); inp.value=`About the stuck ${agentId.replace(/_/g," ")}: `; inp.focus(); }
+}
+function threadLast(id){
+  for(let i=ALLMSGS.length-1;i>=0;i--){
+    const m=ALLMSGS[i];
+    if(id==="emma"){ if((m.sender==="Devon"&&!m.text.startsWith("@"))||m.sender==="Emma") return m; }
+    else { if((m.sender==="Devon"&&m.text.startsWith("@"+id+" "))||m.sender===id) return m; }
+  }
+  return null;
+}
+function preview(m, id){
+  let t=m.text; if(id&&m.sender==="Devon") t=t.replace("@"+id+" ","");
+  t=t.replace(FILE_RE,"Attachment").trim();
+  return (m.sender==="Devon"?"You: ":"")+t;
+}
+function renderChatList(){
+  const ags=[];
+  for(const [w,depts] of Object.entries(ORG)) for(const [d,list] of Object.entries(depts))
+    for(const a of list) if(a.id!=="emma") ags.push({...a, wing:w, dept:d});
+  const rank={stuck:0,working:1,waiting:2,idle:3};
+  ags.sort((a,b)=>{
+    const la=threadLast(a.id), lb=threadLast(b.id);
+    if(la&&lb) return new Date(lb.ts)-new Date(la.ts);
+    if(la||lb) return la?-1:1;
+    return (rank[a.status]??4)-(rank[b.status]??4);
+  });
+  const row = (id, nm, sub, av, clr, status, last) => `
+    <div class="crow" onclick="${id==="emma"?"openEmmaChat()":`askChat('${esc(id)}')`}">
+      <div class="cav" style="border-color:color-mix(in srgb,${clr.c} 55%,transparent)">${av}${status?`<span class="sdot ${status}"></span>`:""}</div>
+      <div class="cbody"><div class="cn">${esc(nm)}<span class="cwhen">${last?ago(last.ts):""}</span></div>
+      <div class="cprev">${esc(last?preview(last, id==="emma"?null:id):sub)}</div></div>
+    </div>`;
+  const le = threadLast("emma");
+  let html = row("emma","Emma","Front Office — runs everything", icon("hub"), VIOLET, null, le);
+  html += `<div class="clsec">Agents</div>`;
+  html += ags.map(a=>{
+    const clr=wingClr(a.wing);
+    return row(a.id, shortName(a.title), dl(a.dept)+(a.status_detail?` — ${a.status_detail}`:""), icon("agent",clr.g), clr, a.status, threadLast(a.id));
+  }).join("");
+  document.getElementById("chatlist").innerHTML = html;
 }
 
 /* ── attachments ── */
@@ -553,8 +617,13 @@ async function sendMsg(ev){
   return false;
 }
 async function loadChat(){
-  const r = await relay("poll",{room:"hq",limit:60});
-  const all = r.msgs||[];
+  const r = await relay("poll",{room:"hq",limit:120});
+  ALLMSGS = r.msgs||[];
+  renderChatList();
+  if(chatView==="conv") renderConv();
+}
+function renderConv(){
+  const all = ALLMSGS;
   let msgs;
   if(chatTarget){
     const pre = "@"+chatTarget.id+" ";
@@ -616,7 +685,7 @@ async function tick(){
 /* bottom-nav icons */
 document.querySelectorAll("#bnav .bn .bnic").forEach((el,i)=>{ el.outerHTML = icon(["hub","folder","chat"][i]); });
 let rsz; window.addEventListener("resize", ()=>{ clearTimeout(rsz); rsz=setTimeout(renderCluster, 150); });
-updateChatHead(); setTab(curTab); tick(); setInterval(tick, 20000);
+applyChatView(); setTab(curTab); tick(); setInterval(tick, 20000);
 </script>
 </body>
 </html>
