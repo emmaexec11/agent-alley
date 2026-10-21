@@ -159,6 +159,8 @@ button:hover{transform:translateY(-1px)}
 .crow:hover{background:var(--s2)}
 .cav{position:relative;flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:var(--s2);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center}
 .cav svg{width:52%;height:52%}
+.cav .cimg{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover}
+.ch .chav{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:-6px;margin-right:7px;border:1px solid var(--line2)}
 .cav .sdot{position:absolute;bottom:-1px;right:-1px;width:11px;height:11px;border-radius:50%;border:2px solid var(--s1)}
 .sdot.working{background:var(--green)}.sdot.waiting{background:var(--amber)}.sdot.stuck{background:var(--red)}.sdot.idle{background:var(--faint)}
 .crow .cbody{flex:1;min-width:0}
@@ -502,7 +504,8 @@ function updateChatHead(){
   } else {
     const nm = chatTarget ? chatTarget.nm : "Emma";
     const sub = chatTarget ? "direct line" : "Front Office";
-    h.innerHTML = `${icon("chat")}${esc(nm)}<small>${sub}</small><span id="chatback">‹ all chats</span>`;
+    const aid = chatTarget ? chatTarget.id : "emma";
+    h.innerHTML = `<img class="chav" src="avatars/${esc(aid)}.jpg" alt="" onerror="this.remove()">${esc(nm)}<small>${sub}</small><span id="chatback">‹ all chats</span>`;
     document.getElementById("chatback").onclick = showList;
     document.getElementById("chatin").placeholder = chatTarget ? `Message ${chatTarget.nm}…` : "Message Emma…";
   }
@@ -540,7 +543,7 @@ function renderChatList(){
   });
   const row = (id, nm, sub, av, clr, status, last) => `
     <div class="crow" onclick="${id==="emma"?"openEmmaChat()":`askChat('${esc(id)}')`}">
-      <div class="cav" style="border-color:color-mix(in srgb,${clr.c} 55%,transparent)">${av}${status?`<span class="sdot ${status}"></span>`:""}</div>
+      <div class="cav" style="border-color:color-mix(in srgb,${clr.c} 55%,transparent)">${av}<img class="cimg" src="avatars/${esc(id)}.jpg" alt="" onerror="this.remove()">${status?`<span class="sdot ${status}"></span>`:""}</div>
       <div class="cbody"><div class="cn">${esc(nm)}<span class="cwhen">${last?ago(last.ts):""}</span></div>
       <div class="cprev">${esc(last?preview(last, id==="emma"?null:id):sub)}</div></div>
     </div>`;
