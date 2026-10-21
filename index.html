@@ -83,6 +83,10 @@ button:hover{transform:translateY(-1px)}
 @keyframes pop{from{opacity:0;transform:translate(-50%,-50%) scale(.55)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 @keyframes pulse{50%{opacity:.45}}
 .cnode .orb{display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--s2);border:1px solid var(--line2);position:relative;transition:border-color .15s,box-shadow .15s,transform .15s}
+.orb svg{width:46%;height:46%;filter:drop-shadow(0 0 7px rgba(124,92,255,.55))}
+.cnode:hover .orb svg{filter:drop-shadow(0 0 11px rgba(167,139,250,.85))}
+.ch svg{width:15px;height:15px;vertical-align:-3px;margin-right:5px;filter:drop-shadow(0 0 5px rgba(124,92,255,.5))}
+.allclear svg{width:14px;height:14px;vertical-align:-2px;margin-right:6px}
 .cnode:hover .orb{border-color:var(--v);box-shadow:0 0 22px var(--vglow);transform:scale(1.07)}
 .cnode .nm{font-size:12px;font-weight:600;text-align:center;max-width:120px;line-height:1.25}
 .cnode .sub{font-size:10.5px;color:var(--faint);text-align:center;max-width:130px;margin-top:-2px}
@@ -149,6 +153,9 @@ button:hover{transform:translateY(-1px)}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="ig" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c4b5fd"/><stop offset="1" stop-color="#7C5CFF"/></linearGradient>
+</defs></svg>
 <div id="aurora"></div>
 <div id="keygate"><div style="font-size:19px;font-weight:800">Agent <em style="font-style:normal;color:var(--v)">Alley</em></div><input id="keyin" type="password" placeholder="access key"><button class="b-approve" onclick="saveKey()">Enter</button></div>
 <header>
@@ -165,7 +172,7 @@ button:hover{transform:translateY(-1px)}
   </section>
   <section id="projects"><h2 class="sec">Projects</h2><div class="projgrid" id="projgrid"></div></section>
   <aside class="tile" id="chat">
-    <div class="ch" id="chathead">💬 Front Office<small>Emma answers here</small></div>
+    <div class="ch" id="chathead">Front Office<small>Emma answers here</small></div>
     <div id="msgs"></div>
     <form id="chatform" onsubmit="return sendMsg(event)">
       <input id="chatin" placeholder="Message Emma…" autocomplete="off"><button>Send</button>
@@ -177,7 +184,26 @@ button:hover{transform:translateY(-1px)}
 const EP = "https://emmalindsay--b46b3528cd8a11f1b2291607ee4eb77e.web.val.run";
 const STAGES = ["queued","working","checking","lead_review","ready","approved"];
 const STAGE_LBL = {queued:"Queued",working:"Working",checking:"Checker QC",lead_review:"Lead review",ready:"Ready",approved:"Approved",sent_back:"Sent back"};
-const WING_LBL = {business:"🏢 Business", personal:"🌙 Personal"};
+const WING_LBL = {business:"Business", personal:"Personal"};
+/* custom icon set — gradient stroke, matches aurora theme */
+const ic = p => `<svg viewBox="0 0 24 24" fill="none" stroke="url(#ig)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const ICONS = {
+  hub: ic('<path d="M12 2.5l8 4.6v9.8l-8 4.6-8-4.6V7.1z"/><circle cx="12" cy="12" r="1.9"/><path d="M12 10.1V2.5M13.6 13l6.4 3.9M10.4 13L4 16.9"/>'),
+  business: ic('<path d="M6 21V4.5A1.5 1.5 0 017.5 3h9A1.5 1.5 0 0118 4.5V21M3 21h18"/><path d="M9.5 7.2h1.6M13 7.2h1.6M9.5 11h1.6M13 11h1.6M9.5 14.8h1.6M13 14.8h1.6"/>'),
+  personal: ic('<path d="M20.6 13.2A8.2 8.2 0 1110.8 3.4a6.6 6.6 0 009.8 9.8z"/><path d="M18.5 3v3.6M16.7 4.8h3.6"/>'),
+  front_office: ic('<path d="M6.3 16.5a5.7 5.7 0 0111.4 0"/><path d="M12 10.8V9.2"/><circle cx="12" cy="8" r="1.1"/><path d="M4.5 16.5h15M4 19.5h16"/>'),
+  marketing: ic('<path d="M3 10.8v2.4a1 1 0 001 1h2.2L11.5 18V6L6.2 9.8H4a1 1 0 00-1 1z"/><path d="M15.5 9.2a4.2 4.2 0 010 5.6M18.3 6.4a8.2 8.2 0 010 11.2"/>'),
+  customer_care: ic('<rect x="3" y="5.5" width="18" height="13" rx="1.8"/><path d="M3.5 7l8.5 5.8L20.5 7"/>'),
+  creative_studio: ic('<path d="M4 20l9.8-9.8"/><path d="M17 3l1 2.7L20.7 7l-2.7 1L17 10.7 16 8 13.3 7 16 6z"/><path d="M20.3 12.3v2.4M19.1 13.5h2.4"/>'),
+  sales: ic('<path d="M3.5 4v16.5h17"/><path d="M6.5 15.5l4-4 3 3 6-6"/><path d="M15.8 8.5h3.7v3.7"/>'),
+  finance: ic('<ellipse cx="12" cy="6" rx="7" ry="2.8"/><path d="M5 6v5c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8V6"/><path d="M5 11v5.2c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8V11"/>'),
+  health: ic('<path d="M3.5 12.5h4l2-5.5 4.5 10.5 2.5-5h4"/>'),
+  life_ops: ic('<rect x="4" y="5" width="16" height="15.5" rx="2"/><path d="M4 10h16M8.5 3v4M15.5 3v4"/><path d="M8 14h2.5M13 14h3M8 17.3h3.5"/>'),
+  agent: ic('<rect x="5" y="8" width="14" height="11.5" rx="2.4"/><path d="M12 8V5.2"/><circle cx="12" cy="3.9" r="1.1"/><path d="M9.3 12.6v1.8M14.7 12.6v1.8M9.5 17.2h5"/>'),
+  folder: ic('<path d="M3.5 7A1.5 1.5 0 015 5.5h4l2 2.4h8A1.5 1.5 0 0120.5 9.4v8.1A1.5 1.5 0 0119 19H5a1.5 1.5 0 01-1.5-1.5z"/>'),
+  star: ic('<path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"/>'),
+  chat: ic('<path d="M20 13.5a1.6 1.6 0 01-1.6 1.6H9.6L5.4 18.7v-3.6A1.6 1.6 0 014 13.5V5.6A1.6 1.6 0 015.6 4h12.8A1.6 1.6 0 0120 5.6z"/>')
+};
 const DEPT_LBL = {front_office:"Front Office",marketing:"Marketing",customer_care:"Customer Care",creative_studio:"Creative Studio",sales:"Sales",finance:"Finance",health:"Health",life_ops:"Life Ops"};
 const dl = d => DEPT_LBL[d] || d.replace(/_/g," ");
 
@@ -211,14 +237,13 @@ function renderInbox(jobs, stuckAgents){
   document.getElementById("inbox").innerHTML = `
     <div class="head"><div class="big ${n?"":"zero"}">${n}</div>
       <div class="cap">need${n===1?"s":""} you<small>Everything else is handled — agents working, Emma checking.</small></div></div>
-    ${cards || `<div class="allclear">✨ All clear. Nothing needs your attention right now.</div>`}`;
+    ${cards || `<div class="allclear">${ICONS.star}All clear. Nothing needs your attention right now.</div>`}`;
 }
 /* ── cluster map ── */
 let ORG = {}, view = {level:"home"};
-const WING_EMO = {business:"🏢", personal:"🌙"};
-const DEPT_EMO = {front_office:"🛎️",marketing:"📣",customer_care:"💌",creative_studio:"🎨",sales:"🤝",finance:"📚",health:"💪",life_ops:"🗓️"};
-const shortName = t => String(t).split("—")[0].trim();
-const agentEmo = t => { const m=String(t).match(/\p{Extended_Pictographic}/u); return m?m[0]:"🤖"; };
+const wingIco = w => ICONS[w] || ICONS.star;
+const deptIco = d => ICONS[d] || ICONS.folder;
+const shortName = t => String(t).split("—")[0].replace(/\p{Extended_Pictographic}|️/gu,"").trim();
 function deptStats(agents){ return {stuck:agents.filter(a=>a.status==="stuck").length, working:agents.filter(a=>a.status==="working").length}; }
 function wingStats(depts){ const s={stuck:0,working:0}; for(const ag of Object.values(depts)){const d=deptStats(ag); s.stuck+=d.stuck; s.working+=d.working;} return s; }
 function nav(v){ view=v; renderCluster(); }
@@ -227,7 +252,7 @@ function mkNode(spec, x, y){
   el.className="cnode "+spec.cls;
   el.style.left=x+"px"; el.style.top=y+"px";
   if(spec.delay) el.style.animationDelay=spec.delay+"ms";
-  const orb=document.createElement("div"); orb.className="orb"; orb.textContent=spec.emo;
+  const orb=document.createElement("div"); orb.className="orb"; orb.innerHTML=spec.ico;
   if(spec.ring){ const r=document.createElement("div"); r.className="ring "+spec.ring; orb.appendChild(r); }
   if(spec.red){ const b=document.createElement("div"); b.className="badge red"; b.textContent=spec.red; orb.appendChild(b); }
   else if(spec.green){ const b=document.createElement("div"); b.className="badge green"; b.textContent=spec.green; orb.appendChild(b); }
@@ -245,23 +270,23 @@ function renderCluster(){
   if(view.level==="wing" && !ORG[view.wing]) view={level:"home"};
   if(view.level==="dept" && !(ORG[view.wing]&&ORG[view.wing][view.dept])) view={level:"home"};
   if(view.level==="home"){
-    center={emo:"💼",nm:"Agent Alley",cls:"hub"};
+    center={ico:ICONS.hub,nm:"Agent Alley",cls:"hub"};
     children=Object.entries(ORG).map(([w,depts])=>{ const st=wingStats(depts);
-      return {emo:WING_EMO[w]||"✦", nm:(WING_LBL[w]||w).replace(/^\S+\s/,""), sub:Object.keys(depts).length+" departments", cls:"wingn",
+      return {ico:wingIco(w), nm:WING_LBL[w]||w, sub:Object.keys(depts).length+" departments", cls:"wingn",
         red:st.stuck||0, green:st.stuck?0:(st.working||0), click:()=>nav({level:"wing",wing:w})}; });
   } else if(view.level==="wing"){
     const depts=ORG[view.wing];
-    crumb.push([(WING_LBL[view.wing]||view.wing).replace(/^\S+\s/,""),()=>nav({level:"wing",wing:view.wing})]);
-    center={emo:WING_EMO[view.wing]||"✦", nm:(WING_LBL[view.wing]||view.wing).replace(/^\S+\s/,""), cls:"hub"};
+    crumb.push([WING_LBL[view.wing]||view.wing,()=>nav({level:"wing",wing:view.wing})]);
+    center={ico:wingIco(view.wing), nm:WING_LBL[view.wing]||view.wing, cls:"hub"};
     children=Object.entries(depts).map(([d,agents])=>{ const st=deptStats(agents);
-      return {emo:DEPT_EMO[d]||"📁", nm:dl(d), sub:agents.length+(agents.length===1?" agent":" agents"), cls:"deptn",
+      return {ico:deptIco(d), nm:dl(d), sub:agents.length+(agents.length===1?" agent":" agents"), cls:"deptn",
         red:st.stuck||0, green:st.stuck?0:(st.working||0), click:()=>nav({level:"dept",wing:view.wing,dept:d})}; });
   } else {
     const agents=ORG[view.wing][view.dept];
-    crumb.push([(WING_LBL[view.wing]||view.wing).replace(/^\S+\s/,""),()=>nav({level:"wing",wing:view.wing})]);
+    crumb.push([WING_LBL[view.wing]||view.wing,()=>nav({level:"wing",wing:view.wing})]);
     crumb.push([dl(view.dept),null]);
-    center={emo:DEPT_EMO[view.dept]||"📁", nm:dl(view.dept), cls:"hub"};
-    children=agents.map(a=>({emo:agentEmo(a.title), nm:shortName(a.title), sub:a.status==="idle"?"":a.status_detail||a.status, cls:"agentn",
+    center={ico:deptIco(view.dept), nm:dl(view.dept), cls:"hub"};
+    children=agents.map(a=>({ico:ICONS.agent, nm:shortName(a.title), sub:a.status==="idle"?"":a.status_detail||a.status, cls:"agentn",
       ring:a.status!=="idle"?a.status:null, click:()=>openAgentChat(a)}));
   }
   document.getElementById("crumb").innerHTML = crumb.map(([t,fn],i)=>
@@ -293,7 +318,7 @@ async function decide(id, what){
   const note = what==="send_back" ? (prompt("What needs fixing?")||"") : "";
   if(what==="send_back" && !note) return;
   try{ await relay("queue",{},{kind:"decision",payload:{job_id:id,decision:what,note}});
-    toast(what==="approve"?"✅ Approved — Emma is actioning it":"↩ Sent back with your note"); setTimeout(tick,1600);
+    toast(what==="approve"?"✓ Approved — Emma is actioning it":"↩ Sent back with your note"); setTimeout(tick,1600);
   }catch(e){ toast("Failed — check connection"); }
 }
 /* ── chat (Emma by default; click an agent for a direct line) ── */
@@ -306,10 +331,10 @@ function openAgentChat(a){
 function updateChatHead(){
   const h=document.getElementById("chathead");
   if(chatTarget){
-    h.innerHTML = `💬 ${esc(chatTarget.nm)}<small>direct line</small><span id="chatback">↩ back to Emma</span>`;
+    h.innerHTML = `${ICONS.chat}${esc(chatTarget.nm)}<small>direct line</small><span id="chatback">↩ back to Emma</span>`;
     document.getElementById("chatback").onclick = ()=>{ chatTarget=null; updateChatHead(); loadChat(); };
   } else {
-    h.innerHTML = `💬 Front Office<small>Emma answers here</small>`;
+    h.innerHTML = `${ICONS.chat}Front Office<small>Emma answers here</small>`;
   }
   document.getElementById("chatin").placeholder = chatTarget ? `Message ${chatTarget.nm}…` : "Message Emma…";
 }
@@ -367,7 +392,7 @@ async function tick(){
   }
 }
 let rsz; window.addEventListener("resize", ()=>{ clearTimeout(rsz); rsz=setTimeout(renderCluster, 150); });
-tick(); setInterval(tick, 20000);
+updateChatHead(); tick(); setInterval(tick, 20000);
 </script>
 </body>
 </html>
