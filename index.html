@@ -82,6 +82,8 @@ button{cursor:pointer;border:none;border-radius:6px;padding:6px 11px;font-size:1
 <script>
 const EP = "https://emmalindsay--b46b3528cd8a11f1b2291607ee4eb77e.web.val.run";
 const STAGE_LABELS = {queued:"Queued",working:"Working",checking:"Checker QC",lead_review:"Lead Review",ready:"Ready for Devon",approved:"Approved",sent_back:"Sent Back"};
+const DEPT_NAMES = {ads:"Ads",cs:"CS",images:"Images",outreach:"Outreach"};
+const dn = d => DEPT_NAMES[d]||d;
 let KEY = localStorage.getItem("ahq_key") || "";
 if (location.hash.startsWith("#k=")) { KEY = location.hash.slice(3); localStorage.setItem("ahq_key", KEY); history.replaceState(null,"",location.pathname); }
 if (!KEY) document.getElementById("keygate").style.display = "flex";
@@ -100,18 +102,19 @@ function ago(ts){ const d=(Date.now()-new Date(ts+(ts.includes("Z")||ts.includes
 
 function renderOrg(org){
   document.getElementById("orgtree").innerHTML = Object.entries(org).map(([dept,roles])=>`
-    <div class="dept"><div class="dname">${esc(dept)}</div>
+    <div class="dept"><div class="dname">${esc(dn(dept))}</div>
     ${roles.map(r=>`<div class="role">${esc(r.title)}<span class="badge ${r.model}">${r.model==="grok"?"GROK":"CLAUDE"}</span></div>`).join("")}
     </div>`).join("");
 }
 function renderBoard(jobs, stages){
-  const show = stages.filter(s=>s!=="approved"&&s!=="sent_back");
+  const pipeline = stages.filter(s=>s!=="approved"&&s!=="sent_back"&&s!=="ready");
+  const show = ["ready", ...pipeline];
   const done = jobs.filter(j=>j.stage==="approved"||j.stage==="sent_back");
   const col = s => {
     const js = jobs.filter(j=>j.stage===s);
     return `<div class="col s-${s}"><h3>${STAGE_LABELS[s]||s}<span class="cnt">${js.length}</span></h3>
       ${js.map(j=>`<div class="card"><div class="t">${esc(j.title)}</div>
-        <div class="m"><span>${esc(j.dept)}</span>·<span class="badge ${j.model}">${j.model==="grok"?"GROK":"CLAUDE"}</span>·<span>${ago(j.updated)}</span></div>
+        <div class="m"><span>${esc(dn(j.dept))}</span>·<span class="badge ${j.model}">${j.model==="grok"?"GROK":"CLAUDE"}</span>·<span>${ago(j.updated)}</span></div>
         ${j.detail?`<div class="d">${esc(j.detail)}</div>`:""}
         ${s==="ready"?`<div class="btns"><button class="approve" onclick="decide(${j.id},'approve')">✓ Approve</button><button class="sendback" onclick="decide(${j.id},'send_back')">↩ Send Back</button></div>`:""}
       </div>`).join("") || `<div style="color:var(--dim);font-size:12px;padding:4px">—</div>`}
@@ -119,7 +122,7 @@ function renderBoard(jobs, stages){
   };
   document.getElementById("board").innerHTML = show.map(col).join("") +
     `<div class="col"><h3>Done<span class="cnt">${done.length}</span></h3>${done.slice(0,8).map(j=>
-      `<div class="card" style="opacity:.6"><div class="t">${j.stage==="approved"?"✅":"↩️"} ${esc(j.title)}</div><div class="m">${esc(j.dept)} · ${ago(j.updated)}</div></div>`).join("")}</div>`;
+      `<div class="card" style="opacity:.6"><div class="t">${j.stage==="approved"?"✅":"↩️"} ${esc(j.title)}</div><div class="m">${esc(dn(j.dept))} · ${ago(j.updated)}</div></div>`).join("")}</div>`;
 }
 async function decide(id, what){
   const note = what==="send_back" ? (prompt("What needs fixing?")||"") : "";
