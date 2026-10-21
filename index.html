@@ -14,7 +14,7 @@
   --txt:#ECECF4; --dim:#8E8EA3; --faint:#5B5B70;
   --v:#7C5CFF; --vglow:rgba(124,92,255,.35);
   --green:#4ade80; --amber:#fbbf24; --red:#f87171;
-  --claude:#e8a860; --grok:#6fc3ff;
+  --chatw:350px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -25,10 +25,10 @@ body{background:var(--bg);color:var(--txt);font:14px/1.5 Inter,-apple-system,san
 #aurora{position:fixed;top:-220px;left:50%;transform:translateX(-50%);width:1100px;height:520px;pointer-events:none;z-index:0;filter:blur(110px);opacity:.5}
 #aurora::before,#aurora::after{content:"";position:absolute;width:60%;height:70%;border-radius:50%}
 #aurora::before{left:8%;top:10%;background:radial-gradient(circle,#7C5CFF 0%,transparent 70%);animation:drift 16s ease-in-out infinite alternate}
-#aurora::after{right:4%;top:25%;background:radial-gradient(circle,#3b2a8c 0%,transparent 70%);animation:drift 21s ease-in-out infinite alternate-reverse}
+#aurora::after{right:4%;top:25%;background:radial-gradient(circle,#0f5c43 0%,transparent 70%);animation:drift 21s ease-in-out infinite alternate-reverse}
 @keyframes drift{to{transform:translate(70px,40px) scale(1.15)}}
 
-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;padding:16px 26px;background:rgba(10,10,15,.72);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;padding:13px 22px;background:rgba(10,10,15,.72);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
 header .logo{font-size:17px;font-weight:800;letter-spacing:-.3px}
 header .logo em{font-style:normal;background:linear-gradient(100deg,#a78bfa,#7C5CFF);-webkit-background-clip:text;background-clip:text;color:transparent}
 header .gen{color:var(--faint);font-size:12px}
@@ -36,23 +36,36 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size
 .livedot{width:8px;height:8px;border-radius:50%;background:var(--red)}
 .livedot.ok{background:var(--green);box-shadow:0 0 10px rgba(74,222,128,.7)}
 
-main{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:26px;display:grid;gap:18px;
-  grid-template-columns:1fr 1fr 340px;
-  grid-template-areas:"inbox inbox chat" "wings wings chat" "projects projects chat"}
-@media(max-width:1000px){main{grid-template-columns:1fr;grid-template-areas:"inbox" "chat" "wings" "projects";padding:14px}}
+/* ── agent status strip ── */
+#astrip{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:12px 22px 0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+#astrip::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;display:flex;align-items:center;gap:8px;background:rgba(16,16,24,.8);border:1px solid var(--line);border-radius:99px;padding:6px 13px;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;transition:border-color .15s,transform .15s}
+.chip:hover{transform:translateY(-1px);border-color:var(--line2)}
+.chip small{color:var(--dim);font-weight:400;max-width:190px;overflow:hidden;text-overflow:ellipsis}
+.chip.off{cursor:default;color:var(--dim)}
+.cdot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.cdot.working{background:var(--green);box-shadow:0 0 9px rgba(74,222,128,.8);animation:pulse 1.8s infinite}
+.cdot.waiting{background:var(--amber);box-shadow:0 0 8px rgba(251,191,36,.6)}
+.cdot.stuck{background:var(--red);box-shadow:0 0 9px rgba(248,113,113,.85);animation:pulse 1.1s infinite}
+.cdot.idle{background:var(--faint)}
+.chip .ck{color:var(--green);font-weight:800}
+.chip.stuckc{border-color:rgba(248,113,113,.45)}
+.chip.donec{border-color:rgba(74,222,128,.3)}
 
-.tile{background:var(--s1);border:1px solid var(--line);border-radius:18px;transition:border-color .18s,transform .18s}
+main{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:14px 22px 26px;display:flex;gap:0;align-items:stretch}
+#left{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
+
+.tile{background:var(--s1);border:1px solid var(--line);border-radius:18px;transition:border-color .18s}
 .tile:hover{border-color:var(--line2)}
-h2.sec{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.6px;color:var(--faint);margin-bottom:12px}
 
-/* ── inbox hero ── */
-#inbox{grid-area:inbox;position:relative;overflow:hidden;background:rgba(21,21,31,.6);backdrop-filter:blur(20px);border:1px solid rgba(124,92,255,.28);padding:24px 26px;box-shadow:0 0 44px rgba(124,92,255,.12)}
-#inbox .head{display:flex;align-items:baseline;gap:18px;margin-bottom:16px}
-#inbox .big{font-size:84px;font-weight:800;line-height:.9;letter-spacing:-4px;font-variant-numeric:tabular-nums;background:linear-gradient(170deg,#fff 30%,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
-#inbox .big.zero{background:none;-webkit-text-fill-color:var(--faint)}
-#inbox .cap{font-size:15px;font-weight:600}
-#inbox .cap small{display:block;color:var(--dim);font-weight:400;font-size:12.5px;margin-top:3px}
-.ibcard{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--s2);border:1px solid var(--line);border-radius:13px;padding:13px 15px;margin-top:9px;transition:transform .15s,border-color .15s}
+/* ── compact inbox ── */
+#inbox{background:rgba(21,21,31,.6);backdrop-filter:blur(20px);border:1px solid rgba(124,92,255,.24);padding:11px 16px}
+#inbox.hot{border-color:rgba(124,92,255,.45);box-shadow:0 0 30px rgba(124,92,255,.12)}
+.ibzero{display:flex;align-items:center;gap:8px;color:var(--dim);font-size:13px}
+.ibzero svg{width:14px;height:14px}
+.ibhead{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;margin-bottom:4px}
+.ibcount{font-size:22px;font-weight:800;background:linear-gradient(170deg,#fff 30%,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ibcard{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--s2);border:1px solid var(--line);border-radius:13px;padding:11px 14px;margin-top:8px;transition:transform .15s,border-color .15s}
 .ibcard:hover{transform:translateY(-2px);border-color:rgba(124,92,255,.4)}
 .ibcard .tag{font-size:10px;font-weight:700;letter-spacing:.8px;padding:4px 9px;border-radius:7px;white-space:nowrap}
 .tag.launch{background:rgba(124,92,255,.16);color:#b8a3ff;box-shadow:0 0 14px var(--vglow)}
@@ -66,35 +79,35 @@ button:hover{transform:translateY(-1px)}
 .b-approve{background:linear-gradient(120deg,#8b6cff,#6c4ce0);color:#fff;box-shadow:0 0 16px var(--vglow)}
 .b-back{background:transparent;border:1px solid rgba(248,113,113,.5);color:var(--red)}
 .b-chat{background:var(--s3);color:var(--txt);border:1px solid var(--line2)}
-.allclear{color:var(--dim);font-size:13.5px;padding:6px 2px}
+
+/* ── left tabs ── */
+#lefttabs{display:flex;gap:6px}
+#lefttabs .lt{background:transparent;border:1px solid var(--line);color:var(--dim);border-radius:10px;padding:7px 16px;font-size:12.5px}
+#lefttabs .lt.on{background:rgba(124,92,255,.14);border-color:rgba(124,92,255,.45);color:var(--txt);box-shadow:0 0 14px rgba(124,92,255,.15)}
 
 /* ── cluster map ── */
-#clusterwrap{grid-area:wings;padding:12px 16px 8px;overflow:hidden}
+#alleytab{padding:12px 16px 8px;overflow:hidden}
 #crumb{display:flex;gap:4px;align-items:center;font-size:12px;color:var(--dim);min-height:26px}
 #crumb .c{cursor:pointer;padding:3px 9px;border-radius:7px;font-weight:600}
 #crumb .c:hover{background:var(--s3);color:var(--txt)}
 #crumb .c.cur{color:var(--txt);cursor:default}
 #crumb .sep{color:var(--faint)}
-#cluster{position:relative;height:430px}
-@media(max-width:1000px){#cluster{height:380px}}
+#cluster{position:relative;height:440px}
 #clines{position:absolute;inset:0;width:100%;height:100%}
-#clines line{stroke:rgba(124,92,255,.18);stroke-width:1.5}
-.cnode{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;animation:pop .35s cubic-bezier(.2,.9,.3,1.25) both}
+.cnode{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;animation:pop .35s cubic-bezier(.2,.9,.3,1.25) both;--nc:#7C5CFF;--ng:rgba(124,92,255,.35)}
 @keyframes pop{from{opacity:0;transform:translate(-50%,-50%) scale(.55)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 @keyframes pulse{50%{opacity:.45}}
-.cnode .orb{display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--s2);border:1px solid var(--line2);position:relative;transition:border-color .15s,box-shadow .15s,transform .15s}
-.orb svg{width:46%;height:46%;filter:drop-shadow(0 0 7px rgba(124,92,255,.55))}
-.cnode:hover .orb svg{filter:drop-shadow(0 0 11px rgba(167,139,250,.85))}
-.ch svg{width:15px;height:15px;vertical-align:-3px;margin-right:5px;filter:drop-shadow(0 0 5px rgba(124,92,255,.5))}
-.allclear svg{width:14px;height:14px;vertical-align:-2px;margin-right:6px}
-.cnode:hover .orb{border-color:var(--v);box-shadow:0 0 22px var(--vglow);transform:scale(1.07)}
+.cnode .orb{display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--s2);border:1px solid color-mix(in srgb,var(--nc) 38%,transparent);position:relative;transition:border-color .15s,box-shadow .15s,transform .15s}
+.cnode:hover .orb{border-color:var(--nc);box-shadow:0 0 22px var(--ng);transform:scale(1.07)}
+.orb svg{width:46%;height:46%;filter:drop-shadow(0 0 7px var(--ng))}
+.cnode:hover .orb svg{filter:drop-shadow(0 0 11px var(--ng))}
 .cnode .nm{font-size:12px;font-weight:600;text-align:center;max-width:120px;line-height:1.25}
 .cnode .sub{font-size:10.5px;color:var(--faint);text-align:center;max-width:130px;margin-top:-2px}
-.cnode.hub .orb{width:108px;height:108px;font-size:36px;background:radial-gradient(circle at 35% 30%,rgba(124,92,255,.38),var(--s2) 72%);border-color:rgba(124,92,255,.5);box-shadow:0 0 36px var(--vglow)}
+.cnode.hub .orb{width:106px;height:106px;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--nc) 34%,transparent),var(--s2) 72%);border-color:color-mix(in srgb,var(--nc) 55%,transparent);box-shadow:0 0 36px var(--ng)}
 .cnode.hub{cursor:default}
-.cnode.wingn .orb{width:92px;height:92px;font-size:32px}
-.cnode.deptn .orb{width:74px;height:74px;font-size:26px}
-.cnode.agentn .orb{width:62px;height:62px;font-size:23px}
+.cnode.wingn .orb{width:92px;height:92px}
+.cnode.deptn .orb{width:74px;height:74px}
+.cnode.agentn .orb{width:62px;height:62px}
 .badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;z-index:2}
 .badge.red{background:var(--red);color:#1a0505;box-shadow:0 0 10px rgba(248,113,113,.7)}
 .badge.green{background:rgba(74,222,128,.92);color:#05260f}
@@ -103,19 +116,14 @@ button:hover{transform:translateY(-1px)}
 .ring.waiting{border-color:var(--amber)}
 .ring.stuck{border-color:var(--red);animation:pulse 1.2s infinite}
 .hint{font-size:11px;color:var(--faint);text-align:center;padding:2px 0 4px}
-@media(max-width:600px){
-  .cnode.hub .orb{width:82px;height:82px;font-size:28px}
-  .cnode.wingn .orb{width:68px;height:68px;font-size:24px}
-  .cnode.deptn .orb{width:58px;height:58px;font-size:21px}
-  .cnode.agentn .orb{width:50px;height:50px;font-size:19px}
-  .cnode .nm{font-size:11px;max-width:90px}
-  .cnode .sub{display:none}
-}
 
-/* ── projects ── */
-#projects{grid-area:projects}
-.projgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:12px}
-.proj{padding:16px 17px}
+/* ── projects tab ── */
+#projectstab{padding:16px}
+.gsec{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.6px;margin:14px 0 9px}
+.gsec:first-child{margin-top:0}
+.gsec.ready{color:#b8a3ff}.gsec.active{color:var(--green)}.gsec.launched{color:var(--dim)}.gsec.parked{color:var(--amber)}
+.projgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.proj{padding:15px 16px;border-left:3px solid var(--line2)}
 .proj .top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .proj .pt{font-weight:700;font-size:14px;flex:1}
 .pill{font-size:10px;font-weight:700;letter-spacing:.6px;padding:3px 9px;border-radius:99px;text-transform:uppercase}
@@ -130,31 +138,80 @@ button:hover{transform:translateY(-1px)}
 .strip .lbl{font-size:10.5px;color:var(--faint);margin-left:6px;white-space:nowrap}
 .proj .latest{font-size:11.5px;color:var(--faint);margin-top:9px}
 
-/* ── chat ── */
-#chat{grid-area:chat;display:flex;flex-direction:column;min-height:420px;max-height:calc(100vh - 120px);position:sticky;top:86px}
-@media(max-width:1000px){#chat{position:static;max-height:460px}}
+/* ── chat + drag handle ── */
+#drag{flex:0 0 14px;cursor:col-resize;position:relative}
+#drag::after{content:"";position:absolute;left:5px;top:12%;bottom:12%;width:3px;border-radius:2px;background:var(--line);transition:background .15s}
+#drag:hover::after,#drag.on::after{background:var(--v);box-shadow:0 0 10px var(--vglow)}
+#chat{flex:0 0 var(--chatw);display:flex;flex-direction:column;position:sticky;top:76px;height:calc(100vh - 100px);min-height:380px}
 #chat .ch{padding:15px 17px 8px;font-size:12.5px;font-weight:700}
 #chat .ch small{color:var(--faint);font-weight:400;margin-left:6px}
+.ch svg{width:15px;height:15px;vertical-align:-3px;margin-right:5px;filter:drop-shadow(0 0 5px rgba(124,92,255,.5))}
 #chatback{float:right;cursor:pointer;color:var(--v);font-size:11px;font-weight:600;padding:2px 8px;border:1px solid rgba(124,92,255,.35);border-radius:7px}
 #chatback:hover{background:rgba(124,92,255,.14)}
 #msgs{flex:1;overflow-y:auto;padding:4px 14px 10px;display:flex;flex-direction:column;gap:8px}
-.msg{max-width:88%;border-radius:13px;padding:8px 12px;font-size:13px;background:var(--s2);border:1px solid var(--line);align-self:flex-start}
+.msg{max-width:88%;border-radius:13px;padding:8px 12px;font-size:13px;background:var(--s2);border:1px solid var(--line);align-self:flex-start;overflow-wrap:break-word}
 .msg.me{align-self:flex-end;background:rgba(124,92,255,.14);border-color:rgba(124,92,255,.3)}
 .msg .who{font-size:10.5px;font-weight:700;color:var(--dim);margin-bottom:2px}
 .msg .who .when{float:right;color:var(--faint);font-weight:400;margin-left:10px}
-#chatform{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
-#chatin{flex:1;background:var(--s2);border:1px solid var(--line2);border-radius:10px;padding:9px 12px;color:var(--txt);font:13px Inter;outline:none}
+.att{margin-top:6px}
+.att img{max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--line2);display:block}
+.att a{display:inline-flex;align-items:center;gap:6px;color:#b8a3ff;background:var(--s3);border:1px solid var(--line2);border-radius:9px;padding:6px 11px;font-size:12px;text-decoration:none}
+#attprev{display:none;align-items:center;gap:8px;margin:0 14px;padding:7px 11px;background:var(--s2);border:1px dashed rgba(124,92,255,.4);border-radius:10px;font-size:12px;color:var(--dim)}
+#attprev .x{cursor:pointer;color:var(--red);font-weight:800;margin-left:auto;padding:0 4px}
+#chatform{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);align-items:center}
+#attbtn{background:var(--s2);border:1px solid var(--line2);border-radius:10px;width:37px;height:37px;display:flex;align-items:center;justify-content:center;padding:0;flex:0 0 auto}
+#attbtn svg{width:17px;height:17px}
+#chatin{flex:1;min-width:0;background:var(--s2);border:1px solid var(--line2);border-radius:10px;padding:9px 12px;color:var(--txt);font:13px Inter;outline:none}
 #chatin:focus{border-color:var(--v);box-shadow:0 0 0 3px rgba(124,92,255,.15)}
-#chatform button{background:linear-gradient(120deg,#8b6cff,#6c4ce0);color:#fff}
+#chatform button[type=submit]{background:linear-gradient(120deg,#8b6cff,#6c4ce0);color:#fff}
+
+/* ── bottom nav (mobile) ── */
+#bnav{display:none}
 
 #keygate{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:50}
 #keygate input{background:var(--s2);border:1px solid var(--line2);border-radius:10px;padding:11px 15px;color:var(--txt);width:290px;font:14px Inter}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--s3);border:1px solid rgba(124,92,255,.4);padding:10px 18px;border-radius:11px;font-size:13px;display:none;z-index:40;box-shadow:0 0 24px var(--vglow)}
+
+/* ── mobile ── */
+@media(max-width:1000px){
+  main{flex-direction:column;padding:12px 12px 86px}
+  #astrip{padding:10px 12px 0}
+  #drag{display:none}
+  #lefttabs{display:none}
+  #chat{position:static;flex:0 0 auto;height:auto;min-height:0}
+  body[data-tab="alley"] #projectstab,body[data-tab="alley"] #chat{display:none}
+  body[data-tab="projects"] #alleytab,body[data-tab="projects"] #chat{display:none}
+  body[data-tab="chat"] #alleytab,body[data-tab="chat"] #projectstab,body[data-tab="chat"] #inbox{display:none}
+  body[data-tab="chat"] #chat{display:flex;height:calc(100dvh - 185px);min-height:420px}
+  #cluster{height:420px}
+  .cnode.hub .orb{width:84px;height:84px}
+  .cnode.wingn .orb{width:70px;height:70px}
+  .cnode.deptn .orb{width:60px;height:60px}
+  .cnode.agentn .orb{width:52px;height:52px}
+  .cnode .nm{font-size:11px;max-width:90px}
+  .cnode .sub{display:none}
+  .toast{bottom:92px}
+  #bnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:25;background:rgba(10,10,15,.82);backdrop-filter:blur(18px);border-top:1px solid var(--line);padding:7px 10px calc(7px + env(safe-area-inset-bottom))}
+  #bnav .bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--faint);font-size:10.5px;font-weight:600;padding:5px 0;position:relative}
+  #bnav .bn svg{width:21px;height:21px;filter:none;opacity:.65}
+  #bnav .bn.on{color:var(--txt)}
+  #bnav .bn.on svg{opacity:1;filter:drop-shadow(0 0 8px var(--vglow))}
+  #bnav .bbadge{position:absolute;top:0;left:calc(50% + 6px);min-width:16px;height:16px;border-radius:8px;background:var(--red);color:#1a0505;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px}
+}
+@media(min-width:1001px){
+  body[data-tab="alley"] #projectstab{display:none}
+  body[data-tab="projects"] #alleytab{display:none}
+  body[data-tab="chat"] #projectstab{display:none}
+}
 </style>
 </head>
-<body>
+<body data-tab="alley">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-<linearGradient id="ig" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c4b5fd"/><stop offset="1" stop-color="#7C5CFF"/></linearGradient>
+<linearGradient id="igV" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d6c7ff"/><stop offset="1" stop-color="#7C5CFF"/></linearGradient>
+<linearGradient id="igG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#86efac"/><stop offset="1" stop-color="#10b981"/></linearGradient>
+<linearGradient id="igC" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a5f3fc"/><stop offset="1" stop-color="#06b6d4"/></linearGradient>
+<linearGradient id="igA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fde68a"/><stop offset="1" stop-color="#f59e0b"/></linearGradient>
+<linearGradient id="igP" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbcfe8"/><stop offset="1" stop-color="#ec4899"/></linearGradient>
 </defs></svg>
 <div id="aurora"></div>
 <div id="keygate"><div style="font-size:19px;font-weight:800">Agent <em style="font-style:normal;color:var(--v)">Alley</em></div><input id="keyin" type="password" placeholder="access key"><button class="b-approve" onclick="saveKey()">Enter</button></div>
@@ -163,49 +220,85 @@ button:hover{transform:translateY(-1px)}
   <span class="gen mono" id="gen"></span>
   <div class="right"><span id="statdot" class="livedot"></span><span id="stattxt">connecting…</span></div>
 </header>
+<div id="astrip"></div>
 <main>
-  <section class="tile" id="inbox"></section>
-  <section class="tile" id="clusterwrap">
-    <div id="crumb"></div>
-    <div id="cluster"><svg id="clines"></svg><div id="cnodes"></div></div>
-    <div class="hint" id="chint">click a cluster to open it · click an agent to talk to them</div>
-  </section>
-  <section id="projects"><h2 class="sec">Projects</h2><div class="projgrid" id="projgrid"></div></section>
+  <div id="left">
+    <div id="inbox"></div>
+    <div id="lefttabs">
+      <button class="lt on" data-t="alley" onclick="setTab('alley')">Alley</button>
+      <button class="lt" data-t="projects" onclick="setTab('projects')">Projects</button>
+    </div>
+    <section class="tile" id="alleytab">
+      <div id="crumb"></div>
+      <div id="cluster"><svg id="clines"></svg><div id="cnodes"></div></div>
+      <div class="hint" id="chint">click a cluster to open it · click an agent to talk to them</div>
+    </section>
+    <section class="tile" id="projectstab"><div id="projwrap"></div></section>
+  </div>
+  <div id="drag"></div>
   <aside class="tile" id="chat">
     <div class="ch" id="chathead">Front Office<small>Emma answers here</small></div>
     <div id="msgs"></div>
+    <div id="attprev"></div>
     <form id="chatform" onsubmit="return sendMsg(event)">
-      <input id="chatin" placeholder="Message Emma…" autocomplete="off"><button>Send</button>
+      <button type="button" id="attbtn" title="Attach file" onclick="document.getElementById('attfile').click()"></button>
+      <input type="file" id="attfile" hidden>
+      <input id="chatin" placeholder="Message Emma…" autocomplete="off"><button type="submit">Send</button>
     </form>
   </aside>
 </main>
+<nav id="bnav">
+  <button class="bn on" data-t="alley" onclick="setTab('alley')"><span class="bnic"></span>Alley<span class="bbadge" id="bnavbadge" style="display:none"></span></button>
+  <button class="bn" data-t="projects" onclick="setTab('projects')"><span class="bnic"></span>Projects</button>
+  <button class="bn" data-t="chat" onclick="setTab('chat')"><span class="bnic"></span>Chat</button>
+</nav>
 <div class="toast" id="toast"></div>
 <script>
 const EP = "https://emmalindsay--b46b3528cd8a11f1b2291607ee4eb77e.web.val.run";
 const STAGES = ["queued","working","checking","lead_review","ready","approved"];
 const STAGE_LBL = {queued:"Queued",working:"Working",checking:"Checker QC",lead_review:"Lead review",ready:"Ready",approved:"Approved",sent_back:"Sent back"};
 const WING_LBL = {business:"Business", personal:"Personal"};
-/* custom icon set — gradient stroke, matches aurora theme */
-const ic = p => `<svg viewBox="0 0 24 24" fill="none" stroke="url(#ig)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
-const ICONS = {
-  hub: ic('<path d="M12 2.5l8 4.6v9.8l-8 4.6-8-4.6V7.1z"/><circle cx="12" cy="12" r="1.9"/><path d="M12 10.1V2.5M13.6 13l6.4 3.9M10.4 13L4 16.9"/>'),
-  business: ic('<path d="M6 21V4.5A1.5 1.5 0 017.5 3h9A1.5 1.5 0 0118 4.5V21M3 21h18"/><path d="M9.5 7.2h1.6M13 7.2h1.6M9.5 11h1.6M13 11h1.6M9.5 14.8h1.6M13 14.8h1.6"/>'),
-  personal: ic('<path d="M20.6 13.2A8.2 8.2 0 1110.8 3.4a6.6 6.6 0 009.8 9.8z"/><path d="M18.5 3v3.6M16.7 4.8h3.6"/>'),
-  front_office: ic('<path d="M6.3 16.5a5.7 5.7 0 0111.4 0"/><path d="M12 10.8V9.2"/><circle cx="12" cy="8" r="1.1"/><path d="M4.5 16.5h15M4 19.5h16"/>'),
-  marketing: ic('<path d="M3 10.8v2.4a1 1 0 001 1h2.2L11.5 18V6L6.2 9.8H4a1 1 0 00-1 1z"/><path d="M15.5 9.2a4.2 4.2 0 010 5.6M18.3 6.4a8.2 8.2 0 010 11.2"/>'),
-  customer_care: ic('<rect x="3" y="5.5" width="18" height="13" rx="1.8"/><path d="M3.5 7l8.5 5.8L20.5 7"/>'),
-  creative_studio: ic('<path d="M4 20l9.8-9.8"/><path d="M17 3l1 2.7L20.7 7l-2.7 1L17 10.7 16 8 13.3 7 16 6z"/><path d="M20.3 12.3v2.4M19.1 13.5h2.4"/>'),
-  sales: ic('<path d="M3.5 4v16.5h17"/><path d="M6.5 15.5l4-4 3 3 6-6"/><path d="M15.8 8.5h3.7v3.7"/>'),
-  finance: ic('<ellipse cx="12" cy="6" rx="7" ry="2.8"/><path d="M5 6v5c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8V6"/><path d="M5 11v5.2c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8V11"/>'),
-  health: ic('<path d="M3.5 12.5h4l2-5.5 4.5 10.5 2.5-5h4"/>'),
-  life_ops: ic('<rect x="4" y="5" width="16" height="15.5" rx="2"/><path d="M4 10h16M8.5 3v4M15.5 3v4"/><path d="M8 14h2.5M13 14h3M8 17.3h3.5"/>'),
-  agent: ic('<rect x="5" y="8" width="14" height="11.5" rx="2.4"/><path d="M12 8V5.2"/><circle cx="12" cy="3.9" r="1.1"/><path d="M9.3 12.6v1.8M14.7 12.6v1.8M9.5 17.2h5"/>'),
-  folder: ic('<path d="M3.5 7A1.5 1.5 0 015 5.5h4l2 2.4h8A1.5 1.5 0 0120.5 9.4v8.1A1.5 1.5 0 0119 19H5a1.5 1.5 0 01-1.5-1.5z"/>'),
-  star: ic('<path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"/>'),
-  chat: ic('<path d="M20 13.5a1.6 1.6 0 01-1.6 1.6H9.6L5.4 18.7v-3.6A1.6 1.6 0 014 13.5V5.6A1.6 1.6 0 015.6 4h12.8A1.6 1.6 0 0120 5.6z"/>')
-};
 const DEPT_LBL = {front_office:"Front Office",marketing:"Marketing",customer_care:"Customer Care",creative_studio:"Creative Studio",sales:"Sales",finance:"Finance",health:"Health",life_ops:"Life Ops"};
 const dl = d => DEPT_LBL[d] || d.replace(/_/g," ");
+
+/* ── wing colour system: business green, personal purple, extras cycle ── */
+const WING_CLR = {
+  business:{c:"#34d399",glow:"rgba(52,211,153,.4)",g:"igG"},
+  personal:{c:"#a78bfa",glow:"rgba(167,139,250,.42)",g:"igV"}
+};
+const EXTRA_CLR = [
+  {c:"#22d3ee",glow:"rgba(34,211,238,.4)",g:"igC"},
+  {c:"#fbbf24",glow:"rgba(251,191,36,.4)",g:"igA"},
+  {c:"#f472b6",glow:"rgba(244,114,182,.4)",g:"igP"}
+];
+const VIOLET = {c:"#7C5CFF",glow:"rgba(124,92,255,.35)",g:"igV"};
+let _extraIdx = {};
+function wingClr(w){
+  if(WING_CLR[w]) return WING_CLR[w];
+  if(!(w in _extraIdx)) _extraIdx[w] = Object.keys(_extraIdx).length % EXTRA_CLR.length;
+  return EXTRA_CLR[_extraIdx[w]];
+}
+
+/* ── custom icon set — gradient strokes, aurora theme ── */
+const P = {
+  hub:'<path d="M12 2.5l8 4.6v9.8l-8 4.6-8-4.6V7.1z"/><circle cx="12" cy="12" r="1.9"/><path d="M12 10.1V2.5M13.6 13l6.4 3.9M10.4 13L4 16.9"/>',
+  business:'<path d="M6 21V4.5A1.5 1.5 0 017.5 3h9A1.5 1.5 0 0118 4.5V21M3 21h18"/><path d="M9.5 7.2h1.6M13 7.2h1.6M9.5 11h1.6M13 11h1.6M9.5 14.8h1.6M13 14.8h1.6"/>',
+  personal:'<path d="M20.6 13.2A8.2 8.2 0 1110.8 3.4a6.6 6.6 0 009.8 9.8z"/><path d="M18.5 3v3.6M16.7 4.8h3.6"/>',
+  front_office:'<path d="M6.3 16.5a5.7 5.7 0 0111.4 0"/><path d="M12 10.8V9.2"/><circle cx="12" cy="8" r="1.1"/><path d="M4.5 16.5h15M4 19.5h16"/>',
+  marketing:'<path d="M3 10.8v2.4a1 1 0 001 1h2.2L11.5 18V6L6.2 9.8H4a1 1 0 00-1 1z"/><path d="M15.5 9.2a4.2 4.2 0 010 5.6M18.3 6.4a8.2 8.2 0 010 11.2"/>',
+  customer_care:'<rect x="3" y="5.5" width="18" height="13" rx="1.8"/><path d="M3.5 7l8.5 5.8L20.5 7"/>',
+  creative_studio:'<path d="M4 20l9.8-9.8"/><path d="M17 3l1 2.7L20.7 7l-2.7 1L17 10.7 16 8 13.3 7 16 6z"/><path d="M20.3 12.3v2.4M19.1 13.5h2.4"/>',
+  sales:'<path d="M3.5 4v16.5h17"/><path d="M6.5 15.5l4-4 3 3 6-6"/><path d="M15.8 8.5h3.7v3.7"/>',
+  finance:'<ellipse cx="12" cy="6" rx="7" ry="2.8"/><path d="M5 6v5c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8V6"/><path d="M5 11v5.2c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8V11"/>',
+  health:'<path d="M3.5 12.5h4l2-5.5 4.5 10.5 2.5-5h4"/>',
+  life_ops:'<rect x="4" y="5" width="16" height="15.5" rx="2"/><path d="M4 10h16M8.5 3v4M15.5 3v4"/><path d="M8 14h2.5M13 14h3M8 17.3h3.5"/>',
+  agent:'<rect x="5" y="8" width="14" height="11.5" rx="2.4"/><path d="M12 8V5.2"/><circle cx="12" cy="3.9" r="1.1"/><path d="M9.3 12.6v1.8M14.7 12.6v1.8M9.5 17.2h5"/>',
+  folder:'<path d="M3.5 7A1.5 1.5 0 015 5.5h4l2 2.4h8A1.5 1.5 0 0120.5 9.4v8.1A1.5 1.5 0 0119 19H5a1.5 1.5 0 01-1.5-1.5z"/>',
+  star:'<path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"/>',
+  chat:'<path d="M20 13.5a1.6 1.6 0 01-1.6 1.6H9.6L5.4 18.7v-3.6A1.6 1.6 0 014 13.5V5.6A1.6 1.6 0 015.6 4h12.8A1.6 1.6 0 0120 5.6z"/>',
+  clip:'<path d="M20 11.5l-8 8a5.2 5.2 0 01-7.4-7.4l8.5-8.5a3.5 3.5 0 015 5l-8.5 8.5a1.8 1.8 0 01-2.6-2.6l7.8-7.8"/>'
+};
+const icon = (n,g="igV") => `<svg viewBox="0 0 24 24" fill="none" stroke="url(#${g})" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${P[n]||P.star}</svg>`;
 
 let KEY = localStorage.getItem("ahq_key") || "";
 if (location.hash.startsWith("#k=")) { KEY = location.hash.slice(3); localStorage.setItem("ahq_key", KEY); history.replaceState(null,"",location.pathname); }
@@ -222,10 +315,49 @@ function toast(t){ const el=document.getElementById("toast"); el.textContent=t; 
 function esc(s){ return String(s??"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 function ago(ts){ if(!ts) return ""; const d=(Date.now()-new Date(ts+(/Z|\+/.test(ts)?"":"-07:00")).getTime())/60000;
   if(d<1)return"now"; if(d<60)return Math.round(d)+"m"; if(d<1440)return Math.round(d/60)+"h"; return Math.round(d/1440)+"d"; }
+function hoursSince(ts){ if(!ts) return 1e9; return (Date.now()-new Date(ts+(/Z|\+/.test(ts)?"":"-07:00")).getTime())/3600000; }
 
+/* ── tabs ── */
+let curTab = localStorage.getItem("ahq_tab") || "alley";
+function setTab(t){
+  curTab = t; localStorage.setItem("ahq_tab", t);
+  document.body.dataset.tab = t;
+  document.querySelectorAll("#lefttabs .lt").forEach(b=>b.classList.toggle("on", b.dataset.t===t || (t==="chat"&&b.dataset.t==="alley")));
+  document.querySelectorAll("#bnav .bn").forEach(b=>b.classList.toggle("on", b.dataset.t===t));
+  if(t==="alley") requestAnimationFrame(renderCluster);
+  if(t==="chat"){ const el=document.getElementById("msgs"); el.scrollTop=el.scrollHeight; }
+}
+
+/* ── agent status strip ── */
+function renderStrip(jobs){
+  const ags=[];
+  for(const [w,depts] of Object.entries(ORG)) for(const [d,list] of Object.entries(depts))
+    for(const a of list) ags.push({...a, wing:w, dept:d});
+  const by = s => ags.filter(a=>a.status===s);
+  const done = (jobs||[]).filter(j=>(j.stage==="approved"||j.stage==="ready") && hoursSince(j.updated)<24)
+    .sort((a,b)=>new Date(b.updated)-new Date(a.updated)).slice(0,6);
+  const chip = (a,cls) => `<div class="chip ${a.status==='stuck'?'stuckc':''}" onclick="askChat('${esc(a.id)}')">
+    <span class="cdot ${a.status}"></span>${esc(shortName(a.title))}${a.status_detail?`<small>${esc(a.status_detail)}</small>`:""}</div>`;
+  const parts = [
+    ...by("stuck").map(a=>chip(a)),
+    ...by("working").map(a=>chip(a)),
+    ...by("waiting").map(a=>chip(a)),
+    ...done.map(j=>`<div class="chip donec off"><span class="ck">✓</span>${esc(j.title)}<small>${j.stage==="ready"?"ready for you":"done"} · ${ago(j.updated)}</small></div>`)
+  ];
+  const idle = by("idle").length;
+  if(idle) parts.push(`<div class="chip off"><span class="cdot idle"></span>${idle} idle</div>`);
+  document.getElementById("astrip").innerHTML = parts.join("") || "";
+}
+
+/* ── inbox (compact) ── */
 function renderInbox(jobs, stuckAgents){
   const ready = jobs.filter(j=>j.stage==="ready");
   const n = ready.length + stuckAgents.length;
+  const box = document.getElementById("inbox");
+  box.classList.toggle("hot", n>0);
+  const bb=document.getElementById("bnavbadge");
+  bb.style.display = n? "flex":"none"; bb.textContent=n;
+  if(!n){ box.innerHTML = `<div class="ibzero">${icon("star")}All clear — agents working, Emma checking.</div>`; return; }
   const cards = [
     ...ready.map(j=>`<div class="ibcard"><span class="tag launch">READY TO LAUNCH</span>
       <div class="body"><div class="t">${esc(j.title)}</div><div class="sub">${esc(dl(j.dept))} · ${ago(j.updated)}${j.detail?` — ${esc(j.detail)}`:""}</div></div>
@@ -234,15 +366,11 @@ function renderInbox(jobs, stuckAgents){
       <div class="body"><div class="t">${esc(a.title)}</div><div class="sub">${esc(a.status_detail)||"Couldn't resolve after escalation"}</div></div>
       <div class="btns"><button class="b-chat" onclick="askChat('${esc(a.id)}')">Reply in chat</button></div></div>`)
   ].join("");
-  document.getElementById("inbox").innerHTML = `
-    <div class="head"><div class="big ${n?"":"zero"}">${n}</div>
-      <div class="cap">need${n===1?"s":""} you<small>Everything else is handled — agents working, Emma checking.</small></div></div>
-    ${cards || `<div class="allclear">${ICONS.star}All clear. Nothing needs your attention right now.</div>`}`;
+  box.innerHTML = `<div class="ibhead"><span class="ibcount">${n}</span> need${n===1?"s":""} you</div>${cards}`;
 }
+
 /* ── cluster map ── */
 let ORG = {}, view = {level:"home"};
-const wingIco = w => ICONS[w] || ICONS.star;
-const deptIco = d => ICONS[d] || ICONS.folder;
 const shortName = t => String(t).split("—")[0].replace(/\p{Extended_Pictographic}|️/gu,"").trim();
 function deptStats(agents){ return {stuck:agents.filter(a=>a.status==="stuck").length, working:agents.filter(a=>a.status==="working").length}; }
 function wingStats(depts){ const s={stuck:0,working:0}; for(const ag of Object.values(depts)){const d=deptStats(ag); s.stuck+=d.stuck; s.working+=d.working;} return s; }
@@ -251,6 +379,8 @@ function mkNode(spec, x, y){
   const el=document.createElement("div");
   el.className="cnode "+spec.cls;
   el.style.left=x+"px"; el.style.top=y+"px";
+  const clr = spec.clr || VIOLET;
+  el.style.setProperty("--nc", clr.c); el.style.setProperty("--ng", clr.glow);
   if(spec.delay) el.style.animationDelay=spec.delay+"ms";
   const orb=document.createElement("div"); orb.className="orb"; orb.innerHTML=spec.ico;
   if(spec.ring){ const r=document.createElement("div"); r.className="ring "+spec.ring; orb.appendChild(r); }
@@ -264,29 +394,30 @@ function mkNode(spec, x, y){
 }
 function renderCluster(){
   const cont=document.getElementById("cluster"), C=document.getElementById("cnodes"), S=document.getElementById("clines");
+  if(!cont.clientWidth) return;
   const W=cont.clientWidth, H=cont.clientHeight, cx=W/2, cy=H/2;
   C.innerHTML=""; S.innerHTML="";
   let center, children=[], crumb=[["Alley",()=>nav({level:"home"})]];
   if(view.level==="wing" && !ORG[view.wing]) view={level:"home"};
   if(view.level==="dept" && !(ORG[view.wing]&&ORG[view.wing][view.dept])) view={level:"home"};
   if(view.level==="home"){
-    center={ico:ICONS.hub,nm:"Agent Alley",cls:"hub"};
-    children=Object.entries(ORG).map(([w,depts])=>{ const st=wingStats(depts);
-      return {ico:wingIco(w), nm:WING_LBL[w]||w, sub:Object.keys(depts).length+" departments", cls:"wingn",
+    center={ico:icon("hub"),nm:"Agent Alley",cls:"hub",clr:VIOLET};
+    children=Object.entries(ORG).map(([w,depts])=>{ const st=wingStats(depts); const clr=wingClr(w);
+      return {ico:icon(P[w]?w:"star", clr.g), nm:WING_LBL[w]||w, sub:Object.keys(depts).length+" departments", cls:"wingn", clr,
         red:st.stuck||0, green:st.stuck?0:(st.working||0), click:()=>nav({level:"wing",wing:w})}; });
   } else if(view.level==="wing"){
-    const depts=ORG[view.wing];
+    const depts=ORG[view.wing]; const clr=wingClr(view.wing);
     crumb.push([WING_LBL[view.wing]||view.wing,()=>nav({level:"wing",wing:view.wing})]);
-    center={ico:wingIco(view.wing), nm:WING_LBL[view.wing]||view.wing, cls:"hub"};
+    center={ico:icon(P[view.wing]?view.wing:"star", clr.g), nm:WING_LBL[view.wing]||view.wing, cls:"hub", clr};
     children=Object.entries(depts).map(([d,agents])=>{ const st=deptStats(agents);
-      return {ico:deptIco(d), nm:dl(d), sub:agents.length+(agents.length===1?" agent":" agents"), cls:"deptn",
+      return {ico:icon(P[d]?d:"folder", clr.g), nm:dl(d), sub:agents.length+(agents.length===1?" agent":" agents"), cls:"deptn", clr,
         red:st.stuck||0, green:st.stuck?0:(st.working||0), click:()=>nav({level:"dept",wing:view.wing,dept:d})}; });
   } else {
-    const agents=ORG[view.wing][view.dept];
+    const agents=ORG[view.wing][view.dept]; const clr=wingClr(view.wing);
     crumb.push([WING_LBL[view.wing]||view.wing,()=>nav({level:"wing",wing:view.wing})]);
     crumb.push([dl(view.dept),null]);
-    center={ico:deptIco(view.dept), nm:dl(view.dept), cls:"hub"};
-    children=agents.map(a=>({ico:ICONS.agent, nm:shortName(a.title), sub:a.status==="idle"?"":a.status_detail||a.status, cls:"agentn",
+    center={ico:icon(P[view.dept]?view.dept:"folder", clr.g), nm:dl(view.dept), cls:"hub", clr};
+    children=agents.map(a=>({ico:icon("agent", clr.g), nm:shortName(a.title), sub:a.status==="idle"?"":a.status_detail||a.status, cls:"agentn", clr,
       ring:a.status!=="idle"?a.status:null, click:()=>openAgentChat(a)}));
   }
   document.getElementById("crumb").innerHTML = crumb.map(([t,fn],i)=>
@@ -299,20 +430,31 @@ function renderCluster(){
     const ang=(start+i*360/children.length)*Math.PI/180;
     const x=cx+R*Math.cos(ang), y=cy+(R-14)*Math.sin(ang);
     ch.delay=i*45;
-    S.innerHTML+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"/>`;
+    const lc=(ch.clr||VIOLET).c;
+    S.innerHTML+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" style="stroke:${lc};stroke-opacity:.22;stroke-width:1.5"/>`;
     C.appendChild(mkNode(ch,x,y));
   });
 }
+
+/* ── projects (grouped by status) ── */
 function renderProjects(projects, jobs){
-  document.getElementById("projgrid").innerHTML = projects.map(p=>{
+  const card = p => {
     const pj = jobs.filter(j=>j.project_id===p.id);
     const furthest = Math.max(0, ...pj.map(j=>STAGES.indexOf(j.stage==="sent_back"?"working":j.stage)));
     const latest = pj[0];
-    return `<div class="tile proj"><div class="top"><div class="pt">${esc(p.title)}</div><span class="pill ${esc(p.status)}">${esc(p.status)}</span></div>
+    const wc = wingClr(p.wing||"business").c;
+    return `<div class="tile proj" style="border-left-color:${wc}"><div class="top"><div class="pt">${esc(p.title)}</div><span class="pill ${esc(p.status)}">${esc(p.status)}</span></div>
       <div class="pd">${esc(dl(p.dept))}${p.detail?` — ${esc(p.detail)}`:""}</div>
       <div class="strip">${STAGES.slice(0,5).map((s,i)=>`<span class="seg ${pj.length&&i<=furthest?"done":""}"></span>`).join("")}<span class="lbl">${pj.length?esc(STAGE_LBL[latest.stage]||latest.stage):"no jobs yet"}</span></div>
       ${latest?`<div class="latest">↳ ${esc(latest.title)} · ${ago(latest.updated)}</div>`:""}</div>`;
-  }).join("") || `<div style="color:var(--faint)">No projects yet.</div>`;
+  };
+  const order=[["ready","Ready for you"],["active","In motion"],["launched","Launched"],["parked","Parked"]];
+  let html="";
+  for(const [st,lbl] of order){
+    const g=projects.filter(p=>p.status===st);
+    if(g.length) html += `<div class="gsec ${st}">${lbl}</div><div class="projgrid">${g.map(card).join("")}</div>`;
+  }
+  document.getElementById("projwrap").innerHTML = html || `<div style="color:var(--faint)">No projects yet.</div>`;
 }
 async function decide(id, what){
   const note = what==="send_back" ? (prompt("What needs fixing?")||"") : "";
@@ -321,20 +463,22 @@ async function decide(id, what){
     toast(what==="approve"?"✓ Approved — Emma is actioning it":"↩ Sent back with your note"); setTimeout(tick,1600);
   }catch(e){ toast("Failed — check connection"); }
 }
+
 /* ── chat (Emma by default; click an agent for a direct line) ── */
 let chatTarget = null;
 function openAgentChat(a){
   chatTarget = (a.id==="emma") ? null : {id:a.id, nm:shortName(a.title)};
   updateChatHead(); loadChat();
-  const inp=document.getElementById("chatin"); inp.focus(); inp.scrollIntoView({block:"center"});
+  if(window.innerWidth<=1000) setTab("chat");
+  const inp=document.getElementById("chatin"); inp.focus();
 }
 function updateChatHead(){
   const h=document.getElementById("chathead");
   if(chatTarget){
-    h.innerHTML = `${ICONS.chat}${esc(chatTarget.nm)}<small>direct line</small><span id="chatback">↩ back to Emma</span>`;
+    h.innerHTML = `${icon("chat")}${esc(chatTarget.nm)}<small>direct line</small><span id="chatback">↩ back to Emma</span>`;
     document.getElementById("chatback").onclick = ()=>{ chatTarget=null; updateChatHead(); loadChat(); };
   } else {
-    h.innerHTML = `${ICONS.chat}Front Office<small>Emma answers here</small>`;
+    h.innerHTML = `${icon("chat")}Front Office<small>Emma answers here</small>`;
   }
   document.getElementById("chatin").placeholder = chatTarget ? `Message ${chatTarget.nm}…` : "Message Emma…";
 }
@@ -343,14 +487,69 @@ function askChat(agentId){
   for(const depts of Object.values(ORG)) for(const agents of Object.values(depts))
     for(const a of agents) if(a.id===agentId) found=a;
   if(found) openAgentChat(found);
-  else { const inp=document.getElementById("chatin"); inp.value=`About the stuck ${agentId.replace(/_/g," ")}: `; inp.focus(); }
+  else { if(window.innerWidth<=1000) setTab("chat"); const inp=document.getElementById("chatin"); inp.value=`About the stuck ${agentId.replace(/_/g," ")}: `; inp.focus(); }
+}
+
+/* ── attachments ── */
+let pendingFile = null;
+document.getElementById("attbtn").innerHTML = icon("clip");
+document.getElementById("attfile").addEventListener("change", async ev=>{
+  const f = ev.target.files[0]; ev.target.value=""; if(!f) return;
+  try{
+    if(f.type.startsWith("image/")) pendingFile = {name:f.name, type:"image/jpeg", data: await downscale(f)};
+    else {
+      if(f.size > 600*1024){ toast("Too big — max 600KB for non-image files"); return; }
+      pendingFile = {name:f.name, type:f.type||"application/octet-stream", data: await readAsDataURL(f)};
+    }
+    const pv=document.getElementById("attprev");
+    pv.style.display="flex";
+    pv.innerHTML = `${icon("clip")}<span>${esc(pendingFile.name)}</span><span class="x" onclick="clearAtt()">✕</span>`;
+    pv.querySelector("svg").style.cssText="width:14px;height:14px;flex:0 0 auto";
+    document.getElementById("chatin").focus();
+  }catch(e){ toast("Couldn't read file"); }
+});
+function clearAtt(){ pendingFile=null; const pv=document.getElementById("attprev"); pv.style.display="none"; pv.innerHTML=""; }
+const readAsDataURL = f => new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); });
+async function downscale(f){
+  const url = await readAsDataURL(f);
+  const img = await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; });
+  const M=1400, sc=Math.min(1, M/Math.max(img.width,img.height));
+  if(sc===1 && f.size<500*1024) return url;
+  const cv=document.createElement("canvas"); cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
+  cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+  return cv.toDataURL("image/jpeg",.82);
+}
+const FILE_RE = /\[\[file\|([^|\]]+)\|([^\]]*)\]\]/g;
+const ATT_CACHE = {};
+async function hydrateAtts(){
+  for(const el of document.querySelectorAll(".att[data-k]:not([data-done])")){
+    el.dataset.done="1";
+    const k=el.dataset.k, n=el.dataset.n;
+    try{
+      if(!ATT_CACHE[k]){ const r=await relay("kvget",{key:k}); ATT_CACHE[k]=r.value||r; }
+      const v=ATT_CACHE[k];
+      if(v && v.data && String(v.type||"").startsWith("image/")) el.innerHTML=`<img src="${v.data}" alt="${esc(n)}">`;
+      else if(v && v.data) el.innerHTML=`<a href="${v.data}" download="${esc(n)}">${icon("clip")} ${esc(n)}</a>`;
+      else el.textContent="(attachment unavailable)";
+    }catch(e){ el.textContent="(attachment unavailable)"; }
+  }
 }
 async function sendMsg(ev){
   ev.preventDefault();
-  const inp=document.getElementById("chatin"); const t=inp.value.trim(); if(!t)return false;
+  const inp=document.getElementById("chatin"); let t=inp.value.trim();
+  if(!t && !pendingFile) return false;
   inp.value="";
-  const text = chatTarget ? `@${chatTarget.id} ${t}` : t;
-  try{ await relay("send",{},{room:"hq",sender:"Devon",text}); loadChat(); }catch(e){ toast("Send failed"); }
+  try{
+    if(pendingFile){
+      const key="file:"+Date.now();
+      await relay("kvset",{},{key, value:pendingFile});
+      t = `[[file|${key}|${pendingFile.name}]]` + (t?` ${t}`:"");
+      clearAtt();
+    }
+    const text = chatTarget ? `@${chatTarget.id} ${t}` : t;
+    await relay("send",{},{room:"hq",sender:"Devon",text});
+    loadChat();
+  }catch(e){ toast("Send failed"); }
   return false;
 }
 async function loadChat(){
@@ -364,9 +563,13 @@ async function loadChat(){
   } else {
     msgs = all.filter(m => (m.sender==="Devon" && !m.text.startsWith("@")) || m.sender==="Emma");
   }
-  document.getElementById("msgs").innerHTML = msgs.map(m=>
-    `<div class="msg ${m.sender==="Devon"?"me":""}"><div class="who">${esc(m.sender)}<span class="when">${ago(m.ts)}</span></div>${esc(m.text)}</div>`).join("");
+  document.getElementById("msgs").innerHTML = msgs.map(m=>{
+    const atts=[]; const txt = m.text.replace(FILE_RE,(_,k,n)=>{ atts.push([k,n]); return ""; }).trim();
+    return `<div class="msg ${m.sender==="Devon"?"me":""}"><div class="who">${esc(m.sender)}<span class="when">${ago(m.ts)}</span></div>${esc(txt)}${
+      atts.map(([k,n])=>`<div class="att" data-k="${esc(k)}" data-n="${esc(n)}">loading…</div>`).join("")}</div>`;
+  }).join("");
   const el=document.getElementById("msgs"); el.scrollTop=el.scrollHeight;
+  hydrateAtts();
 }
 function stuckFromWings(wings){
   const out=[];
@@ -374,12 +577,31 @@ function stuckFromWings(wings){
     for(const a of agents) if(a.status==="stuck") out.push(a);
   return out;
 }
+
+/* ── resizable chat (desktop) ── */
+(function(){
+  const saved = localStorage.getItem("ahq_chatw");
+  if(saved) document.documentElement.style.setProperty("--chatw", saved+"px");
+  const d=document.getElementById("drag");
+  let on=false;
+  d.addEventListener("pointerdown", e=>{ on=true; d.classList.add("on"); d.setPointerCapture(e.pointerId); });
+  d.addEventListener("pointermove", e=>{
+    if(!on) return;
+    const main=document.querySelector("main").getBoundingClientRect();
+    const w=Math.max(280, Math.min(640, main.right-22-e.clientX));
+    document.documentElement.style.setProperty("--chatw", w+"px");
+  });
+  d.addEventListener("pointerup", e=>{ if(!on)return; on=false; d.classList.remove("on");
+    localStorage.setItem("ahq_chatw", parseInt(getComputedStyle(document.documentElement).getPropertyValue("--chatw"))); renderCluster(); });
+})();
+
 async function tick(){
   if(!KEY) return;
   try{
     const st = await relay("kvget",{key:"state"});
     const s = st.value || st;
     ORG = s.wings||{};
+    renderStrip(s.jobs||[]);
     renderInbox(s.jobs||[], stuckFromWings(ORG));
     renderCluster();
     renderProjects(s.projects||[], s.jobs||[]);
@@ -391,8 +613,10 @@ async function tick(){
     if(String(e).includes("401")||String(e).includes("403")) document.getElementById("keygate").style.display="flex";
   }
 }
+/* bottom-nav icons */
+document.querySelectorAll("#bnav .bn .bnic").forEach((el,i)=>{ el.outerHTML = icon(["hub","folder","chat"][i]); });
 let rsz; window.addEventListener("resize", ()=>{ clearTimeout(rsz); rsz=setTimeout(renderCluster, 150); });
-updateChatHead(); tick(); setInterval(tick, 20000);
+updateChatHead(); setTab(curTab); tick(); setInterval(tick, 20000);
 </script>
 </body>
 </html>
