@@ -179,6 +179,13 @@ button:hover{transform:translateY(-1px)}
 .gll{margin:2px 0}
 .gitem{display:flex;justify-content:space-between;gap:10px;padding:2px 0}
 .gitem em{font-style:normal;opacity:.55;font-size:10px}
+#recapcard{margin:0 14px 14px;border:1px solid var(--line2);border-radius:14px;background:rgba(124,92,255,.04);padding:10px 12px}
+#recapcard:empty{display:none}
+.rchips{display:flex;gap:6px;margin:6px 0 7px;flex-wrap:wrap}
+.rchip2{font-size:10.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line2);color:var(--faint)}
+.rchip2 b{color:var(--ink);font-weight:700}
+.rline{font-size:11.5px;color:var(--faint);padding:2.5px 0;line-height:1.4}
+.rline.done{color:#34d399}.rline.stuck{color:#f59e0b}
 .ch .chav{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:-6px;margin-right:7px;border:1px solid var(--line2)}
 .cav .sdot{position:absolute;bottom:-1px;right:-1px;width:11px;height:11px;border-radius:50%;border:2px solid var(--s1)}
 .sdot.working{background:var(--green)}.sdot.waiting{background:var(--amber)}.sdot.stuck{background:var(--red)}.sdot.idle{background:var(--faint)}
@@ -267,6 +274,7 @@ button:hover{transform:translateY(-1px)}
       <div id="cluster"><svg id="clines"></svg><div id="cnodes"></div></div>
       <div class="hint" id="chint">click a cluster to open it · click an agent to talk to them</div>
       <div id="goalscard"></div>
+      <div id="recapcard"></div>
     </section>
     <section class="tile" id="projectstab"><div id="projwrap"></div></section>
   </div>
@@ -706,10 +714,21 @@ function renderGoals(){
   }
   el.innerHTML=h;
 }
+function renderRecap(r){
+  const el=document.getElementById("recapcard");
+  if(!r||!r.lines){ el.innerHTML=""; return; }
+  const today=new Date().toISOString().slice(0,10);
+  const label=r.date===today?"today":r.date;
+  const c=r.counts||{};
+  el.innerHTML=`<div class="ghead">${icon("star")}Recap<small>${esc(label)}</small></div>
+    <div class="rchips"><span class="rchip2"><b>${c.done||0}</b> done</span><span class="rchip2"><b>${c.moved||0}</b> moving</span><span class="rchip2"><b>${c.stuck||0}</b> stuck</span>${r.goals!=null?`<span class="rchip2">goals <b>${r.goals}%</b></span>`:""}</div>`+
+    r.lines.map(l=>`<div class="rline ${l.startsWith("✓")?"done":l.startsWith("⚠")?"stuck":""}">${esc(l)}</div>`).join("");
+}
 async function tick(){
   if(!KEY) return;
   try{
     relay("kvget",{key:"goals"}).then(g=>{ GOALS=g.value||null; renderGoals(); }).catch(()=>{});
+    relay("kvget",{key:"recap"}).then(g=>{ renderRecap(g.value||null); }).catch(()=>{});
     const st = await relay("kvget",{key:"state"});
     const s = st.value || st;
     ORG = s.wings||{};
