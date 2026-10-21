@@ -10,24 +10,26 @@ OUT.mkdir(exist_ok=True)
 GREEN, CYAN, VIOLET = "emerald green (#34d399)", "electric cyan (#22d3ee)", "violet purple (#7C5CFF)"
 
 AGENTS = {
-    "emma": (VIOLET, "a confident futuristic cowgirl sheriff woman with a sleek cyber cowboy hat and sheriff star badge"),
-    "image_maker": (GREEN, "a creative android artist with a holographic paintbrush and floating colour swatches"),
-    "image_checker": (GREEN, "a sharp-eyed android inspector with one glowing magnifier monocle lens"),
-    "cs_bot": (GREEN, "a warm friendly android receptionist wearing a glowing headset, gentle smile"),
-    "cs_checker": (GREEN, "a meticulous android editor wearing thin rectangular glasses, holding a glowing checkmark"),
-    "carol": (GREEN, "a tidy android bookkeeper woman with round glasses and a floating holographic ledger"),
-    "ad_checker": (GREEN, "a stern android critic with a heads-up-display visor showing a checklist"),
-    "ad_maker": (GREEN, "an energetic android street artist holding a neon spray can, paint splashes of light"),
-    "meta_copilot": (GREEN, "a cool android pilot with aviator visor and a small glowing megaphone emblem"),
-    "sage": (GREEN, "a serene botanical android woman with glowing leaf patterns woven into her hair"),
-    "pitch": (GREEN, "a slick charismatic android salesman in a sharp suit with a glowing handshake emblem"),
-    "sage_fitness": (CYAN, "an athletic android coach woman with a sweatband and glowing pulse-line tattoo"),
-    "devon_hq": (CYAN, "a calm android organizer with a floating holographic calendar grid behind him"),
+    "emma": (VIOLET, "a confident cheerful futuristic cowgirl sheriff woman with a sleek cyber cowboy hat and sheriff star badge"),
+    "image_maker": (GREEN, "a creative young artist with paint-smudged cheeks, a holographic paintbrush and floating colour swatches"),
+    "image_checker": (GREEN, "a bright curious inspector with a fun oversized magnifier monocle over one eye"),
+    "cs_bot": (GREEN, "a warm friendly receptionist woman wearing a glowing headset, mid-laugh"),
+    "cs_checker": (GREEN, "a kind meticulous editor with thin rectangular glasses and a reassuring smile"),
+    "carol": (GREEN, "a cosy grandmotherly bookkeeper with round glasses, cardigan with neon trim, and a knowing smile"),
+    "ad_checker": (GREEN, "a sharp but friendly film-critic type with a stylish heads-up-display visor pushed up on his forehead"),
+    "ad_maker": (GREEN, "an energetic grinning street artist holding a neon spray can, playful paint splashes of light"),
+    "meta_copilot": (GREEN, "a cool easygoing pilot with aviator sunglasses pushed up and a flight jacket"),
+    "sage": (GREEN, "a serene gentle botanist woman with glowing leaf patterns woven into her braided hair"),
+    "pitch": (GREEN, "a charismatic winking salesman in a sharp suit with a loosened neon tie"),
+    "sage_fitness": (CYAN, "an upbeat athletic coach woman with a sweatband, ponytail and encouraging grin"),
+    "devon_hq": (CYAN, "a calm friendly organizer guy with tousled hair and a small floating holographic calendar"),
 }
 
-TMPL = ("Futuristic cyberpunk avatar portrait of {persona}. Head and shoulders, centered, facing viewer. "
-        "Very dark near-black background (#0A0A0F) with subtle aurora glow. Glowing {clr} neon rim lighting "
-        "and accent details. Sleek sci-fi character design, polished digital illustration, high detail, "
+TMPL = ("Friendly stylized 3D avatar portrait of {persona}, in the style of a charming animated movie "
+        "character. Warm genuine smile, big expressive friendly eyes, soft rounded features, likeable and "
+        "approachable — NOT uncanny, NOT robotic skin, NOT creepy. Head and shoulders, centered, facing "
+        "viewer. Very dark near-black background (#0A0A0F) with subtle aurora glow. Glowing {clr} neon rim "
+        "lighting and futuristic accent details on clothing. Full-bleed edge to edge, no frame or border, "
         "square format, no text, no watermark.")
 
 
