@@ -1,5 +1,5 @@
 /* Agent Alley service worker — minimal shell cache + network-first for data */
-const V = "aa-v1-2026-10-22";
+const V = "aa-v2-2026-10-22-stale-cache-fix";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest"];
 
 self.addEventListener("install", (ev)=>{
