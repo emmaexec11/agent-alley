@@ -218,6 +218,8 @@ button:hover{transform:translateY(-1px)}
 .cnode.hub.cos .orb{box-shadow:0 0 46px var(--ng),inset 0 0 20px rgba(255,255,255,.05)}
 .cnode .orb .oimg{position:absolute;inset:3px;width:calc(100% - 6px);height:calc(100% - 6px);object-fit:cover;border-radius:50%;z-index:1}
 .cnode.hub.cos .orb .cosbadge{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--nc);background:var(--bg);padding:2px 8px;border-radius:999px;border:1px solid color-mix(in srgb,var(--nc) 55%,transparent);white-space:nowrap;z-index:3}
+.cnode.hub.cos .sub{font-weight:600;font-size:11.5px;margin-top:10px}
+.cnode.hub.cos.hot .sub{color:#c4b5fd;text-shadow:0 0 10px rgba(124,92,255,.5)}
 
 /* ── fleet filter pills (Chief of Staff home) ── */
 #fleetfilter{display:flex;gap:6px;padding:4px 0 8px;justify-content:center}
@@ -649,13 +651,21 @@ function renderCluster(){
     document.body.dataset.view = "home";
     /* Chief-of-Staff hub: Emma centered, Devon's real Telegram crew orbit her, filterable. */
     const emmaAg = findAgent("emma");
-    center = {ico:"", avatar:"penny", nm:"Emma", cls:"hub cos", clr:VIOLET, badge:"Chief of Staff",
+    /* CEO-glance subtitle: one short phrase, no text overwhelm. Reflects the inbox count. */
+    const readyN = (LASTJOBS||[]).filter(j=>j.stage==="ready").length;
+    const stuckN = stuckFromWings(ORG).length;
+    const inboxN = readyN + stuckN;
+    const ceoSub = inboxN ? `${inboxN} need you` : "all clear";
+    center = {ico:"", avatar:"penny", nm:"Emma", sub:ceoSub, cls:"hub cos"+(inboxN?" hot":""), clr:VIOLET, badge:"Chief of Staff",
       ring: emmaAg && emmaAg.status && emmaAg.status!=="idle" ? emmaAg.status : null,
       click: openEmmaChat};
     const fleet = CREW.filter(([id,nm,w]) => id!=="emma" && (fleetFilter==="all" || w===fleetFilter));
+    /* Short labels for mobile — "Naturally Wyld CS" wraps at narrow widths */
+    const SHORT = {cs_bot:"Wyld CS",meta_copilot:"Meta",pitch:"Outreach",carol:"Books",sage:"SAGE"};
+    const narrow = window.innerWidth<=1000;
     children = fleet.map(([id,nm,w])=>{
       const clr=wingClr(w); const ag=findAgent(id);
-      return {ico:icon("agent",clr.g), avatar:id, nm, cls:"agentn fleet", clr,
+      return {ico:icon("agent",clr.g), avatar:id, nm: narrow && SHORT[id] ? SHORT[id] : nm, cls:"agentn fleet", clr,
         ring: ag && ag.status && ag.status!=="idle" ? ag.status : null,
         click:()=>openCrewChat(id, nm)};
     });
