@@ -546,6 +546,15 @@ function openAgentChat(a){
   document.getElementById("chatin").focus();
 }
 function openEmmaChat(){ openAgentChat({id:"penny", title:"Penny"}); }
+/* Devon's real Telegram crew — pinned, word-for-word names (ids = poller FLEET routing) */
+const CREW = [["emma","E.M.M.A"],["sage","S.A.G.E"],["pitch","Cold Outreach"],
+  ["meta_copilot","Meta Copilot"],["cs_bot","Naturally Wyld CS"],["carol","Carol"]];
+function openCrewChat(id, nm){
+  chatTarget = {id, nm};
+  chatView="conv"; applyChatView(); renderConv();
+  if(window.innerWidth<=1000) setTab("chat");
+  document.getElementById("chatin").focus();
+}
 let PROJECTS=[];
 function openProjectChat(pid){
   const p = PROJECTS.find(x=>x.id===pid);
@@ -585,6 +594,8 @@ function findAgent(id){
   return null;
 }
 function askChat(agentId){
+  const crew = CREW.find(c=>c[0]===agentId);
+  if(crew){ openCrewChat(crew[0], crew[1]); return; }
   let found=null;
   for(const depts of Object.values(ORG)) for(const agents of Object.values(depts))
     for(const a of agents) if(a.id===agentId) found=a;
@@ -606,8 +617,9 @@ function preview(m, id){
 }
 function renderChatList(){
   const ags=[];
+  const crewIds = new Set(CREW.map(c=>c[0]));
   for(const [w,depts] of Object.entries(ORG)) for(const [d,list] of Object.entries(depts))
-    for(const a of list) if(a.id!=="penny") ags.push({...a, wing:w, dept:d});
+    for(const a of list) if(a.id!=="penny" && !crewIds.has(a.id)) ags.push({...a, wing:w, dept:d});
   const rank={stuck:0,working:1,waiting:2,idle:3};
   ags.sort((a,b)=>{
     const la=threadLast(a.id), lb=threadLast(b.id);
@@ -623,6 +635,13 @@ function renderChatList(){
     </div>`;
   const le = threadLast("penny");
   let html = row("penny","Penny","Front Desk — runs the Alley", icon("hub"), VIOLET, null, le);
+  html += `<div class="clsec">Your crew</div>`;
+  html += CREW.map(([id,nm])=>{
+    const ag = findAgent(id);
+    const clr = ag ? wingClr(ag.wing||"business") : VIOLET;
+    const sub = ag && ag.status_detail ? ag.status_detail : "your Telegram agent — full context";
+    return row(id, nm, sub, icon("agent",clr.g), clr, ag?ag.status:null, threadLast(id));
+  }).join("");
   html += `<div class="clsec">Agents</div>`;
   html += ags.map(a=>{
     const clr=wingClr(a.wing);
