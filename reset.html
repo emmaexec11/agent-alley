@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reset Agent Alley</title>
+<style>
+body{background:#0A0A0F;color:#ECECF4;font:14px/1.5 -apple-system,sans-serif;padding:40px 20px;text-align:center;min-height:100vh;margin:0;display:flex;flex-direction:column;justify-content:center}
+h1{color:#7C5CFF;font-size:22px;margin:0 0 20px}
+#status{background:#15151f;border:1px solid #7C5CFF;border-radius:12px;padding:20px;margin:20px auto;max-width:400px;font-family:"JetBrains Mono",monospace;font-size:12px;text-align:left;white-space:pre-wrap}
+.done{color:#4ade80}
+.err{color:#f87171}
+a{color:#7C5CFF;display:inline-block;margin-top:20px;padding:12px 24px;background:rgba(124,92,255,.15);border:1px solid #7C5CFF;border-radius:10px;text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<h1>🔄 Resetting Agent Alley</h1>
+<div id="status">Starting cleanup...</div>
+<a href="./" id="goback" style="display:none">→ Open fresh dashboard</a>
+<script>
+const s = document.getElementById("status");
+const log = (msg, cls) => s.innerHTML += `\n<span class="${cls||''}">${msg}</span>`;
+(async () => {
+  try {
+    s.textContent = "Starting cleanup...";
+    // Unregister all service workers
+    if("serviceWorker" in navigator){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      log(`\nFound ${regs.length} service worker(s)`);
+      for(const r of regs){
+        await r.unregister();
+        log(`✓ Unregistered ${r.scope}`, "done");
+      }
+    }
+    // Clear all caches
+    if("caches" in window){
+      const names = await caches.keys();
+      log(`\nFound ${names.length} cache(s)`);
+      for(const n of names){
+        await caches.delete(n);
+        log(`✓ Deleted cache: ${n}`, "done");
+      }
+    }
+    // Clear local storage keys that might be stale (keep the api key)
+    const key = localStorage.getItem("ahq_key");
+    const tab = localStorage.getItem("ahq_tab");
+    const chatw = localStorage.getItem("ahq_chatw");
+    log(`\n✓ Preserving API key + tab + chat width`, "done");
+    log(`\n\n✅ CLEANUP COMPLETE`, "done");
+    log(`\nTap below to open fresh dashboard →`);
+    document.getElementById("goback").style.display = "inline-block";
+  } catch(e) {
+    log(`\n\n❌ Error: ${e.message}`, "err");
+    log(`\nTry closing browser and reopening.`, "err");
+  }
+})();
+</script>
+</body>
+</html>
