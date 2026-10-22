@@ -424,7 +424,6 @@ body.dragging #chat,body.dragging main{pointer-events:none}
 <div id="astrip"></div>
 <div id="alertbar"></div>
 <main>
-  <aside id="routines"></aside>
   <div id="left">
     <div id="inbox"></div>
     <div id="top3"></div>
@@ -1425,7 +1424,7 @@ async function tick(){
 /* bottom-nav icons */
 document.querySelectorAll("#bnav .bn .bnic").forEach((el,i)=>{ el.outerHTML = icon(["hub","folder","life_ops","star","chat"][i]); });
 let rsz; window.addEventListener("resize", ()=>{ clearTimeout(rsz); rsz=setTimeout(renderCluster, 150); });
-applyChatView(); setTab(curTab); renderRoutines(); tick(); setInterval(tick, 20000);
+applyChatView(); setTab(curTab); tick(); setInterval(tick, 20000);
 /* Register PWA service worker so Agent Alley installs on mobile */
 if("serviceWorker" in navigator){
   window.addEventListener("load", ()=>{
