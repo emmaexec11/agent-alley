@@ -450,10 +450,16 @@ function mkNode(spec, x, y){
   if(spec.click) el.onclick=spec.click;
   return el;
 }
+let _clHash="";
 function renderCluster(){
   const cont=document.getElementById("cluster"), C=document.getElementById("cnodes"), S=document.getElementById("clines");
   if(!cont.clientWidth) return;
   const W=cont.clientWidth, H=cont.clientHeight, cx=W/2, cy=H/2;
+  // only redraw when the data, nav level, or size actually changed — rebuilding
+  // every sync poll replays the node entry animation (visible flash)
+  const hash=JSON.stringify(view)+"|"+W+"x"+H+"|"+JSON.stringify(ORG);
+  if(hash===_clHash) return;
+  _clHash=hash;
   C.innerHTML=""; S.innerHTML="";
   let center, children=[], crumb=[["Alley",()=>nav({level:"home"})]];
   if(view.level==="wing" && !ORG[view.wing]) view={level:"home"};

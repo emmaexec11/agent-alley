@@ -24,6 +24,7 @@ AGENTS = {
     "pitch": (GREEN, "a charismatic winking salesman in a sharp suit with a loosened neon tie"),
     "sage_fitness": (CYAN, "an upbeat athletic coach woman with a sweatband, ponytail and encouraging grin"),
     "devon_hq": (CYAN, "a calm friendly organizer guy with tousled hair and a small floating holographic calendar"),
+    "personal": (CYAN, "a relaxed warm life-coach woman with a soft cardigan, gentle smile and a small glowing heart-shaped locket"),
 }
 
 TMPL = ("Friendly stylized 3D avatar portrait of {persona}, in the style of a charming animated movie "
