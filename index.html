@@ -1425,10 +1425,30 @@ async function tick(){
 document.querySelectorAll("#bnav .bn .bnic").forEach((el,i)=>{ el.outerHTML = icon(["hub","folder","life_ops","star","chat"][i]); });
 let rsz; window.addEventListener("resize", ()=>{ clearTimeout(rsz); rsz=setTimeout(renderCluster, 150); });
 applyChatView(); setTab(curTab); tick(); setInterval(tick, 20000);
-/* Register PWA service worker so Agent Alley installs on mobile */
+/* PWA service worker — auto-cleans up any stale SW/cache from previous versions so Devon never has to clear browser cache manually again. One-time self-heal. */
 if("serviceWorker" in navigator){
-  window.addEventListener("load", ()=>{
-    navigator.serviceWorker.register("./sw.js").catch(e=>console.warn("sw register failed", e));
+  window.addEventListener("load", async ()=>{
+    try {
+      // Nuke any OLD service workers from previous aggressive cache versions
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for(const r of regs){
+        // Keep only the latest SW URL; unregister anything else
+        if(!r.active || !r.active.scriptURL.endsWith("/sw.js")){
+          await r.unregister();
+        }
+      }
+      // Also nuke old caches that aren't the current version
+      if("caches" in window){
+        const names = await caches.keys();
+        for(const n of names){
+          if(!n.startsWith("aa-v3-")) await caches.delete(n);
+        }
+      }
+      // Register the fresh SW
+      const reg = await navigator.serviceWorker.register("./sw.js", {updateViaCache: "none"});
+      // Force immediate update check on every page load
+      reg.update();
+    } catch(e){ console.warn("sw setup failed", e); }
   });
 }
 </script>
