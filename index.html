@@ -501,7 +501,7 @@ function renderProjects(projects, jobs){
     const furthest = Math.max(0, ...pj.map(j=>STAGES.indexOf(j.stage==="sent_back"?"working":j.stage)));
     const latest = pj[0];
     const wc = wingClr(p.wing||"business").c;
-    return `<div class="tile proj" style="border-left-color:${wc}"><div class="top"><div class="pt">${esc(p.title)}</div><span class="pill ${esc(p.status)}">${esc(p.status)}</span></div>
+    return `<div class="tile proj" style="border-left-color:${wc};cursor:pointer" onclick="openProjectChat(${p.id})"><div class="top"><div class="pt">${esc(p.title)}</div><span class="pill ${esc(p.status)}">${esc(p.status)}</span></div>
       <div class="pd">${esc(dl(p.dept))}${p.detail?` — ${esc(p.detail)}`:""}</div>
       <div class="strip">${STAGES.slice(0,5).map((s,i)=>`<span class="seg ${pj.length&&i<=furthest?"done":""}"></span>`).join("")}<span class="lbl">${pj.length?esc(STAGE_LBL[latest.stage]||latest.stage):"no jobs yet"}</span></div>
       ${latest?`<div class="latest">↳ ${esc(latest.title)} · ${ago(latest.updated)}</div>`:""}</div>`;
@@ -540,6 +540,15 @@ function openAgentChat(a){
   document.getElementById("chatin").focus();
 }
 function openEmmaChat(){ openAgentChat({id:"emma", title:"Emma"}); }
+let PROJECTS=[];
+function openProjectChat(pid){
+  const p = PROJECTS.find(x=>x.id===pid);
+  if(!p) return;
+  chatTarget = {id:"project_"+p.id, nm:p.title.length>26?p.title.slice(0,24)+"…":p.title, proj:p};
+  chatView="conv"; applyChatView(); renderConv();
+  if(window.innerWidth<=1000) setTab("chat");
+  document.getElementById("chatin").focus();
+}
 function updateChatHead(){
   const h=document.getElementById("chathead");
   if(chatView==="list"){
@@ -548,11 +557,16 @@ function updateChatHead(){
     const nm = chatTarget ? chatTarget.nm : "Emma";
     const aid = chatTarget ? chatTarget.id : "emma";
     const ag = findAgent(aid);
-    const st = ag ? ag.status : null;
-    const stTxt = st==="working" ? "working"+(ag.status_detail?" — "+ag.status_detail:"")
-      : st==="stuck" ? "stuck"+(ag.status_detail?" — "+ag.status_detail:"")
-      : st==="waiting" ? "waiting"+(ag.status_detail?" — "+ag.status_detail:"")
-      : "online";
+    let st = ag ? ag.status : null, stTxt;
+    if(chatTarget && chatTarget.proj){
+      st = chatTarget.proj.status==="active" ? "working" : "idle";
+      stTxt = "project room — "+chatTarget.proj.status;
+    } else {
+      stTxt = st==="working" ? "working"+(ag.status_detail?" — "+ag.status_detail:"")
+        : st==="stuck" ? "stuck"+(ag.status_detail?" — "+ag.status_detail:"")
+        : st==="waiting" ? "waiting"+(ag.status_detail?" — "+ag.status_detail:"")
+        : "online";
+    }
     const sub = `<span class="sdot ${st||"idle"}"></span>${esc(stTxt)}`;
     h.innerHTML = `<img class="chav" src="avatars/${esc(aid)}.jpg?v=2" alt="" onerror="this.remove()">${esc(nm)}<small>${sub}</small><span id="chatback">‹ all chats</span>`;
     document.getElementById("chatback").onclick = showList;
@@ -608,6 +622,19 @@ function renderChatList(){
     const clr=wingClr(a.wing);
     return row(a.id, shortName(a.title), dl(a.dept)+(a.status_detail?` — ${a.status_detail}`:""), icon("agent",clr.g), clr, a.status, threadLast(a.id));
   }).join("");
+  const prooms = PROJECTS.filter(p=>p.status==="active"||p.status==="ready");
+  if(prooms.length){
+    html += `<div class="clsec">Project rooms</div>`;
+    html += prooms.map(p=>{
+      const clr=wingClr(p.wing||"business");
+      const last=threadLast("project_"+p.id);
+      return `<div class="crow" onclick="openProjectChat(${p.id})">
+        <div class="cav" style="border-color:color-mix(in srgb,${clr.c} 55%,transparent)">${icon("folder",clr.g)}</div>
+        <div class="cbody"><div class="cn">${esc(p.title)}<span class="cwhen">${last?ago(last.ts):""}</span></div>
+        <div class="cprev">${esc(last?preview(last,"project_"+p.id):dl(p.dept)+" — "+p.status)}</div></div>
+      </div>`;
+    }).join("");
+  }
   document.getElementById("chatlist").innerHTML = html;
 }
 
@@ -783,7 +810,7 @@ async function tick(){
     relay("kvget",{key:"usage"}).then(g=>{ renderUsage(g.value||null); }).catch(()=>{});
     const st = await relay("kvget",{key:"state"});
     const s = st.value || st;
-    ORG = s.wings||{};
+    ORG = s.wings||{}; PROJECTS = s.projects||[];
     renderStrip(s.jobs||[]);
     renderInbox(s.jobs||[], stuckFromWings(ORG));
     renderCluster();
