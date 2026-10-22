@@ -862,36 +862,22 @@ function preview(m, id){
   return (m.sender==="Devon"?"You: ":"")+t;
 }
 function renderChatList(){
-  const ags=[];
-  const crewIds = new Set(CREW.map(c=>c[0]));
-  for(const [w,depts] of Object.entries(ORG)) for(const [d,list] of Object.entries(depts))
-    for(const a of list) if(a.id!=="penny" && !crewIds.has(a.id)) ags.push({...a, wing:w, dept:d});
-  const rank={stuck:0,working:1,waiting:2,idle:3};
-  ags.sort((a,b)=>{
-    const la=threadLast(a.id), lb=threadLast(b.id);
-    if(la&&lb) return new Date(lb.ts)-new Date(la.ts);
-    if(la||lb) return la?-1:1;
-    return (rank[a.status]??4)-(rank[b.status]??4);
-  });
   const row = (id, nm, sub, av, clr, status, last) => `
     <div class="crow" onclick="${id==="penny"?"openEmmaChat()":`askChat('${esc(id)}')`}">
       <div class="cav" style="border-color:color-mix(in srgb,${clr.c} 55%,transparent)">${av}<img class="cimg" src="avatars/${esc(id)}.jpg?v=2" alt="" onerror="this.remove()">${status?`<span class="sdot ${status}"></span>`:""}</div>
       <div class="cbody"><div class="cn">${esc(nm)}<span class="cwhen">${last?ago(last.ts):""}</span></div>
       <div class="cprev">${esc(last?preview(last, id==="penny"?null:id):sub)}</div></div>
     </div>`;
+  /* Pinned hub = Emma (same chat as Penny — she IS the Chief of Staff on the dashboard). */
   const le = threadLast("penny");
-  let html = row("penny","Penny","Front Desk — runs the Alley", icon("hub"), VIOLET, null, le);
+  let html = row("penny","Emma","Chief of Staff — Front Desk", icon("hub"), VIOLET, null, le);
+  /* Right-side list mirrors the orb cluster exactly — drop E.M.M.A duplicate, drop ORG extras. */
   html += `<div class="clsec">Your crew</div>`;
-  html += CREW.map(([id,nm])=>{
+  html += CREW.filter(([id])=>id!=="emma").map(([id,nm,w])=>{
     const ag = findAgent(id);
-    const clr = ag ? wingClr(ag.wing||"business") : VIOLET;
+    const clr = wingClr(w || (ag&&ag.wing) || "business");
     const sub = ag && ag.status_detail ? ag.status_detail : "your Telegram agent — full context";
     return row(id, nm, sub, icon("agent",clr.g), clr, ag?ag.status:null, threadLast(id));
-  }).join("");
-  html += `<div class="clsec">Agents</div>`;
-  html += ags.map(a=>{
-    const clr=wingClr(a.wing);
-    return row(a.id, shortName(a.title), dl(a.dept)+(a.status_detail?` — ${a.status_detail}`:""), icon("agent",clr.g), clr, a.status, threadLast(a.id));
   }).join("");
   const prooms = PROJECTS.filter(p=>p.status==="active"||p.status==="ready");
   if(prooms.length){
