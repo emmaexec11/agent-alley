@@ -51,6 +51,32 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size
 .chip .ck{color:var(--green);font-weight:800}
 .chip.stuckc{border-color:rgba(248,113,113,.45)}
 .chip.donec{border-color:rgba(74,222,128,.3)}
+.chip.tgl{cursor:pointer;color:var(--dim);padding:6px 10px}
+.chip.tgl:hover{color:var(--txt)}
+
+/* ── alert bar ── */
+#alertbar{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:10px 22px 0;display:none;gap:8px;flex-wrap:wrap}
+#alertbar.on{display:flex}
+.al{display:flex;align-items:center;gap:8px;border-radius:99px;padding:6px 13px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--line2);background:rgba(16,16,24,.85);white-space:nowrap;transition:transform .15s}
+.al:hover{transform:translateY(-1px)}
+.al .cnt{font-family:"JetBrains Mono",monospace;font-weight:700}
+.al.timer{border-color:rgba(251,191,36,.5);color:#fde68a}
+.al.timer.soon{border-color:rgba(248,113,113,.7);color:#fecaca;animation:pulse 1.1s infinite}
+.al.approval{border-color:rgba(124,92,255,.5);color:#c4b5fd}
+.al.info{color:var(--dim)}
+.al .x{color:var(--faint);font-weight:800;padding:0 2px}
+.al .x:hover{color:var(--red)}
+
+/* ── tasks card ── */
+#taskscard{margin:2px 0 10px;border:1px solid color-mix(in srgb,#7C5CFF 26%,transparent);border-radius:14px;background:rgba(124,92,255,.05);padding:10px 12px}
+#taskscard:empty{display:none}
+.ttabs{display:flex;gap:5px;margin-left:auto}
+.ttab{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:99px;border:1px solid var(--line);color:var(--dim);background:transparent;cursor:pointer}
+.ttab.on{background:rgba(124,92,255,.16);border-color:rgba(124,92,255,.5);color:var(--txt)}
+.trow{display:flex;align-items:center;gap:8px;padding:4px 2px;font-size:12.5px}
+.trow .tdot{width:6px;height:6px;border-radius:50%;background:var(--v);flex:0 0 auto}
+.trow .tdue{margin-left:auto;font-size:10.5px;color:var(--faint);white-space:nowrap}
+.tempty{color:var(--faint);font-size:12px;padding:4px 2px}
 
 main{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:14px 22px 26px;display:flex;gap:0;align-items:stretch}
 #left{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
@@ -283,6 +309,7 @@ button:hover{transform:translateY(-1px)}
   <div class="right"><span id="statdot" class="livedot"></span><span id="stattxt">connecting…</span></div>
 </header>
 <div id="astrip"></div>
+<div id="alertbar"></div>
 <main>
   <div id="left">
     <div id="inbox"></div>
@@ -291,6 +318,7 @@ button:hover{transform:translateY(-1px)}
       <button class="lt" data-t="projects" onclick="setTab('projects')">Projects</button>
     </div>
     <section class="tile" id="alleytab">
+      <div id="taskscard"></div>
       <div id="crumb"></div>
       <div id="cluster"><svg id="clines"></svg><div id="cnodes"></div></div>
       <div class="hint" id="chint">click a cluster to open it · click an agent to talk to them</div>
@@ -394,7 +422,9 @@ function setTab(t){
   if(t==="chat"){ const el=document.getElementById("msgs"); el.scrollTop=el.scrollHeight; }
 }
 
-/* ── agent status strip ── */
+/* ── agent status strip (collapsible) ── */
+let chipsOpen = localStorage.getItem("ahq_chips")!=="0";
+function toggleChips(){ chipsOpen=!chipsOpen; localStorage.setItem("ahq_chips",chipsOpen?"1":"0"); renderStrip(LASTJOBS); }
 function renderStrip(jobs){
   const ags=[];
   for(const [w,depts] of Object.entries(ORG)) for(const [d,list] of Object.entries(depts))
@@ -412,7 +442,10 @@ function renderStrip(jobs){
   ];
   const idle = by("idle").length;
   if(idle) parts.push(`<div class="chip off"><span class="cdot idle"></span>${idle} idle</div>`);
-  document.getElementById("astrip").innerHTML = parts.join("") || "";
+  if(!parts.length){ document.getElementById("astrip").innerHTML=""; return; }
+  const tgl = `<div class="chip off tgl" onclick="toggleChips()" title="${chipsOpen?"Hide":"Show"} agent status">${
+    chipsOpen?"▾":`▸<small>${parts.length} status</small>`}</div>`;
+  document.getElementById("astrip").innerHTML = chipsOpen ? tgl+parts.join("") : tgl;
 }
 
 /* ── inbox (compact) ── */
@@ -876,16 +909,77 @@ function renderRecap(r){
     <div class="rchips"><span class="rchip2"><b>${c.done||0}</b> done</span><span class="rchip2"><b>${c.moved||0}</b> moving</span><span class="rchip2"><b>${c.stuck||0}</b> stuck</span>${r.goals!=null?`<span class="rchip2">goals <b>${r.goals}%</b></span>`:""}</div>`+
     r.lines.map(l=>`<div class="rline ${l.startsWith("✓")?"done":l.startsWith("⚠")?"stuck":""}">${esc(l)}</div>`).join("");
 }
+/* ── tasks card (Google Tasks via tasks_sync) ── */
+let TASKS=null, taskTab=localStorage.getItem("ahq_ttab")||"today";
+const TTABS=[["today","Today"],["tomorrow","Tomorrow"],["week","Week"],["month","Month"]];
+function setTaskTab(t){ taskTab=t; localStorage.setItem("ahq_ttab",t); renderTasks(); }
+function renderTasks(){
+  const el=document.getElementById("taskscard");
+  if(!TASKS||!TASKS.tabs){ el.innerHTML=""; return; }
+  const items=TASKS.tabs[taskTab]||[];
+  let h=`<div class="ghead">${icon("life_ops")}Tasks<small>${items.length||""}</small><span class="ttabs">${
+    TTABS.map(([k,l])=>`<button class="ttab ${k===taskTab?"on":""}" onclick="setTaskTab('${k}')">${l}</button>`).join("")}</span></div>`;
+  h += items.length
+    ? items.map(t=>`<div class="trow"><span class="tdot"></span><span>${esc(t.title)}</span>${t.due?`<span class="tdue">${esc(t.due.slice(5))}</span>`:""}</div>`).join("")
+    : `<div class="tempty">nothing here</div>`;
+  el.innerHTML=h;
+}
+
+/* ── alert bar: timers (countdown + alarm) + approvals ── */
+let ALERTS=[], LASTJOBS=[];
+function fmtLeft(s){ s=Math.max(0,Math.round(s)); const m=Math.floor(s/60);
+  return m>=60 ? Math.floor(m/60)+"h"+String(m%60).padStart(2,"0") : m+":"+String(s%60).padStart(2,"0"); }
+function beep(){ try{ const ac=new (window.AudioContext||window.webkitAudioContext)();
+  const o=ac.createOscillator(), g=ac.createGain(); o.connect(g); g.connect(ac.destination);
+  o.frequency.value=880; g.gain.setValueAtTime(.22,ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.8); o.start(); o.stop(ac.currentTime+.85); }catch(e){} }
+function notify(t){ try{ if(("Notification" in window)&&Notification.permission==="granted") new Notification("Agent Alley",{body:t}); }catch(e){} }
+async function dismissAlert(id, ev){ if(ev) ev.stopPropagation();
+  ALERTS=ALERTS.filter(a=>a.id!==id); renderAlerts();
+  try{ await relay("kvset",{},{key:"alerts",value:ALERTS}); }catch(e){} }
+function renderAlerts(){
+  const bar=document.getElementById("alertbar");
+  const now=Date.now()/1000;
+  const fired=JSON.parse(localStorage.getItem("ahq_fired")||"{}");
+  const chips=[];
+  for(const a of ALERTS){
+    if(a.type==="timer" && a.fire_at){
+      const left=a.fire_at-now;
+      if(left < -600) continue;
+      if(left<=600 && !fired["w"+a.id]){ fired["w"+a.id]=1; beep(); notify(`10 min — ${a.label}`); }
+      if(left<=0 && !fired["f"+a.id]){ fired["f"+a.id]=1; beep(); setTimeout(beep,450); setTimeout(beep,900); notify(`⏰ ${a.label}`); }
+      chips.push(`<div class="al timer ${left<=600?"soon":""}" onclick="dismissAlert(${a.id})" title="Click to dismiss">⏰ ${esc(a.label)} <span class="cnt">${left<=0?"now":fmtLeft(left)}</span><span class="x">✕</span></div>`);
+    } else {
+      const go = a.project_id?`openProjectChat(${a.project_id})`:"setTab('alley')";
+      chips.push(`<div class="al ${a.type==="approval"?"approval":"info"}" onclick="${go}">${a.type==="approval"?"✓":"·"} ${esc(a.label)}<span class="x" onclick="dismissAlert(${a.id},event)">✕</span></div>`);
+    }
+  }
+  for(const j of LASTJOBS.filter(j=>j.stage==="ready")){
+    const go = j.project_id?`openProjectChat(${j.project_id})`:"setTab('alley')";
+    chips.push(`<div class="al approval" onclick="${go}" title="Needs your approval">✓ ${esc(j.title)}</div>`);
+  }
+  localStorage.setItem("ahq_fired", JSON.stringify(fired));
+  const vis=chips.slice(0,4);
+  bar.innerHTML=vis.join("");
+  bar.classList.toggle("on", vis.length>0);
+  if(ALERTS.some(a=>a.type==="timer") && ("Notification" in window) && Notification.permission==="default")
+    Notification.requestPermission();
+}
+setInterval(()=>{ if(ALERTS.some(a=>a.type==="timer")) renderAlerts(); }, 1000);
+
 async function tick(){
   if(!KEY) return;
   try{
     relay("kvget",{key:"goals"}).then(g=>{ GOALS=g.value||null; renderGoals(); }).catch(()=>{});
     relay("kvget",{key:"recap"}).then(g=>{ renderRecap(g.value||null); }).catch(()=>{});
     relay("kvget",{key:"usage"}).then(g=>{ renderUsage(g.value||null); }).catch(()=>{});
+    relay("kvget",{key:"tasks"}).then(g=>{ TASKS=g.value||null; renderTasks(); }).catch(()=>{});
+    relay("kvget",{key:"alerts"}).then(g=>{ ALERTS=Array.isArray(g.value)?g.value:[]; renderAlerts(); }).catch(()=>{});
     const st = await relay("kvget",{key:"state"});
     const s = st.value || st;
-    ORG = s.wings||{}; PROJECTS = s.projects||[];
+    ORG = s.wings||{}; PROJECTS = s.projects||[]; LASTJOBS = s.jobs||[];
     renderStrip(s.jobs||[]);
+    renderAlerts();
     renderInbox(s.jobs||[], stuckFromWings(ORG));
     renderCluster();
     renderProjects(s.projects||[], s.jobs||[]);
