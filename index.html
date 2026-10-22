@@ -2,8 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#7C5CFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Alley">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="avatars/penny.jpg">
 <title>Agent Alley</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -53,6 +59,8 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size
 .chip.donec{border-color:rgba(74,222,128,.3)}
 .chip.tgl{cursor:pointer;color:var(--dim);padding:6px 10px}
 .chip.tgl:hover{color:var(--txt)}
+.chip .x{color:var(--faint);font-weight:800;padding:0 2px 0 6px;cursor:pointer;font-size:11px}
+.chip .x:hover{color:var(--red)}
 
 /* ── alert bar ── */
 #alertbar{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:10px 22px 0;display:none;gap:8px;flex-wrap:wrap}
@@ -113,8 +121,27 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size
 .donetgl{font-size:11.5px;font-weight:700;color:var(--faint);cursor:pointer;margin-top:16px;padding:4px 2px}
 .donetgl:hover{color:var(--dim)}
 
-main{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:14px 22px 26px;display:flex;gap:0;align-items:stretch}
+main{position:relative;z-index:1;max-width:1540px;margin:0 auto;padding:14px 22px 26px;display:flex;gap:0;align-items:stretch}
 #left{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
+
+/* ── Routines sidebar (left) ── */
+#routines{flex:0 0 220px;background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:14px 12px;margin-right:12px;align-self:flex-start;position:sticky;top:76px;max-height:calc(100dvh - 100px);overflow-y:auto;scrollbar-width:thin}
+#routines::-webkit-scrollbar{width:4px}
+#routines::-webkit-scrollbar-thumb{background:var(--line2);border-radius:2px}
+#routines .rhead{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim);padding:0 4px 10px;border-bottom:1px solid var(--line);margin-bottom:10px}
+#routines .rhead svg{width:14px;height:14px;color:#c4b5fd}
+.rtn{display:flex;align-items:flex-start;gap:9px;padding:9px 7px;border-radius:10px;cursor:pointer;transition:background .15s;margin-bottom:2px}
+.rtn:hover{background:rgba(255,255,255,.03)}
+.rtn.paused{opacity:.45}
+.rtn .ric{flex:0 0 20px;font-size:16px;line-height:1.1;margin-top:1px}
+.rtn .rbody{flex:1;min-width:0}
+.rtn .rnm{font-weight:600;font-size:12.5px;line-height:1.25}
+.rtn .rsc{color:var(--dim);font-size:10.5px;margin-top:2px;line-height:1.3}
+.rtn .rnxt{color:#6ee7b7;font-size:10px;margin-top:3px;font-family:"JetBrains Mono",monospace}
+.rtn.paused .rnxt{color:var(--faint)}
+.rtn .rtgl{flex:0 0 auto;color:var(--faint);font-size:14px;padding:2px 4px;cursor:pointer;user-select:none;line-height:1}
+.rtn .rtgl:hover{color:#c4b5fd}
+.rtn.paused .rtgl{color:var(--amber)}
 
 .tile{background:var(--s1);border:1px solid var(--line);border-radius:18px;transition:border-color .18s}
 .tile:hover{border-color:var(--line2)}
@@ -140,6 +167,22 @@ button:hover{transform:translateY(-1px)}
 .b-approve{background:linear-gradient(120deg,#8b6cff,#6c4ce0);color:#fff;box-shadow:0 0 16px var(--vglow)}
 .b-back{background:transparent;border:1px solid rgba(248,113,113,.5);color:var(--red)}
 .b-chat{background:var(--s3);color:var(--txt);border:1px solid var(--line2)}
+
+/* ── Top 3 Daily (always visible, pulls from Google Tasks starred/due today) ── */
+#top3{background:linear-gradient(135deg,rgba(124,92,255,.08),rgba(74,222,128,.05));border:1px solid rgba(124,92,255,.35);border-radius:16px;padding:12px 16px;display:none}
+#top3.on{display:block}
+#top3 .t3head{display:flex;align-items:center;gap:9px;font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#c4b5fd;margin-bottom:8px}
+#top3 .t3head small{color:var(--faint);font-weight:600;letter-spacing:0;text-transform:none;font-size:11px;margin-left:auto}
+#top3 .t3row{display:flex;align-items:center;gap:11px;padding:7px 2px;font-size:14px;cursor:pointer;border-radius:9px;transition:background .15s}
+#top3 .t3row:hover{background:rgba(255,255,255,.03)}
+#top3 .t3chk{flex:0 0 20px;width:20px;height:20px;border-radius:50%;border:1.8px solid rgba(124,92,255,.55);display:flex;align-items:center;justify-content:center;font-size:11px;color:#0a0a0f;transition:background .15s}
+#top3 .t3row.ck .t3chk{background:#7C5CFF;border-color:#7C5CFF}
+#top3 .t3row.ck .t3nm{text-decoration:line-through;color:var(--faint)}
+#top3 .t3rank{flex:0 0 20px;color:#c4b5fd;font-weight:800;font-size:13px;font-family:"JetBrains Mono",monospace}
+#top3 .t3nm{flex:1;min-width:0;font-weight:600}
+#top3 .t3due{margin-left:auto;font-size:11px;color:var(--faint);white-space:nowrap}
+#top3 .t3star{color:#fcd34d;font-size:12px;flex:0 0 auto}
+#top3 .t3empty{color:var(--faint);font-size:12px;padding:4px 2px;text-align:center}
 
 /* ── left tabs ── */
 #lefttabs{display:flex;gap:6px}
@@ -188,10 +231,27 @@ button:hover{transform:translateY(-1px)}
 .proj .top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .proj .pt{font-weight:700;font-size:14px;flex:1}
 .pill{font-size:10px;font-weight:700;letter-spacing:.6px;padding:3px 9px;border-radius:99px;text-transform:uppercase}
+.pill.queued{background:rgba(255,255,255,.08);color:var(--dim)}
+.pill.working{background:rgba(96,165,250,.14);color:#93c5fd}
 .pill.active{background:rgba(74,222,128,.12);color:var(--green)}
+.pill.checking{background:rgba(103,232,249,.14);color:#67e8f9}
+.pill.lead_review{background:rgba(251,191,36,.14);color:#fcd34d}
 .pill.ready{background:rgba(124,92,255,.16);color:#b8a3ff}
+.pill.approved{background:rgba(217,70,239,.15);color:#e879f9}
+.pill.sent_back{background:rgba(248,113,113,.14);color:#fecaca}
 .pill.launched{background:rgba(255,255,255,.08);color:var(--dim)}
 .pill.parked{background:rgba(251,191,36,.1);color:var(--amber)}
+/* Project card tint based on status — Devon wants visual differentiation, not all green */
+.proj.st-queued{background:color-mix(in srgb,#ffffff 2%,var(--s1))}
+.proj.st-working{background:color-mix(in srgb,#60a5fa 4%,var(--s1));border-top:2px solid rgba(96,165,250,.35)}
+.proj.st-active{background:color-mix(in srgb,#4ade80 4%,var(--s1));border-top:2px solid rgba(74,222,128,.35)}
+.proj.st-checking{background:color-mix(in srgb,#67e8f9 4%,var(--s1));border-top:2px solid rgba(103,232,249,.4)}
+.proj.st-lead_review{background:color-mix(in srgb,#fbbf24 5%,var(--s1));border-top:2px solid rgba(251,191,36,.5)}
+.proj.st-ready{background:color-mix(in srgb,#7C5CFF 6%,var(--s1));border-top:2px solid rgba(124,92,255,.55);box-shadow:0 0 14px rgba(124,92,255,.1)}
+.proj.st-approved{background:color-mix(in srgb,#d946ef 4%,var(--s1));border-top:2px solid rgba(217,70,239,.4)}
+.proj.st-sent_back{background:color-mix(in srgb,#f87171 5%,var(--s1));border-top:2px solid rgba(248,113,113,.5)}
+.proj.st-launched{opacity:.7}
+.proj.st-parked{background:color-mix(in srgb,#fbbf24 3%,var(--s1));opacity:.85}
 .proj .pd{color:var(--dim);font-size:12.5px;margin-bottom:11px}
 .strip{display:flex;align-items:center;gap:5px}
 .strip .seg{height:5px;flex:1;border-radius:3px;background:var(--s3)}
@@ -280,6 +340,10 @@ body.dragging #chat,body.dragging main{pointer-events:none}
 .msg .q{border-left:3px solid var(--v);background:rgba(124,92,255,.08);border-radius:0 6px 6px 0;padding:4px 9px;margin:2px 0 6px;font-size:12px;color:var(--dim);white-space:pre-wrap}
 .msg .qbtn{float:right;cursor:pointer;color:var(--faint);font-size:13px;line-height:1;margin-left:8px;padding:0 3px;user-select:none}
 .msg .qbtn:hover{color:#b8a3ff}
+/* Floating "Quote" bubble that appears when text is highlighted inside #msgs */
+#quotepop{position:fixed;display:none;background:linear-gradient(120deg,#8b6cff,#6c4ce0);color:#fff;border-radius:8px;padding:6px 12px;font:600 12px Inter;cursor:pointer;z-index:60;box-shadow:0 4px 16px rgba(124,92,255,.45);user-select:none;letter-spacing:.3px}
+#quotepop:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,92,255,.6)}
+#quotepop::before{content:"❝ ";font-weight:800}
 #qprev{display:none;align-items:center;gap:8px;margin:0 14px 6px;padding:7px 11px;background:var(--s2);border-left:3px solid var(--v);border-radius:10px;font-size:12px;color:var(--dim)}
 #qprev .qt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #qprev .qw{font-weight:700;color:#b8a3ff;flex:0 0 auto}
@@ -304,6 +368,10 @@ body.dragging #chat,body.dragging main{pointer-events:none}
   #astrip{padding:10px 12px 0}
   #drag{display:none}
   #lefttabs{display:none}
+  #routines{position:static;flex:0 0 auto;max-height:none;margin:0 0 12px}
+  body[data-tab="alley"] #routines,body[data-tab="projects"] #routines,body[data-tab="tasks"] #routines,body[data-tab="habits"] #routines,body[data-tab="chat"] #routines{display:none}
+  body[data-tab="routines"] #routines{display:block}
+  body[data-tab="routines"] #inbox,body[data-tab="routines"] #top3,body[data-tab="routines"] #alleytab,body[data-tab="routines"] #projectstab,body[data-tab="routines"] #taskstab,body[data-tab="routines"] #habitstab,body[data-tab="routines"] #chat{display:none}
   #chat{position:static;flex:0 0 auto;height:auto;min-height:0}
   body[data-tab="alley"] #projectstab,body[data-tab="alley"] #taskstab,body[data-tab="alley"] #habitstab,body[data-tab="alley"] #chat{display:none}
   body[data-tab="projects"] #alleytab,body[data-tab="projects"] #taskstab,body[data-tab="projects"] #habitstab,body[data-tab="projects"] #chat{display:none}
@@ -353,8 +421,10 @@ body.dragging #chat,body.dragging main{pointer-events:none}
 <div id="astrip"></div>
 <div id="alertbar"></div>
 <main>
+  <aside id="routines"></aside>
   <div id="left">
     <div id="inbox"></div>
+    <div id="top3"></div>
     <div id="lefttabs">
       <button class="lt on" data-t="alley" onclick="setTab('alley')">Alley</button>
       <button class="lt" data-t="projects" onclick="setTab('projects')">Projects</button>
@@ -390,10 +460,12 @@ body.dragging #chat,body.dragging main{pointer-events:none}
   <button class="bn on" data-t="alley" onclick="setTab('alley')"><span class="bnic"></span>Alley<span class="bbadge" id="bnavbadge" style="display:none"></span></button>
   <button class="bn" data-t="projects" onclick="setTab('projects')"><span class="bnic"></span>Projects</button>
   <button class="bn" data-t="tasks" onclick="setTab('tasks')"><span class="bnic"></span>Tasks</button>
+  <button class="bn" data-t="routines" onclick="setTab('routines')"><span class="bnic"></span>Routines</button>
   <button class="bn" data-t="habits" onclick="setTab('habits')"><span class="bnic"></span>Habits</button>
   <button class="bn" data-t="chat" onclick="setTab('chat')"><span class="bnic"></span>Chat</button>
 </nav>
 <div class="toast" id="toast"></div>
+<div id="quotepop" onmousedown="event.preventDefault()" onclick="quoteFromSelection(event)">Quote</div>
 <script>
 const EP = "https://emmalindsay--b46b3528cd8a11f1b2291607ee4eb77e.web.val.run";
 const STAGES = ["queued","working","checking","lead_review","ready","approved"];
@@ -469,14 +541,22 @@ function setTab(t){
 }
 
 /* ── top strip: critical-only (today's birthdays / all-day events) ──
-   agent statuses live in the cluster + chat views, never up here */
+   agent statuses live in the cluster + chat views, never up here.
+   Dismiss state resets daily so tomorrow's chips show up fresh. */
 let chipsOpen = localStorage.getItem("ahq_chips")!=="0";
 function toggleChips(){ chipsOpen=!chipsOpen; localStorage.setItem("ahq_chips",chipsOpen?"1":"0"); renderStrip(LASTJOBS); }
+function _todayKey(){ const d=new Date(); return `ahq_dismissed_strip_${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+function _getDismissedChips(){ try{ return new Set(JSON.parse(localStorage.getItem(_todayKey())||"[]")); }catch(e){ return new Set(); } }
+function _saveDismissedChips(set){ localStorage.setItem(_todayKey(), JSON.stringify([...set])); }
+function dismissStripChip(key, ev){ if(ev){ ev.stopPropagation(); ev.preventDefault(); }
+  const d=_getDismissedChips(); d.add(key); _saveDismissedChips(d); renderStrip(); }
 function renderStrip(){
   const evs = (TASKS && TASKS.today && TASKS.today.events) ? TASKS.today.events.filter(e=>e.all_day) : [];
-  const parts = evs.map(e=>{
+  const dismissed = _getDismissedChips();
+  const parts = evs.filter(e=>!dismissed.has(e.title)).map(e=>{
     const bday = /birthday/i.test(e.title);
-    return `<div class="chip off" style="border-color:rgba(251,191,36,.35);color:#fde68a">${bday?"🎂":"📅"} ${esc(e.title)}<small>today</small></div>`;
+    const key = e.title.replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+    return `<div class="chip" style="border-color:rgba(251,191,36,.35);color:#fde68a;cursor:default">${bday?"🎂":"📅"} ${esc(e.title)}<small>today</small><span class="x" onclick="dismissStripChip('${key}', event)" title="Dismiss">✕</span></div>`;
   });
   if(!parts.length){ document.getElementById("astrip").innerHTML=""; return; }
   const tgl = `<div class="chip off tgl" onclick="toggleChips()" title="${chipsOpen?"Hide":"Show"} today's notes">${
@@ -611,7 +691,7 @@ function renderProjects(projects, jobs){
     const furthest = Math.max(0, ...pj.map(j=>STAGES.indexOf(j.stage==="sent_back"?"working":j.stage)));
     const latest = pj[0];
     const wc = wingClr(p.wing||"business").c;
-    return `<div class="tile proj" style="border-left-color:${wc};cursor:pointer" onclick="openProjectChat(${p.id})"><div class="top"><div class="pt">${esc(p.title)}</div><span class="pill ${esc(p.status)}">${esc(p.status)}</span></div>
+    return `<div class="tile proj st-${esc(p.status)}" style="border-left-color:${wc};cursor:pointer" onclick="openProjectChat(${p.id})"><div class="top"><div class="pt">${esc(p.title)}</div><span class="pill ${esc(p.status)}">${esc(p.status).replace("_"," ")}</span></div>
       <div class="pd">${esc(dl(p.dept))}${p.detail?` — ${esc(p.detail)}`:""}</div>
       <div class="strip">${STAGES.slice(0,5).map((s,i)=>`<span class="seg ${pj.length&&i<=furthest?"done":""}"></span>`).join("")}<span class="lbl">${pj.length?esc(STAGE_LBL[latest.stage]||latest.stage):"no jobs yet"}</span></div>
       ${latest?`<div class="latest">↳ ${esc(latest.title)} · ${ago(latest.updated)}</div>`:""}
@@ -804,6 +884,48 @@ function clearQuote(){
   const qv = document.getElementById("qprev");
   if(qv){ qv.style.display="none"; qv.innerHTML=""; }
 }
+/* Highlight-to-quote: when user selects text inside #msgs, show a floating Quote button */
+function _selectionInMsgs(sel){
+  if(!sel || !sel.rangeCount) return null;
+  const node = sel.anchorNode; if(!node) return null;
+  const container = node.nodeType===1 ? node : node.parentNode;
+  if(!container || !container.closest) return null;
+  const msgEl = container.closest(".msg"); if(!msgEl) return null;
+  const msgs = document.getElementById("msgs"); if(!msgs || !msgs.contains(msgEl)) return null;
+  return msgEl;
+}
+function quoteFromSelection(ev){
+  if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  const sel = window.getSelection(); const txt = (sel||"").toString().trim();
+  if(!txt){ document.getElementById("quotepop").style.display="none"; return; }
+  const msgEl = _selectionInMsgs(sel); if(!msgEl) return;
+  const idx = parseInt(msgEl.dataset.idx||"0",10);
+  const m = CONVMSGS[idx]; if(!m) return;
+  let t = txt.replace(/\n+/g," "); if(t.length>300) t = t.slice(0,299)+"…";
+  pendingQuote = {who: m.sender==="Devon"?"Devon":m.sender, text: t};
+  const qv = document.getElementById("qprev");
+  qv.style.display = "flex";
+  qv.innerHTML = `<span class="qw">❝ ${esc(pendingQuote.who)}</span><span class="qt">${esc(pendingQuote.text)}</span><span class="x" onclick="clearQuote()">✕</span>`;
+  document.getElementById("quotepop").style.display="none";
+  if(sel.removeAllRanges) sel.removeAllRanges();
+  document.getElementById("chatin").focus();
+}
+document.addEventListener("selectionchange", ()=>{
+  const pop = document.getElementById("quotepop"); if(!pop) return;
+  const sel = window.getSelection(); const txt = (sel||"").toString().trim();
+  if(!txt){ pop.style.display="none"; return; }
+  if(!_selectionInMsgs(sel)){ pop.style.display="none"; return; }
+  try{
+    const r = sel.getRangeAt(0).getBoundingClientRect();
+    pop.style.top = Math.max(8, r.top - 36) + "px";
+    pop.style.left = Math.max(8, Math.min(window.innerWidth-80, r.left + r.width/2 - 32)) + "px";
+    pop.style.display = "block";
+  }catch(e){ pop.style.display="none"; }
+});
+document.addEventListener("mousedown", (e)=>{
+  const pop = document.getElementById("quotepop");
+  if(pop && e.target!==pop) pop.style.display="none";
+});
 /* split a rendered message into leading "> [Who] …" quote block + body */
 function splitQuote(txt){
   const lines = txt.split("\n");
@@ -832,6 +954,31 @@ document.getElementById("attfile").addEventListener("change", async ev=>{
   }catch(e){ toast("Couldn't read file"); }
 });
 function clearAtt(){ pendingFile=null; const pv=document.getElementById("attprev"); pv.style.display="none"; pv.innerHTML=""; }
+/* Paste image from clipboard directly into chat input (Telegram-style) */
+async function _setPendingImageFromBlob(blob, name){
+  try{
+    const f = new File([blob], name||("pasted-"+Date.now()+".png"), {type: blob.type||"image/png"});
+    pendingFile = {name:f.name, type:"image/jpeg", data: await downscale(f)};
+    const pv=document.getElementById("attprev");
+    pv.style.display="flex";
+    pv.innerHTML = `<img src="${pendingFile.data}" style="max-height:48px;max-width:70px;border-radius:6px;object-fit:cover" alt="pasted"><span>${esc(pendingFile.name)}</span><span class="x" onclick="clearAtt()">✕</span>`;
+    document.getElementById("chatin").focus();
+    toast("📎 Image pasted — type a caption and send");
+  }catch(e){ toast("Couldn't read pasted image"); }
+}
+document.addEventListener("paste", async (ev)=>{
+  const chatin = document.getElementById("chatin");
+  if(document.activeElement !== chatin && !document.getElementById("chat").contains(document.activeElement)) return;
+  const items = (ev.clipboardData||{}).items||[];
+  for(const it of items){
+    if(it.kind==="file" && String(it.type||"").startsWith("image/")){
+      ev.preventDefault();
+      const blob = it.getAsFile(); if(!blob) continue;
+      await _setPendingImageFromBlob(blob, blob.name);
+      return;
+    }
+  }
+});
 const readAsDataURL = f => new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); });
 async function downscale(f){
   const url = await readAsDataURL(f);
@@ -905,7 +1052,7 @@ function renderConv(){
   document.getElementById("msgs").innerHTML = msgs.map((m,i)=>{
     const atts=[]; const txt = m.text.replace(FILE_RE,(_,k,n)=>{ atts.push([k,n]); return ""; }).trim();
     const {q, body} = splitQuote(txt);
-    return `<div class="msg ${m.sender==="Devon"?"me":""}"><div class="who">${esc(m.sender)}<span class="when">${ago(m.ts)}</span><span class="qbtn" title="Quote" onclick="quoteMsg(${i},event)">❝</span></div>${
+    return `<div class="msg ${m.sender==="Devon"?"me":""}" data-idx="${i}"><div class="who">${esc(m.sender)}<span class="when">${ago(m.ts)}</span><span class="qbtn" title="Quote" onclick="quoteMsg(${i},event)">❝</span></div>${
       q?`<div class="q">${esc(q)}</div>`:""}${esc(body)}${
       atts.map(([k,n])=>`<div class="att" data-k="${esc(k)}" data-n="${esc(n)}">loading…</div>`).join("")}</div>`;
   }).join("");
@@ -953,25 +1100,6 @@ function stuckFromWings(wings){
     lastTap=t; });
 })();
 
-let GOALS=null, goalsOpen={};
-function renderGoals(){
-  const el=document.getElementById("goalscard");
-  if(!GOALS||!GOALS.cats){ el.innerHTML=""; return; }
-  let h=`<div class="ghead">${icon("star","igC")}Goals<small>personal</small><span class="gpct ${GOALS.overall>=80?"ok":"warn"}">${GOALS.overall}%</span></div>`;
-  for(const c of GOALS.cats){
-    h+=`<div class="grow" onclick="goalsOpen['${esc(c.id)}']=!goalsOpen['${esc(c.id)}'];renderGoals()">
-      <span class="gic">${esc(c.icon)}</span><span class="gnm">${esc(c.name)}</span>
-      <span class="gbar"><i class="${c.pct<80?"low":""}" style="width:${c.pct}%"></i></span>
-      <span class="gv ${c.pct>=80?"ok":"warn"}">${c.pct}</span></div>`;
-    if(goalsOpen[c.id]){
-      h+=`<div class="gdet">`;
-      if(c.lag) h+=`<div class="gll">🎯 ${esc(c.lag)}</div>`;
-      if(c.lead) h+=`<div class="gll">⚡ ${esc(c.lead)}</div>`;
-      h+=c.items.map(i=>`<div class="gitem"><span>${esc(i.name)}${i.opt?" <em>optional</em>":""}</span><span class="${i.pct>=80?"ok":"warn"}">${i.pct}%</span></div>`).join("")+`</div>`;
-    }
-  }
-  el.innerHTML=h;
-}
 function renderUsage(u){
   const el=document.getElementById("usagecard");
   if(!u||u.session==null){ el.innerHTML=""; return; }
@@ -995,27 +1123,158 @@ function renderRecap(r){
     <div class="rchips"><span class="rchip2"><b>${c.done||0}</b> done</span><span class="rchip2"><b>${c.moved||0}</b> moving</span><span class="rchip2"><b>${c.stuck||0}</b> stuck</span>${r.goals!=null?`<span class="rchip2">goals <b>${r.goals}%</b></span>`:""}</div>`+
     r.lines.map(l=>`<div class="rline ${l.startsWith("✓")?"done":l.startsWith("⚠")?"stuck":""}">${esc(l)}</div>`).join("");
 }
-/* ── Tasks tab (DHQ morning-card clone: Today / Next few days / Daily Dragons) ── */
-let TASKS=null;
+/* ── Tasks tab — DHQ port: actions queue to the DHQ relay, applied to the REAL
+   Google Tasks by Devon's existing hq_actions_poller (~60s). Optimistic UI +
+   pending overlay bridges until the next tasks_sync refresh of kv "tasks". ── */
+const DQEP="https://emmalindsay--fa014b18bbba11f19dfa1607ee4eb77e.web.val.run", DQK="dhq-x7k2-rls84m-v9q3";
+const DQLISTS={"Daily Dragons":"MTgxMjMxMjg3Nzk3MzI5ODc0NTU6MDow","Tomorrow":"OE9DeWdFMm5jdXhocDRx","This Week":"Qm1lM3gxUW5sUmNaejVhNA","This Month":"UUt5ZlpxdXJKUkp3NTRBXw","At Some Point":"WEJaZ3ZWOFI1NHhMOFZWTA"};
+let TASKS=null, TROWS=[], openPill=localStorage.getItem("ahq_pill")||"";
 let nextOpen = localStorage.getItem("ahq_next")!=="0";
-let laterOpen = localStorage.getItem("ahq_later")==="1";
 function toggleNext(){ nextOpen=!nextOpen; localStorage.setItem("ahq_next",nextOpen?"1":"0"); renderTasks(); }
-function toggleLater(){ laterOpen=!laterOpen; localStorage.setItem("ahq_later",laterOpen?"1":"0"); renderTasks(); }
-const dragKey = t => "dg:"+(TASKS&&TASKS.generated?new Date(TASKS.generated*1000).toISOString().slice(0,10):"")+":"+t;
-function toggleDragon(i){
-  const t=(TASKS.tabs.today||[])[i]; if(!t) return;
-  const done=JSON.parse(localStorage.getItem("ahq_dgdone")||"{}");
-  const k=dragKey(t.title);
-  if(done[k]) delete done[k]; else done[k]=1;
-  localStorage.setItem("ahq_dgdone",JSON.stringify(done));
-  renderTasks();
+let TPEND={};
+try{ TPEND=JSON.parse(localStorage.getItem("ahq_tpend")||"{}"); }catch(e){}
+function tpSave(){ localStorage.setItem("ahq_tpend",JSON.stringify(TPEND)); }
+function tpAdd(id,op){ TPEND[id]=Object.assign(TPEND[id]||{},op,{t:Date.now()}); tpSave(); }
+function tpSweep(){ const gen=TASKS&&TASKS.generated?TASKS.generated*1000:0;
+  for(const id in TPEND){ const p=TPEND[id];
+    if((gen&&gen>p.t+150000)||(Date.now()-p.t>2*3600*1000)) delete TPEND[id]; }
+  tpSave(); }
+function dq(kind,payload){
+  fetch(DQEP+"/?k="+DQK+"&action=queue",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({kind,payload})}).catch(()=>{});
+  relay("queue",{},{kind:"tasksync",payload:{}}).catch(()=>{});
 }
-function evRow(e, next){
+function evRow(e){
   return `<div class="evrow ${e.all_day?"allday":""}"><span class="evt">${esc(e.time)}</span><span class="evn">${esc(e.title)}</span></div>`;
+}
+function taskRow(t,ri){
+  const p=TPEND[t.id]||{};
+  if(p.gone) return "";
+  const done=p.done!=null?p.done:false;
+  const star=p.star!=null?p.star:!!t.star;
+  const title=p.title!=null?p.title:t.title;
+  return `<div class="tkr${done?" done":""}${star?" starred":""}" onclick="tToggle(${ri})">
+    <span class="tbox">${done?"✓":""}</span><span class="ttl">${esc(title)}</span>
+    ${t.due?`<span class="tdue">${esc(t.due.slice(5))}</span>`:""}
+    <span class="tka tstar" onclick="tStar(${ri},event)">${star?"★":"☆"}</span>
+    <span class="tka" onclick="tEdit(${ri},event)">✎</span>
+    <span class="tka" onclick="tMove(${ri},event)">↪</span></div>`;
+}
+function pendStar(t){ const p=TPEND[t.id]; return p&&p.star!=null?p.star:!!t.star; }
+function liveCount(key){ return (TASKS.tabs[key]||[]).filter(t=>!(TPEND[t.id]&&(TPEND[t.id].done||TPEND[t.id].gone))).length; }
+function rowsFor(key,listName){
+  const items=(TASKS.tabs[key]||[]).slice();
+  items.sort((a,b)=>(pendStar(b)?1:0)-(pendStar(a)?1:0));
+  return items.map(t=>{ const ri=TROWS.length;
+    TROWS.push(Object.assign({},t,{lid:t.lid||DQLISTS[listName]}));
+    return taskRow(TROWS[ri],ri); }).join("");
+}
+function togglePill(k){ openPill=openPill===k?"":k; localStorage.setItem("ahq_pill",openPill); renderTasks(); }
+const TPILLS=[["tomorrow","🌄","tomorrow","Tomorrow"],["week","🗓","week","This Week"],["month","📆","month","This Month"],["some","🗃","some point","At Some Point"]];
+/* ── Routines panel (left sidebar) ── */
+/* Each routine: name, icon, cron-ish schedule, kv key for latest run content */
+const ROUTINES = [
+  {id:"morning",   nm:"Morning Briefing",   ic:"🌅", sc:"Daily · 8:00 AM",     at:{h:8,  m:0,  d:"*"}, kv:"routine_morning"},
+  {id:"inbox",     nm:"Inbox Cleanup",      ic:"📧", sc:"Weekdays · 6:00 PM",  at:{h:18, m:0,  d:"wk"}, kv:"routine_inbox"},
+  {id:"ads",       nm:"Ad Performance",     ic:"📊", sc:"Daily · 7:00 AM",     at:{h:7,  m:0,  d:"*"}, kv:"routine_ads"},
+  {id:"fitness",   nm:"Fitness Check-in",   ic:"🧘", sc:"Daily · 9:00 PM",     at:{h:21, m:0,  d:"*"}, kv:"routine_fitness"},
+  {id:"books",     nm:"Bookkeeping Sync",   ic:"💰", sc:"Daily · 4:15 AM",     at:{h:4,  m:15, d:"*"}, kv:"routine_books"},
+  {id:"guests",    nm:"Guest Tracking",     ic:"👀", sc:"Every 30 min",        at:{m30:true},         kv:"routine_guests"},
+  {id:"weekly",    nm:"Weekly Review",      ic:"📝", sc:"Sundays · 6:00 PM",   at:{h:18, m:0,  d:"sun"}, kv:"routine_weekly"},
+];
+function _pausedRoutines(){ try{ return new Set(JSON.parse(localStorage.getItem("ahq_paused_rtn")||"[]")); }catch(e){ return new Set(); } }
+function _saveRoutinePause(set){ localStorage.setItem("ahq_paused_rtn", JSON.stringify([...set])); }
+function toggleRoutine(id, ev){ if(ev){ ev.stopPropagation(); ev.preventDefault(); }
+  const p=_pausedRoutines(); if(p.has(id)) p.delete(id); else p.add(id);
+  _saveRoutinePause(p); renderRoutines();
+}
+function _nextFire(at){
+  const now=new Date(); const n=new Date(now);
+  if(at.m30){ const mn=now.getMinutes(); const nxt=mn<30?30:60; n.setMinutes(nxt,0,0); return n; }
+  n.setHours(at.h, at.m||0, 0, 0);
+  if(n<=now) n.setDate(n.getDate()+1);
+  if(at.d==="wk"){ while(n.getDay()===0||n.getDay()===6) n.setDate(n.getDate()+1); }
+  if(at.d==="sun"){ while(n.getDay()!==0) n.setDate(n.getDate()+1); }
+  return n;
+}
+function _fmtNext(d){
+  const diff=d-new Date(); const hr=Math.floor(diff/3600000); const mn=Math.floor((diff%3600000)/60000);
+  if(diff<60000) return "firing now…";
+  if(hr>=24) return "in "+Math.floor(hr/24)+"d";
+  if(hr>0) return "in "+hr+"h "+mn+"m";
+  return "in "+mn+"m";
+}
+function openRoutine(id){
+  const r=ROUTINES.find(x=>x.id===id); if(!r) return;
+  relay("kvget",{key:r.kv}).then(g=>{
+    const v=g.value||g;
+    const content=v && v.content ? v.content : (typeof v==="string"?v:null);
+    const when = v && v.at ? v.at : null;
+    toast(content ? (r.nm+(when?" · "+when:"")+":\n"+String(content).substring(0,220)) : (r.nm+" — no run yet"));
+  }).catch(()=>toast(r.nm+" — no run data yet"));
+}
+function renderRoutines(){
+  const el=document.getElementById("routines");
+  const paused=_pausedRoutines();
+  const rows=ROUTINES.map(r=>{
+    const p=paused.has(r.id);
+    const nxt=_nextFire(r.at);
+    return `<div class="rtn ${p?"paused":""}" onclick="openRoutine('${r.id}')">
+      <div class="ric">${r.ic}</div>
+      <div class="rbody">
+        <div class="rnm">${esc(r.nm)}</div>
+        <div class="rsc">${esc(r.sc)}</div>
+        <div class="rnxt">${p?"paused":_fmtNext(nxt)}</div>
+      </div>
+      <div class="rtgl" onclick="toggleRoutine('${r.id}',event)" title="${p?"Resume":"Pause"}">${p?"▶":"⏸"}</div>
+    </div>`;
+  }).join("");
+  el.innerHTML = `<div class="rhead">${icon("star")}Routines</div>${rows}`;
+}
+setInterval(renderRoutines, 30000);
+
+function renderTop3(){
+  const el=document.getElementById("top3");
+  if(!TASKS||!TASKS.tabs||!TASKS.tabs.today){ el.classList.remove("on"); return; }
+  const live = (TASKS.tabs.today||[]).filter(t=>!(TPEND[t.id]&&(TPEND[t.id].done||TPEND[t.id].gone)));
+  if(!live.length){ el.classList.remove("on"); return; }
+  const ranked = [...live].sort((a,b)=>{
+    const sa=pendStar(a)?1:0, sb=pendStar(b)?1:0;
+    if(sa!==sb) return sb-sa;
+    const da=a.due?Date.parse(a.due):Infinity, db=b.due?Date.parse(b.due):Infinity;
+    return da-db;
+  });
+  const top3 = ranked.slice(0,3);
+  TROWS_TOP3 = top3;
+  const rows = top3.map((t,i)=>{
+    const p=TPEND[t.id]||{};
+    const done=p.done!=null?p.done:false;
+    const star=pendStar(t);
+    const due = t.due_text || "";
+    return `<div class="t3row ${done?"ck":""}" onclick="t3Toggle(${i})">
+      <div class="t3rank">${i+1}</div>
+      <div class="t3chk">${done?"✓":""}</div>
+      <div class="t3nm">${esc(t.title||t.name||"")}</div>
+      ${star?`<div class="t3star">★</div>`:""}
+      ${due?`<div class="t3due">${esc(due)}</div>`:""}
+    </div>`;
+  }).join("");
+  el.innerHTML = `<div class="t3head">★ Top 3 Today <small>${live.length-top3.length} more below</small></div>${rows}`;
+  el.classList.add("on");
+}
+let TROWS_TOP3=[];
+function t3Toggle(i){
+  const t=TROWS_TOP3[i]; if(!t||!t.id) return;
+  const p=TPEND[t.id]||{};
+  const done=!(p.done!=null?p.done:false);
+  tpAdd(t.id,{done});
+  dq(done?"taskdone":"taskundo",{id:t.id,lid:t.lid,title:t.title});
+  renderTop3(); renderTasks();
 }
 function renderTasks(){
   const el=document.getElementById("taskstab");
   if(!TASKS||!TASKS.tabs){ el.innerHTML=`<div class="tempty">syncing tasks…</div>`; return; }
+  tpSweep(); TROWS=[];
   const td=TASKS.today, up=TASKS.upcoming||[];
   let h="";
   /* TODAY — calendar */
@@ -1024,27 +1283,62 @@ function renderTasks(){
   h+=`</div>`;
   /* NEXT FEW DAYS — collapsible */
   h+=`<div class="dcard next"><div class="dhead" onclick="toggleNext()">${icon("personal","igC")}Next few days<span class="dcaret">${nextOpen?"▾":"▸"}</span></div>`;
-  if(nextOpen) h+= up.length ? up.map(d=>`<div class="dayhead">${esc(d.label)}</div>`+d.events.map(e=>evRow(e,1)).join("")).join("") : `<div class="tempty">clear skies ahead</div>`;
+  if(nextOpen) h+= up.length ? up.map(d=>`<div class="dayhead">${esc(d.label)}</div>`+d.events.map(e=>evRow(e)).join("")).join("") : `<div class="tempty">clear skies ahead</div>`;
   h+=`</div>`;
-  /* DAILY DRAGONS — checkable */
-  const dragons=TASKS.tabs.today||[];
-  const done=JSON.parse(localStorage.getItem("ahq_dgdone")||"{}");
-  h+=`<div class="dcard dragons"><div class="dhead">${icon("star","igA")}Daily Dragons <small>${dragons.length} to slay</small></div>`;
-  h+= dragons.length ? dragons.map((t,i)=>{
-    const ck=done[dragKey(t.title)];
-    return `<div class="dgrow ${ck?"ck":""}" onclick="toggleDragon(${i})"><span class="dgchk">${ck?"✓":""}</span><span class="dgstar">★</span><span class="dgn">${esc(t.title)}</span>${t.due?`<span class="tdue">${esc(t.due.slice(5))}</span>`:""}</div>`;
-  }).join("") : `<div class="tempty">no dragons today</div>`;
-  h+=`<div class="tnote">✓ marks locally — it doesn't tick the Google Task yet</div></div>`;
-  /* LATER — tomorrow / week / month lists */
-  const later=[["tomorrow","Tomorrow"],["week","This Week"],["month","This Month"]]
-    .map(([k,l])=>[l,TASKS.tabs[k]||[]]).filter(([,v])=>v.length);
-  if(later.length){
-    const n=later.reduce((a,[,v])=>a+v.length,0);
-    h+=`<div class="dcard later"><div class="dhead" onclick="toggleLater()">${icon("folder")}Later <small>${n} queued</small><span class="dcaret">${laterOpen?"▾":"▸"}</span></div>`;
-    if(laterOpen) h+= later.map(([l,v])=>`<div class="dayhead">${esc(l)}</div>`+v.map(t=>`<div class="dgrow" style="cursor:default"><span class="dgstar" style="color:var(--faint)">·</span><span class="dgn">${esc(t.title)}</span>${t.due?`<span class="tdue">${esc(t.due.slice(5))}</span>`:""}</div>`).join("")).join("");
-    h+=`</div>`;
-  }
+  /* DAILY DRAGONS — real Google Tasks + in-place list pills */
+  h+=`<div class="dcard dragons"><div class="dhead">${icon("star","igA")}Daily Dragons <small>${liveCount("today")} to slay</small></div>`;
+  h+= (TASKS.tabs.today||[]).length ? rowsFor("today","Daily Dragons") : `<div class="tempty">no dragons today</div>`;
+  h+=`<div class="tpills">`+TPILLS.map(([k,ic,lb])=>
+    `<span class="tpill${openPill===k?" on":""}" onclick="togglePill('${k}')">${ic} ${lb} · ${liveCount(k)}</span>`).join("")+`</div>`;
+  for(const [k,,,ln] of TPILLS)
+    if(openPill===k) h+=`<div class="tpanel">`+(rowsFor(k,ln)||`<div class="tempty">empty</div>`)+`</div>`;
+  h+=`</div>`;
   el.innerHTML=h;
+}
+function tToggle(ri){
+  const t=TROWS[ri]; if(!t||!t.id) return;
+  const p=TPEND[t.id]||{};
+  const done=!(p.done!=null?p.done:false);
+  tpAdd(t.id,{done});
+  dq(done?"taskdone":"taskundo",{id:t.id,lid:t.lid,title:t.title});
+  renderTasks();
+}
+function tStar(ri,ev){ ev.stopPropagation();
+  const t=TROWS[ri]; if(!t||!t.id) return;
+  const star=!pendStar(t);
+  tpAdd(t.id,{star});
+  dq(star?"staradd":"stardel",{id:t.id,title:t.title});
+  renderTasks();
+}
+function tEdit(ri,ev){ ev.stopPropagation();
+  const t=TROWS[ri]; if(!t||!t.id) return;
+  const cur=(TPEND[t.id]&&TPEND[t.id].title)||t.title;
+  const nt=prompt("Edit task",cur);
+  if(!nt||!nt.trim()||nt.trim()===cur) return;
+  tpAdd(t.id,{title:nt.trim()});
+  dq("taskedit",{id:t.id,lid:t.lid,title:nt.trim()});
+  renderTasks();
+}
+function tMove(ri,ev){ ev.stopPropagation();
+  const t=TROWS[ri]; if(!t||!t.id) return;
+  const row=ev.target.closest(".tkr");
+  const old=row.querySelector(".tkmenu"); if(old){ old.remove(); return; }
+  const m=document.createElement("div"); m.className="tkmenu"; m.onclick=e=>e.stopPropagation();
+  for(const nm in DQLISTS){
+    if(DQLISTS[nm]===t.lid) continue;
+    const b=document.createElement("button"); b.textContent=nm;
+    b.onclick=e=>{ e.stopPropagation();
+      dq("taskmove",{id:t.id,lid:t.lid,to:DQLISTS[nm],title:t.title});
+      tpAdd(t.id,{gone:true}); renderTasks(); };
+    m.appendChild(b);
+  }
+  const del=document.createElement("button"); del.textContent="🗑 Delete";
+  del.onclick=e=>{ e.stopPropagation();
+    if(!confirm("Delete this task?")) return;
+    dq("taskdel",{id:t.id,lid:t.lid,title:t.title});
+    tpAdd(t.id,{gone:true}); renderTasks(); };
+  m.appendChild(del);
+  row.appendChild(m);
 }
 
 /* ── alert bar: timers (countdown + alarm) + approvals ── */
@@ -1092,10 +1386,9 @@ setInterval(()=>{ if(ALERTS.some(a=>a.type==="timer")) renderAlerts(); }, 1000);
 async function tick(){
   if(!KEY) return;
   try{
-    relay("kvget",{key:"goals"}).then(g=>{ GOALS=g.value||null; renderGoals(); }).catch(()=>{});
     relay("kvget",{key:"recap"}).then(g=>{ renderRecap(g.value||null); }).catch(()=>{});
     relay("kvget",{key:"usage"}).then(g=>{ renderUsage(g.value||null); }).catch(()=>{});
-    relay("kvget",{key:"tasks"}).then(g=>{ TASKS=g.value||null; renderTasks(); renderStrip(); }).catch(()=>{});
+    relay("kvget",{key:"tasks"}).then(g=>{ TASKS=g.value||null; renderTasks(); renderStrip(); renderTop3(); }).catch(()=>{});
     relay("kvget",{key:"alerts"}).then(g=>{ ALERTS=Array.isArray(g.value)?g.value:[]; renderAlerts(); }).catch(()=>{});
     const st = await relay("kvget",{key:"state"});
     const s = st.value || st;
@@ -1115,9 +1408,15 @@ async function tick(){
   }
 }
 /* bottom-nav icons */
-document.querySelectorAll("#bnav .bn .bnic").forEach((el,i)=>{ el.outerHTML = icon(["hub","folder","life_ops","star","chat"][i]); });
+document.querySelectorAll("#bnav .bn .bnic").forEach((el,i)=>{ el.outerHTML = icon(["hub","folder","life_ops","personal","star","chat"][i]); });
 let rsz; window.addEventListener("resize", ()=>{ clearTimeout(rsz); rsz=setTimeout(renderCluster, 150); });
-applyChatView(); setTab(curTab); tick(); setInterval(tick, 20000);
+applyChatView(); setTab(curTab); renderRoutines(); tick(); setInterval(tick, 20000);
+/* Register PWA service worker so Agent Alley installs on mobile */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("./sw.js").catch(e=>console.warn("sw register failed", e));
+  });
+}
 </script>
 </body>
 </html>
