@@ -67,16 +67,51 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size
 .al .x{color:var(--faint);font-weight:800;padding:0 2px}
 .al .x:hover{color:var(--red)}
 
-/* ── tasks card ── */
-#taskscard{margin:2px 0 10px;border:1px solid color-mix(in srgb,#7C5CFF 26%,transparent);border-radius:14px;background:rgba(124,92,255,.05);padding:10px 12px}
-#taskscard:empty{display:none}
-.ttabs{display:flex;gap:5px;margin-left:auto}
-.ttab{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:99px;border:1px solid var(--line);color:var(--dim);background:transparent;cursor:pointer}
-.ttab.on{background:rgba(124,92,255,.16);border-color:rgba(124,92,255,.5);color:var(--txt)}
-.trow{display:flex;align-items:center;gap:8px;padding:4px 2px;font-size:12.5px}
-.trow .tdot{width:6px;height:6px;border-radius:50%;background:var(--v);flex:0 0 auto}
-.trow .tdue{margin-left:auto;font-size:10.5px;color:var(--faint);white-space:nowrap}
+/* ── Tasks tab (DHQ-style day cards) ── */
+#taskstab{padding:16px;display:flex;flex-direction:column;gap:14px}
+.dcard{border:1px solid var(--line2);border-radius:16px;background:var(--s2);padding:14px 16px}
+.dcard.today{border-color:rgba(52,211,153,.35);background:color-mix(in srgb,#34d399 4%,var(--s2))}
+.dcard.dragons{border-color:rgba(251,191,36,.3);background:color-mix(in srgb,#fbbf24 3%,var(--s2))}
+.dhead{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:9px;cursor:default}
+.dcard.today .dhead{color:#6ee7b7}
+.dcard.next .dhead{color:#67e8f9;cursor:pointer}
+.dcard.dragons .dhead{color:#fcd34d}
+.dcard.later .dhead{color:var(--dim);cursor:pointer}
+.dhead svg{width:15px;height:15px;flex:0 0 auto}
+.dhead small{color:var(--faint);font-weight:600;letter-spacing:0;text-transform:none;font-size:11.5px}
+.dhead .dcaret{margin-left:auto;color:var(--faint);font-size:12px}
+.evrow{display:flex;align-items:baseline;gap:12px;padding:5px 2px;font-size:13.5px}
+.evrow .evt{flex:0 0 58px;text-align:right;font-size:11px;color:#6ee7b7;font-family:"JetBrains Mono",monospace;white-space:nowrap}
+.evrow.allday .evt{color:#fcd34d}
+.dcard.next .evrow .evt{color:#67e8f9}
+.evrow .evn{flex:1;min-width:0}
+.dayhead{font-size:11px;font-weight:700;color:var(--dim);margin:8px 0 2px;padding-left:2px}
+.dgrow{display:flex;align-items:center;gap:10px;padding:6px 2px;font-size:13.5px;cursor:pointer;border-radius:8px}
+.dgrow:hover{background:rgba(255,255,255,.03)}
+.dgchk{flex:0 0 19px;width:19px;height:19px;border-radius:50%;border:1.6px solid rgba(251,191,36,.55);display:flex;align-items:center;justify-content:center;font-size:11px;color:#1a1405;transition:background .15s}
+.dgrow.ck .dgchk{background:#fbbf24;border-color:#fbbf24}
+.dgrow.ck .dgn{text-decoration:line-through;color:var(--faint)}
+.dgrow .dgstar{color:#fcd34d;font-size:12px;flex:0 0 auto}
+.dgrow .dgn{flex:1;min-width:0}
+.dgrow .tdue{margin-left:auto;font-size:10.5px;color:var(--faint);white-space:nowrap}
 .tempty{color:var(--faint);font-size:12px;padding:4px 2px}
+.tnote{font-size:10.5px;color:var(--faint);margin-top:6px}
+
+/* ── Habit Tracker tab ── */
+#habitstab{padding:14px}
+#habitstab #goalscard{margin:0}
+
+/* ── new project / finish ── */
+.npbtn{display:inline-flex;align-items:center;gap:7px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.45);color:#c4b5fd;border-radius:10px;padding:8px 15px;font-size:12.5px;font-weight:700;margin-bottom:12px}
+#npform{display:none;gap:8px;flex-wrap:wrap;align-items:center;background:var(--s2);border:1px solid rgba(124,92,255,.35);border-radius:13px;padding:11px 13px;margin-bottom:14px}
+#npform.on{display:flex}
+#npform input,#npform select{background:var(--s3);border:1px solid var(--line2);border-radius:9px;padding:8px 11px;color:var(--txt);font:12.5px Inter;outline:none}
+#npform input{flex:1;min-width:170px}
+#npform input:focus{border-color:var(--v)}
+.pfin{margin-top:10px;background:transparent;border:1px solid var(--line2);color:var(--dim);font-size:11px;padding:5px 11px;border-radius:8px}
+.pfin:hover{border-color:rgba(74,222,128,.5);color:var(--green)}
+.donetgl{font-size:11.5px;font-weight:700;color:var(--faint);cursor:pointer;margin-top:16px;padding:4px 2px}
+.donetgl:hover{color:var(--dim)}
 
 main{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:14px 22px 26px;display:flex;gap:0;align-items:stretch}
 #left{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
@@ -267,9 +302,11 @@ button:hover{transform:translateY(-1px)}
   #drag{display:none}
   #lefttabs{display:none}
   #chat{position:static;flex:0 0 auto;height:auto;min-height:0}
-  body[data-tab="alley"] #projectstab,body[data-tab="alley"] #chat{display:none}
-  body[data-tab="projects"] #alleytab,body[data-tab="projects"] #chat{display:none}
-  body[data-tab="chat"] #alleytab,body[data-tab="chat"] #projectstab,body[data-tab="chat"] #inbox{display:none}
+  body[data-tab="alley"] #projectstab,body[data-tab="alley"] #taskstab,body[data-tab="alley"] #habitstab,body[data-tab="alley"] #chat{display:none}
+  body[data-tab="projects"] #alleytab,body[data-tab="projects"] #taskstab,body[data-tab="projects"] #habitstab,body[data-tab="projects"] #chat{display:none}
+  body[data-tab="tasks"] #alleytab,body[data-tab="tasks"] #projectstab,body[data-tab="tasks"] #habitstab,body[data-tab="tasks"] #chat{display:none}
+  body[data-tab="habits"] #alleytab,body[data-tab="habits"] #projectstab,body[data-tab="habits"] #taskstab,body[data-tab="habits"] #chat{display:none}
+  body[data-tab="chat"] #alleytab,body[data-tab="chat"] #projectstab,body[data-tab="chat"] #taskstab,body[data-tab="chat"] #habitstab,body[data-tab="chat"] #inbox{display:none}
   body[data-tab="chat"] #chat{display:flex;height:calc(100dvh - 185px);min-height:420px}
   #cluster{height:420px}
   .cnode.hub .orb{width:84px;height:84px}
@@ -287,9 +324,11 @@ button:hover{transform:translateY(-1px)}
   #bnav .bbadge{position:absolute;top:0;left:calc(50% + 6px);min-width:16px;height:16px;border-radius:8px;background:var(--red);color:#1a0505;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px}
 }
 @media(min-width:1001px){
-  body[data-tab="alley"] #projectstab{display:none}
-  body[data-tab="projects"] #alleytab{display:none}
-  body[data-tab="chat"] #projectstab{display:none}
+  body[data-tab="alley"] #projectstab,body[data-tab="alley"] #taskstab,body[data-tab="alley"] #habitstab,
+  body[data-tab="projects"] #alleytab,body[data-tab="projects"] #taskstab,body[data-tab="projects"] #habitstab,
+  body[data-tab="tasks"] #alleytab,body[data-tab="tasks"] #projectstab,body[data-tab="tasks"] #habitstab,
+  body[data-tab="habits"] #alleytab,body[data-tab="habits"] #projectstab,body[data-tab="habits"] #taskstab,
+  body[data-tab="chat"] #projectstab,body[data-tab="chat"] #taskstab,body[data-tab="chat"] #habitstab{display:none}
 }
 </style>
 </head>
@@ -316,17 +355,19 @@ button:hover{transform:translateY(-1px)}
     <div id="lefttabs">
       <button class="lt on" data-t="alley" onclick="setTab('alley')">Alley</button>
       <button class="lt" data-t="projects" onclick="setTab('projects')">Projects</button>
+      <button class="lt" data-t="tasks" onclick="setTab('tasks')">Tasks</button>
+      <button class="lt" data-t="habits" onclick="setTab('habits')">Habit Tracker</button>
     </div>
     <section class="tile" id="alleytab">
-      <div id="taskscard"></div>
       <div id="crumb"></div>
       <div id="cluster"><svg id="clines"></svg><div id="cnodes"></div></div>
       <div class="hint" id="chint">click a cluster to open it · click an agent to talk to them</div>
-      <div id="goalscard"></div>
       <div id="usagecard"></div>
       <div id="recapcard"></div>
     </section>
     <section class="tile" id="projectstab"><div id="projwrap"></div></section>
+    <section id="taskstab"></section>
+    <section class="tile" id="habitstab"><div id="goalscard"></div></section>
   </div>
   <div id="drag"></div>
   <aside class="tile" id="chat">
@@ -345,6 +386,8 @@ button:hover{transform:translateY(-1px)}
 <nav id="bnav">
   <button class="bn on" data-t="alley" onclick="setTab('alley')"><span class="bnic"></span>Alley<span class="bbadge" id="bnavbadge" style="display:none"></span></button>
   <button class="bn" data-t="projects" onclick="setTab('projects')"><span class="bnic"></span>Projects</button>
+  <button class="bn" data-t="tasks" onclick="setTab('tasks')"><span class="bnic"></span>Tasks</button>
+  <button class="bn" data-t="habits" onclick="setTab('habits')"><span class="bnic"></span>Habits</button>
   <button class="bn" data-t="chat" onclick="setTab('chat')"><span class="bnic"></span>Chat</button>
 </nav>
 <div class="toast" id="toast"></div>
@@ -422,29 +465,19 @@ function setTab(t){
   if(t==="chat"){ const el=document.getElementById("msgs"); el.scrollTop=el.scrollHeight; }
 }
 
-/* ── agent status strip (collapsible) ── */
+/* ── top strip: critical-only (today's birthdays / all-day events) ──
+   agent statuses live in the cluster + chat views, never up here */
 let chipsOpen = localStorage.getItem("ahq_chips")!=="0";
 function toggleChips(){ chipsOpen=!chipsOpen; localStorage.setItem("ahq_chips",chipsOpen?"1":"0"); renderStrip(LASTJOBS); }
-function renderStrip(jobs){
-  const ags=[];
-  for(const [w,depts] of Object.entries(ORG)) for(const [d,list] of Object.entries(depts))
-    for(const a of list) ags.push({...a, wing:w, dept:d});
-  const by = s => ags.filter(a=>a.status===s);
-  const done = (jobs||[]).filter(j=>(j.stage==="approved"||j.stage==="ready") && hoursSince(j.updated)<24)
-    .sort((a,b)=>new Date(b.updated)-new Date(a.updated)).slice(0,6);
-  const chip = (a,cls) => `<div class="chip ${a.status==='stuck'?'stuckc':''}" onclick="askChat('${esc(a.id)}')">
-    <span class="cdot ${a.status}"></span>${esc(shortName(a.title))}${a.status_detail?`<small>${esc(a.status_detail)}</small>`:""}</div>`;
-  const parts = [
-    ...by("stuck").map(a=>chip(a)),
-    ...by("working").map(a=>chip(a)),
-    ...by("waiting").map(a=>chip(a)),
-    ...done.map(j=>`<div class="chip donec off"><span class="ck">✓</span>${esc(j.title)}<small>${j.stage==="ready"?"ready for you":"done"} · ${ago(j.updated)}</small></div>`)
-  ];
-  const idle = by("idle").length;
-  if(idle) parts.push(`<div class="chip off"><span class="cdot idle"></span>${idle} idle</div>`);
+function renderStrip(){
+  const evs = (TASKS && TASKS.today && TASKS.today.events) ? TASKS.today.events.filter(e=>e.all_day) : [];
+  const parts = evs.map(e=>{
+    const bday = /birthday/i.test(e.title);
+    return `<div class="chip off" style="border-color:rgba(251,191,36,.35);color:#fde68a">${bday?"🎂":"📅"} ${esc(e.title)}<small>today</small></div>`;
+  });
   if(!parts.length){ document.getElementById("astrip").innerHTML=""; return; }
-  const tgl = `<div class="chip off tgl" onclick="toggleChips()" title="${chipsOpen?"Hide":"Show"} agent status">${
-    chipsOpen?"▾":`▸<small>${parts.length} status</small>`}</div>`;
+  const tgl = `<div class="chip off tgl" onclick="toggleChips()" title="${chipsOpen?"Hide":"Show"} today's notes">${
+    chipsOpen?"▾":`▸<small>${parts.length} today</small>`}</div>`;
   document.getElementById("astrip").innerHTML = chipsOpen ? tgl+parts.join("") : tgl;
 }
 
@@ -541,9 +574,36 @@ function renderCluster(){
   });
 }
 
-/* ── projects (grouped by status) ── */
+/* ── projects (grouped by status; finished collapsed) ── */
+let doneOpen=false;
+function toggleDone(){ doneOpen=!doneOpen; renderProjects(PROJECTS, LASTJOBS); }
+function toggleNpForm(){ document.getElementById("npform").classList.toggle("on");
+  const i=document.getElementById("npname"); if(document.getElementById("npform").classList.contains("on")) i.focus(); }
+const NP_DEPTS=[["marketing","business","Marketing"],["creative_studio","business","Creative Studio"],["customer_care","business","Customer Care"],["sales","business","Sales"],["finance","business","Finance"],["front_office","business","Front Office"],["health","personal","Health"],["life_ops","personal","Life Ops"]];
+async function newProject(ev){
+  ev.preventDefault();
+  const name=document.getElementById("npname").value.trim();
+  const [dept,wing]=document.getElementById("npdept").value.split("|");
+  if(!name) return false;
+  try{
+    await relay("queue",{},{kind:"add_project",payload:{title:name,wing,dept}});
+    document.getElementById("npname").value=""; toggleNpForm();
+    toast("✓ Project queued — appears in a few seconds"); setTimeout(tick,4000); setTimeout(tick,9000);
+  }catch(e){ toast("Failed — check connection"); }
+  return false;
+}
+async function finishProject(pid, ev){
+  ev.stopPropagation();
+  if(!confirm("Mark this project finished?")) return;
+  try{
+    await relay("queue",{},{kind:"finish_project",payload:{project_id:pid}});
+    toast("✓ Marked finished"); setTimeout(tick,4000);
+  }catch(e){ toast("Failed — check connection"); }
+}
 function renderProjects(projects, jobs){
-  const card = p => {
+  const f=document.getElementById("npform");
+  if(f && f.classList.contains("on")) return; // don't wipe the form mid-typing
+  const card = (p, fin) => {
     const pj = jobs.filter(j=>j.project_id===p.id);
     const furthest = Math.max(0, ...pj.map(j=>STAGES.indexOf(j.stage==="sent_back"?"working":j.stage)));
     const latest = pj[0];
@@ -551,15 +611,27 @@ function renderProjects(projects, jobs){
     return `<div class="tile proj" style="border-left-color:${wc};cursor:pointer" onclick="openProjectChat(${p.id})"><div class="top"><div class="pt">${esc(p.title)}</div><span class="pill ${esc(p.status)}">${esc(p.status)}</span></div>
       <div class="pd">${esc(dl(p.dept))}${p.detail?` — ${esc(p.detail)}`:""}</div>
       <div class="strip">${STAGES.slice(0,5).map((s,i)=>`<span class="seg ${pj.length&&i<=furthest?"done":""}"></span>`).join("")}<span class="lbl">${pj.length?esc(STAGE_LBL[latest.stage]||latest.stage):"no jobs yet"}</span></div>
-      ${latest?`<div class="latest">↳ ${esc(latest.title)} · ${ago(latest.updated)}</div>`:""}</div>`;
+      ${latest?`<div class="latest">↳ ${esc(latest.title)} · ${ago(latest.updated)}</div>`:""}
+      ${fin?`<button class="pfin" onclick="finishProject(${p.id},event)">✓ Mark finished</button>`:""}</div>`;
   };
-  const order=[["ready","Ready for you"],["active","In motion"],["launched","Launched"],["parked","Parked"]];
-  let html="";
-  for(const [st,lbl] of order){
+  let html=`<button class="npbtn" onclick="toggleNpForm()">＋ New project</button>
+    <form id="npform" onsubmit="return newProject(event)">
+      <input id="npname" placeholder="Project name…" autocomplete="off">
+      <select id="npdept">${NP_DEPTS.map(([d,w,l])=>`<option value="${d}|${w}">${l}</option>`).join("")}</select>
+      <button type="submit" class="b-approve">Create</button>
+    </form>`;
+  for(const [st,lbl] of [["ready","Ready for you"],["active","In motion"]]){
     const g=projects.filter(p=>p.status===st);
-    if(g.length) html += `<div class="gsec ${st}">${lbl}</div><div class="projgrid">${g.map(card).join("")}</div>`;
+    if(g.length) html += `<div class="gsec ${st}">${lbl}</div><div class="projgrid">${g.map(p=>card(p,true)).join("")}</div>`;
   }
-  document.getElementById("projwrap").innerHTML = html || `<div style="color:var(--faint)">No projects yet.</div>`;
+  const done=projects.filter(p=>p.status==="launched"||p.status==="parked");
+  if(done.length){
+    html += `<div class="donetgl" onclick="toggleDone()">${doneOpen?"▾":"▸"} Done & parked (${done.length})</div>`;
+    if(doneOpen) html += `<div class="projgrid">${done.map(p=>card(p,false)).join("")}</div>`;
+  }
+  document.getElementById("projwrap").innerHTML = html;
+  if(!projects.some(p=>p.status==="ready"||p.status==="active"))
+    document.getElementById("projwrap").insertAdjacentHTML("beforeend",`<div style="color:var(--faint);margin-top:8px">No projects in motion.</div>`);
 }
 async function decide(id, what){
   const note = what==="send_back" ? (prompt("What needs fixing?")||"") : "";
@@ -909,19 +981,55 @@ function renderRecap(r){
     <div class="rchips"><span class="rchip2"><b>${c.done||0}</b> done</span><span class="rchip2"><b>${c.moved||0}</b> moving</span><span class="rchip2"><b>${c.stuck||0}</b> stuck</span>${r.goals!=null?`<span class="rchip2">goals <b>${r.goals}%</b></span>`:""}</div>`+
     r.lines.map(l=>`<div class="rline ${l.startsWith("✓")?"done":l.startsWith("⚠")?"stuck":""}">${esc(l)}</div>`).join("");
 }
-/* ── tasks card (Google Tasks via tasks_sync) ── */
-let TASKS=null, taskTab=localStorage.getItem("ahq_ttab")||"today";
-const TTABS=[["today","Today"],["tomorrow","Tomorrow"],["week","Week"],["month","Month"]];
-function setTaskTab(t){ taskTab=t; localStorage.setItem("ahq_ttab",t); renderTasks(); }
+/* ── Tasks tab (DHQ morning-card clone: Today / Next few days / Daily Dragons) ── */
+let TASKS=null;
+let nextOpen = localStorage.getItem("ahq_next")!=="0";
+let laterOpen = localStorage.getItem("ahq_later")==="1";
+function toggleNext(){ nextOpen=!nextOpen; localStorage.setItem("ahq_next",nextOpen?"1":"0"); renderTasks(); }
+function toggleLater(){ laterOpen=!laterOpen; localStorage.setItem("ahq_later",laterOpen?"1":"0"); renderTasks(); }
+const dragKey = t => "dg:"+(TASKS&&TASKS.generated?new Date(TASKS.generated*1000).toISOString().slice(0,10):"")+":"+t;
+function toggleDragon(i){
+  const t=(TASKS.tabs.today||[])[i]; if(!t) return;
+  const done=JSON.parse(localStorage.getItem("ahq_dgdone")||"{}");
+  const k=dragKey(t.title);
+  if(done[k]) delete done[k]; else done[k]=1;
+  localStorage.setItem("ahq_dgdone",JSON.stringify(done));
+  renderTasks();
+}
+function evRow(e, next){
+  return `<div class="evrow ${e.all_day?"allday":""}"><span class="evt">${esc(e.time)}</span><span class="evn">${esc(e.title)}</span></div>`;
+}
 function renderTasks(){
-  const el=document.getElementById("taskscard");
-  if(!TASKS||!TASKS.tabs){ el.innerHTML=""; return; }
-  const items=TASKS.tabs[taskTab]||[];
-  let h=`<div class="ghead">${icon("life_ops")}Tasks<small>${items.length||""}</small><span class="ttabs">${
-    TTABS.map(([k,l])=>`<button class="ttab ${k===taskTab?"on":""}" onclick="setTaskTab('${k}')">${l}</button>`).join("")}</span></div>`;
-  h += items.length
-    ? items.map(t=>`<div class="trow"><span class="tdot"></span><span>${esc(t.title)}</span>${t.due?`<span class="tdue">${esc(t.due.slice(5))}</span>`:""}</div>`).join("")
-    : `<div class="tempty">nothing here</div>`;
+  const el=document.getElementById("taskstab");
+  if(!TASKS||!TASKS.tabs){ el.innerHTML=`<div class="tempty">syncing tasks…</div>`; return; }
+  const td=TASKS.today, up=TASKS.upcoming||[];
+  let h="";
+  /* TODAY — calendar */
+  h+=`<div class="dcard today"><div class="dhead">${icon("life_ops","igG")}Today <small>${esc(td?td.label:"")}</small></div>`;
+  h+= td&&td.events.length ? td.events.map(e=>evRow(e)).join("") : `<div class="tempty">nothing on the calendar</div>`;
+  h+=`</div>`;
+  /* NEXT FEW DAYS — collapsible */
+  h+=`<div class="dcard next"><div class="dhead" onclick="toggleNext()">${icon("personal","igC")}Next few days<span class="dcaret">${nextOpen?"▾":"▸"}</span></div>`;
+  if(nextOpen) h+= up.length ? up.map(d=>`<div class="dayhead">${esc(d.label)}</div>`+d.events.map(e=>evRow(e,1)).join("")).join("") : `<div class="tempty">clear skies ahead</div>`;
+  h+=`</div>`;
+  /* DAILY DRAGONS — checkable */
+  const dragons=TASKS.tabs.today||[];
+  const done=JSON.parse(localStorage.getItem("ahq_dgdone")||"{}");
+  h+=`<div class="dcard dragons"><div class="dhead">${icon("star","igA")}Daily Dragons <small>${dragons.length} to slay</small></div>`;
+  h+= dragons.length ? dragons.map((t,i)=>{
+    const ck=done[dragKey(t.title)];
+    return `<div class="dgrow ${ck?"ck":""}" onclick="toggleDragon(${i})"><span class="dgchk">${ck?"✓":""}</span><span class="dgstar">★</span><span class="dgn">${esc(t.title)}</span>${t.due?`<span class="tdue">${esc(t.due.slice(5))}</span>`:""}</div>`;
+  }).join("") : `<div class="tempty">no dragons today</div>`;
+  h+=`<div class="tnote">✓ marks locally — it doesn't tick the Google Task yet</div></div>`;
+  /* LATER — tomorrow / week / month lists */
+  const later=[["tomorrow","Tomorrow"],["week","This Week"],["month","This Month"]]
+    .map(([k,l])=>[l,TASKS.tabs[k]||[]]).filter(([,v])=>v.length);
+  if(later.length){
+    const n=later.reduce((a,[,v])=>a+v.length,0);
+    h+=`<div class="dcard later"><div class="dhead" onclick="toggleLater()">${icon("folder")}Later <small>${n} queued</small><span class="dcaret">${laterOpen?"▾":"▸"}</span></div>`;
+    if(laterOpen) h+= later.map(([l,v])=>`<div class="dayhead">${esc(l)}</div>`+v.map(t=>`<div class="dgrow" style="cursor:default"><span class="dgstar" style="color:var(--faint)">·</span><span class="dgn">${esc(t.title)}</span>${t.due?`<span class="tdue">${esc(t.due.slice(5))}</span>`:""}</div>`).join("")).join("");
+    h+=`</div>`;
+  }
   el.innerHTML=h;
 }
 
@@ -973,12 +1081,12 @@ async function tick(){
     relay("kvget",{key:"goals"}).then(g=>{ GOALS=g.value||null; renderGoals(); }).catch(()=>{});
     relay("kvget",{key:"recap"}).then(g=>{ renderRecap(g.value||null); }).catch(()=>{});
     relay("kvget",{key:"usage"}).then(g=>{ renderUsage(g.value||null); }).catch(()=>{});
-    relay("kvget",{key:"tasks"}).then(g=>{ TASKS=g.value||null; renderTasks(); }).catch(()=>{});
+    relay("kvget",{key:"tasks"}).then(g=>{ TASKS=g.value||null; renderTasks(); renderStrip(); }).catch(()=>{});
     relay("kvget",{key:"alerts"}).then(g=>{ ALERTS=Array.isArray(g.value)?g.value:[]; renderAlerts(); }).catch(()=>{});
     const st = await relay("kvget",{key:"state"});
     const s = st.value || st;
     ORG = s.wings||{}; PROJECTS = s.projects||[]; LASTJOBS = s.jobs||[];
-    renderStrip(s.jobs||[]);
+    renderStrip();
     renderAlerts();
     renderInbox(s.jobs||[], stuckFromWings(ORG));
     renderCluster();
@@ -993,7 +1101,7 @@ async function tick(){
   }
 }
 /* bottom-nav icons */
-document.querySelectorAll("#bnav .bn .bnic").forEach((el,i)=>{ el.outerHTML = icon(["hub","folder","chat"][i]); });
+document.querySelectorAll("#bnav .bn .bnic").forEach((el,i)=>{ el.outerHTML = icon(["hub","folder","life_ops","star","chat"][i]); });
 let rsz; window.addEventListener("resize", ()=>{ clearTimeout(rsz); rsz=setTimeout(renderCluster, 150); });
 applyChatView(); setTab(curTab); tick(); setInterval(tick, 20000);
 </script>
