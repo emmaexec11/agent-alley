@@ -200,7 +200,7 @@ button:hover{transform:translateY(-1px)}
 #crumb .c:hover{background:var(--s3);color:var(--txt)}
 #crumb .c.cur{color:var(--txt);cursor:default}
 #crumb .sep{color:var(--faint)}
-#cluster{position:relative;height:440px}
+#cluster{position:relative;height:500px}
 #clines{position:absolute;inset:0;width:100%;height:100%}
 .cnode{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;animation:pop .35s cubic-bezier(.2,.9,.3,1.25) both;--nc:#7C5CFF;--ng:rgba(124,92,255,.35)}
 @keyframes pop{from{opacity:0;transform:translate(-50%,-50%) scale(.55)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
@@ -398,8 +398,8 @@ body.dragging #chat,body.dragging main{pointer-events:none}
   body[data-tab="habits"] #alleytab,body[data-tab="habits"] #projectstab,body[data-tab="habits"] #taskstab,body[data-tab="habits"] #chat{display:none}
   body[data-tab="chat"] #alleytab,body[data-tab="chat"] #projectstab,body[data-tab="chat"] #taskstab,body[data-tab="chat"] #habitstab,body[data-tab="chat"] #inbox,body[data-tab="chat"] #top3{display:none}
   body[data-tab="chat"] #chat{display:flex;height:calc(100dvh - 185px);min-height:420px}
-  #cluster{height:420px}
-  .cnode.hub .orb{width:94px;height:94px}
+  #cluster{height:500px}
+  .cnode.hub .orb{width:88px;height:88px}
   .cnode.wingn .orb{width:70px;height:70px}
   .cnode.deptn .orb{width:60px;height:60px}
   .cnode.agentn .orb{width:52px;height:52px}
@@ -622,7 +622,7 @@ function mkNode(spec, x, y){
   el.style.setProperty("--nc", clr.c); el.style.setProperty("--ng", clr.glow);
   if(spec.delay) el.style.animationDelay=spec.delay+"ms";
   const orb=document.createElement("div"); orb.className="orb"; orb.innerHTML=spec.ico;
-  if(spec.avatar){ const im=document.createElement("img"); im.className="oimg"; im.src="avatars/"+spec.avatar+".jpg?v=2";
+  if(spec.avatar){ const im=document.createElement("img"); im.className="oimg"; im.src="avatars/"+spec.avatar+".jpg?v=3";
     im.onerror=()=>im.remove(); orb.appendChild(im); }
   if(spec.badge){ const b=document.createElement("div"); b.className="cosbadge"; b.textContent=spec.badge; orb.appendChild(b); }
   if(spec.ring){ const r=document.createElement("div"); r.className="ring "+spec.ring; orb.appendChild(r); }
@@ -840,7 +840,7 @@ function updateChatHead(){
         : "online";
     }
     const sub = `<span class="sdot ${st||"idle"}"></span>${esc(stTxt)}`;
-    h.innerHTML = `<img class="chav" src="avatars/${esc(aid)}.jpg?v=2" alt="" onerror="this.remove()">${esc(nm)}<small>${sub}</small><span id="chatback">‹ all chats</span>`;
+    h.innerHTML = `<img class="chav" src="avatars/${esc(aid)}.jpg?v=3" alt="" onerror="this.remove()">${esc(nm)}<small>${sub}</small><span id="chatback">‹ all chats</span>`;
     document.getElementById("chatback").onclick = showList;
     document.getElementById("chatin").placeholder = chatTarget ? `Message ${chatTarget.nm}…` : "Message Penny…";
   }
@@ -875,7 +875,7 @@ function preview(m, id){
 function renderChatList(){
   const row = (id, nm, sub, av, clr, status, last) => `
     <div class="crow" onclick="${id==="penny"?"openEmmaChat()":`askChat('${esc(id)}')`}">
-      <div class="cav" style="border-color:color-mix(in srgb,${clr.c} 55%,transparent)">${av}<img class="cimg" src="avatars/${esc(id)}.jpg?v=2" alt="" onerror="this.remove()">${status?`<span class="sdot ${status}"></span>`:""}</div>
+      <div class="cav" style="border-color:color-mix(in srgb,${clr.c} 55%,transparent)">${av}<img class="cimg" src="avatars/${esc(id)}.jpg?v=3" alt="" onerror="this.remove()">${status?`<span class="sdot ${status}"></span>`:""}</div>
       <div class="cbody"><div class="cn">${esc(nm)}<span class="cwhen">${last?ago(last.ts):""}</span></div>
       <div class="cprev">${esc(last?preview(last, id==="penny"?null:id):sub)}</div></div>
     </div>`;
