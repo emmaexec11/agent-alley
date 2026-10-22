@@ -372,10 +372,9 @@ body.dragging #chat,body.dragging main{pointer-events:none}
   #astrip{padding:10px 12px 0}
   #drag{display:none}
   #lefttabs{display:none}
-  #routines{position:static;flex:0 0 auto;max-height:none;margin:0 0 12px}
-  body[data-tab="alley"] #routines,body[data-tab="projects"] #routines,body[data-tab="tasks"] #routines,body[data-tab="habits"] #routines,body[data-tab="chat"] #routines{display:none}
-  body[data-tab="routines"] #routines{display:block}
-  body[data-tab="routines"] #inbox,body[data-tab="routines"] #top3,body[data-tab="routines"] #alleytab,body[data-tab="routines"] #projectstab,body[data-tab="routines"] #taskstab,body[data-tab="routines"] #habitstab,body[data-tab="routines"] #chat{display:none}
+  #routines{position:static;flex:0 0 auto;max-height:none;margin:0 0 12px;order:5}
+  body[data-tab="alley"] #routines{display:block}
+  body[data-tab="projects"] #routines,body[data-tab="tasks"] #routines,body[data-tab="habits"] #routines,body[data-tab="chat"] #routines{display:none}
   #chat{position:static;flex:0 0 auto;height:auto;min-height:0}
   body[data-tab="alley"] #projectstab,body[data-tab="alley"] #taskstab,body[data-tab="alley"] #habitstab,body[data-tab="alley"] #chat{display:none}
   body[data-tab="projects"] #alleytab,body[data-tab="projects"] #taskstab,body[data-tab="projects"] #habitstab,body[data-tab="projects"] #chat{display:none}
@@ -464,7 +463,6 @@ body.dragging #chat,body.dragging main{pointer-events:none}
   <button class="bn on" data-t="alley" onclick="setTab('alley')"><span class="bnic"></span>Alley<span class="bbadge" id="bnavbadge" style="display:none"></span></button>
   <button class="bn" data-t="projects" onclick="setTab('projects')"><span class="bnic"></span>Projects</button>
   <button class="bn" data-t="tasks" onclick="setTab('tasks')"><span class="bnic"></span>Tasks</button>
-  <button class="bn" data-t="routines" onclick="setTab('routines')"><span class="bnic"></span>Routines</button>
   <button class="bn" data-t="habits" onclick="setTab('habits')"><span class="bnic"></span>Habits</button>
   <button class="bn" data-t="chat" onclick="setTab('chat')"><span class="bnic"></span>Chat</button>
 </nav>
@@ -1424,7 +1422,7 @@ async function tick(){
   }
 }
 /* bottom-nav icons */
-document.querySelectorAll("#bnav .bn .bnic").forEach((el,i)=>{ el.outerHTML = icon(["hub","folder","life_ops","personal","star","chat"][i]); });
+document.querySelectorAll("#bnav .bn .bnic").forEach((el,i)=>{ el.outerHTML = icon(["hub","folder","life_ops","star","chat"][i]); });
 let rsz; window.addEventListener("resize", ()=>{ clearTimeout(rsz); rsz=setTimeout(renderCluster, 150); });
 applyChatView(); setTab(curTab); renderRoutines(); tick(); setInterval(tick, 20000);
 /* Register PWA service worker so Agent Alley installs on mobile */
