@@ -295,14 +295,14 @@ button:hover{transform:translateY(-1px)}
   </div>
   <div id="drag"></div>
   <aside class="tile" id="chat">
-    <div class="ch" id="chathead">Front Office<small>Emma answers here</small></div>
+    <div class="ch" id="chathead">Front Office<small>Penny answers here</small></div>
     <div id="chatlist"></div>
     <div id="msgs"></div>
     <div id="attprev"></div>
     <form id="chatform" onsubmit="return sendMsg(event)">
       <button type="button" id="attbtn" title="Attach file" onclick="document.getElementById('attfile').click()"></button>
       <input type="file" id="attfile" hidden>
-      <input id="chatin" placeholder="Message Emma…" autocomplete="off"><button type="submit">Send</button>
+      <input id="chatin" placeholder="Message Penny…" autocomplete="off"><button type="submit">Send</button>
     </form>
   </aside>
 </main>
@@ -415,7 +415,7 @@ function renderInbox(jobs, stuckAgents){
   box.classList.toggle("hot", n>0);
   const bb=document.getElementById("bnavbadge");
   bb.style.display = n? "flex":"none"; bb.textContent=n;
-  if(!n){ box.innerHTML = `<div class="ibzero">${icon("star")}All clear — agents working, Emma checking.</div>`; return; }
+  if(!n){ box.innerHTML = `<div class="ibzero">${icon("star")}All clear — agents working, Penny checking.</div>`; return; }
   const cards = [
     ...ready.map(j=>`<div class="ibcard"><span class="tag launch">READY TO LAUNCH</span>
       <div class="body"><div class="t">${esc(j.title)}</div><div class="sub">${esc(dl(j.dept))} · ${ago(j.updated)}${j.detail?` — ${esc(j.detail)}`:""}</div></div>
@@ -518,7 +518,7 @@ async function decide(id, what){
   const note = what==="send_back" ? (prompt("What needs fixing?")||"") : "";
   if(what==="send_back" && !note) return;
   try{ await relay("queue",{},{kind:"decision",payload:{job_id:id,decision:what,note}});
-    toast(what==="approve"?"✓ Approved — Emma is actioning it":"↩ Sent back with your note"); setTimeout(tick,1600);
+    toast(what==="approve"?"✓ Approved — Penny is actioning it":"↩ Sent back with your note"); setTimeout(tick,1600);
   }catch(e){ toast("Failed — check connection"); }
 }
 
@@ -534,12 +534,12 @@ function applyChatView(){
 }
 function showList(){ chatView="list"; chatTarget=null; applyChatView(); renderChatList(); }
 function openAgentChat(a){
-  chatTarget = (a.id==="emma") ? null : {id:a.id, nm:shortName(a.title)};
+  chatTarget = (a.id==="penny") ? null : {id:a.id, nm:shortName(a.title)};
   chatView="conv"; applyChatView(); renderConv();
   if(window.innerWidth<=1000) setTab("chat");
   document.getElementById("chatin").focus();
 }
-function openEmmaChat(){ openAgentChat({id:"emma", title:"Emma"}); }
+function openEmmaChat(){ openAgentChat({id:"penny", title:"Penny"}); }
 let PROJECTS=[];
 function openProjectChat(pid){
   const p = PROJECTS.find(x=>x.id===pid);
@@ -552,10 +552,10 @@ function openProjectChat(pid){
 function updateChatHead(){
   const h=document.getElementById("chathead");
   if(chatView==="list"){
-    h.innerHTML = `${icon("chat")}Chats<small>Emma + your agents</small>`;
+    h.innerHTML = `${icon("chat")}Chats<small>Penny + your agents</small>`;
   } else {
-    const nm = chatTarget ? chatTarget.nm : "Emma";
-    const aid = chatTarget ? chatTarget.id : "emma";
+    const nm = chatTarget ? chatTarget.nm : "Penny";
+    const aid = chatTarget ? chatTarget.id : "penny";
     const ag = findAgent(aid);
     let st = ag ? ag.status : null, stTxt;
     if(chatTarget && chatTarget.proj){
@@ -570,7 +570,7 @@ function updateChatHead(){
     const sub = `<span class="sdot ${st||"idle"}"></span>${esc(stTxt)}`;
     h.innerHTML = `<img class="chav" src="avatars/${esc(aid)}.jpg?v=2" alt="" onerror="this.remove()">${esc(nm)}<small>${sub}</small><span id="chatback">‹ all chats</span>`;
     document.getElementById("chatback").onclick = showList;
-    document.getElementById("chatin").placeholder = chatTarget ? `Message ${chatTarget.nm}…` : "Message Emma…";
+    document.getElementById("chatin").placeholder = chatTarget ? `Message ${chatTarget.nm}…` : "Message Penny…";
   }
 }
 function findAgent(id){
@@ -588,7 +588,7 @@ function askChat(agentId){
 function threadLast(id){
   for(let i=ALLMSGS.length-1;i>=0;i--){
     const m=ALLMSGS[i];
-    if(id==="emma"){ if((m.sender==="Devon"&&!m.text.startsWith("@"))||m.sender==="Emma") return m; }
+    if(id==="penny"){ if((m.sender==="Devon"&&!m.text.startsWith("@"))||m.sender==="Emma"||m.sender==="Penny") return m; }
     else { if((m.sender==="Devon"&&m.text.startsWith("@"+id+" "))||m.sender===id) return m; }
   }
   return null;
@@ -601,7 +601,7 @@ function preview(m, id){
 function renderChatList(){
   const ags=[];
   for(const [w,depts] of Object.entries(ORG)) for(const [d,list] of Object.entries(depts))
-    for(const a of list) if(a.id!=="emma") ags.push({...a, wing:w, dept:d});
+    for(const a of list) if(a.id!=="penny") ags.push({...a, wing:w, dept:d});
   const rank={stuck:0,working:1,waiting:2,idle:3};
   ags.sort((a,b)=>{
     const la=threadLast(a.id), lb=threadLast(b.id);
@@ -610,13 +610,13 @@ function renderChatList(){
     return (rank[a.status]??4)-(rank[b.status]??4);
   });
   const row = (id, nm, sub, av, clr, status, last) => `
-    <div class="crow" onclick="${id==="emma"?"openEmmaChat()":`askChat('${esc(id)}')`}">
+    <div class="crow" onclick="${id==="penny"?"openEmmaChat()":`askChat('${esc(id)}')`}">
       <div class="cav" style="border-color:color-mix(in srgb,${clr.c} 55%,transparent)">${av}<img class="cimg" src="avatars/${esc(id)}.jpg?v=2" alt="" onerror="this.remove()">${status?`<span class="sdot ${status}"></span>`:""}</div>
       <div class="cbody"><div class="cn">${esc(nm)}<span class="cwhen">${last?ago(last.ts):""}</span></div>
-      <div class="cprev">${esc(last?preview(last, id==="emma"?null:id):sub)}</div></div>
+      <div class="cprev">${esc(last?preview(last, id==="penny"?null:id):sub)}</div></div>
     </div>`;
-  const le = threadLast("emma");
-  let html = row("emma","Emma","Front Office — runs everything", icon("hub"), VIOLET, null, le);
+  const le = threadLast("penny");
+  let html = row("penny","Penny","Front Desk — runs the Alley", icon("hub"), VIOLET, null, le);
   html += `<div class="clsec">Agents</div>`;
   html += ags.map(a=>{
     const clr=wingClr(a.wing);
@@ -720,7 +720,7 @@ function renderConv(){
     msgs = all.filter(m => (m.sender==="Devon" && m.text.startsWith(pre)) || m.sender===chatTarget.id)
       .map(m => m.sender==="Devon" ? {...m, text:m.text.slice(pre.length)} : {...m, sender:chatTarget.nm});
   } else {
-    msgs = all.filter(m => (m.sender==="Devon" && !m.text.startsWith("@")) || m.sender==="Emma");
+    msgs = all.filter(m => (m.sender==="Devon" && !m.text.startsWith("@")) || m.sender==="Emma" || m.sender==="Penny");
   }
   document.getElementById("msgs").innerHTML = msgs.map(m=>{
     const atts=[]; const txt = m.text.replace(FILE_RE,(_,k,n)=>{ atts.push([k,n]); return ""; }).trim();
@@ -729,7 +729,7 @@ function renderConv(){
   }).join("");
   const last = msgs[msgs.length-1];
   if(last && last.sender==="Devon" && Date.now()-new Date(last.ts).getTime() < 5*60*1000){
-    const nm = chatTarget ? chatTarget.nm : "Emma";
+    const nm = chatTarget ? chatTarget.nm : "Penny";
     document.getElementById("msgs").innerHTML +=
       `<div class="msg typing"><div class="who">${esc(nm)}</div><span class="tdots"><i></i><i></i><i></i></span></div>`;
   }

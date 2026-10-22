@@ -11,6 +11,7 @@ GREEN, CYAN, VIOLET = "emerald green (#34d399)", "electric cyan (#22d3ee)", "vio
 
 AGENTS = {
     "emma": (VIOLET, "a confident cheerful futuristic cowgirl sheriff woman with a sleek cyber cowboy hat and sheriff star badge"),
+    "penny": (VIOLET, "a bright welcoming front-desk concierge woman with a neat bun, small holographic bell on her desk lapel pin, and a can-do smile"),
     "image_maker": (GREEN, "a creative young artist with paint-smudged cheeks, a holographic paintbrush and floating colour swatches"),
     "image_checker": (GREEN, "a bright curious inspector with a fun oversized magnifier monocle over one eye"),
     "cs_bot": (GREEN, "a warm friendly receptionist woman wearing a glowing headset, mid-laugh"),
