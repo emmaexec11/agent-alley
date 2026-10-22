@@ -181,6 +181,15 @@ button:hover{transform:translateY(-1px)}
 .gitem em{font-style:normal;opacity:.55;font-size:10px}
 #recapcard{margin:0 14px 14px;border:1px solid var(--line2);border-radius:14px;background:rgba(124,92,255,.04);padding:10px 12px}
 #recapcard:empty{display:none}
+#usagecard{margin:0 14px 14px;border:1px solid var(--line2);border-radius:14px;background:rgba(124,92,255,.04);padding:10px 12px}
+#usagecard:empty{display:none}
+.urow{display:flex;align-items:center;gap:9px;padding:4px 0;font-size:12px}
+.urow .unm{width:120px;color:var(--dim)}
+.urow .ubar{flex:1;height:6px;border-radius:4px;background:var(--line);overflow:hidden}
+.urow .ubar i{display:block;height:100%;border-radius:4px;background:var(--green)}
+.urow .ubar i.warn{background:var(--amber)}.urow .ubar i.hot{background:var(--red)}
+.urow .uv{width:40px;text-align:right;font-weight:700}
+.urow .ur{width:88px;text-align:right;color:var(--faint);font-size:10.5px}
 .rchips{display:flex;gap:6px;margin:6px 0 7px;flex-wrap:wrap}
 .rchip2{font-size:10.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line2);color:var(--faint)}
 .rchip2 b{color:var(--ink);font-weight:700}
@@ -279,6 +288,7 @@ button:hover{transform:translateY(-1px)}
       <div id="cluster"><svg id="clines"></svg><div id="cnodes"></div></div>
       <div class="hint" id="chint">click a cluster to open it · click an agent to talk to them</div>
       <div id="goalscard"></div>
+      <div id="usagecard"></div>
       <div id="recapcard"></div>
     </section>
     <section class="tile" id="projectstab"><div id="projwrap"></div></section>
@@ -742,6 +752,19 @@ function renderGoals(){
   }
   el.innerHTML=h;
 }
+function renderUsage(u){
+  const el=document.getElementById("usagecard");
+  if(!u||u.session==null){ el.innerHTML=""; return; }
+  const rt = iso=>{ try{ return new Date(iso).toLocaleString([], {weekday:"short",hour:"numeric",minute:"2-digit"}); }catch(e){ return ""; } };
+  const row = (nm,pct,resets)=>`<div class="urow"><span class="unm">${esc(nm)}</span>
+    <span class="ubar"><i class="${pct>=90?"hot":pct>=75?"warn":""}" style="width:${Math.min(100,pct)}%"></i></span>
+    <span class="uv ${pct>=90?"warn":""}">${Math.round(pct)}%</span><span class="ur">${resets?"resets "+esc(rt(resets)):""}</span></div>`;
+  let h=`<div class="ghead">${icon("star")}Claude usage<small>official</small></div>`;
+  h+=row("Session (5h)", u.session, u.session_resets);
+  for(const w of (u.weekly||[]))
+    h+=row(w.kind==="weekly_all"?"Weekly (all)":"Weekly (Opus)", w.percent, w.resets);
+  el.innerHTML=h;
+}
 function renderRecap(r){
   const el=document.getElementById("recapcard");
   if(!r||!r.lines){ el.innerHTML=""; return; }
@@ -757,6 +780,7 @@ async function tick(){
   try{
     relay("kvget",{key:"goals"}).then(g=>{ GOALS=g.value||null; renderGoals(); }).catch(()=>{});
     relay("kvget",{key:"recap"}).then(g=>{ renderRecap(g.value||null); }).catch(()=>{});
+    relay("kvget",{key:"usage"}).then(g=>{ renderUsage(g.value||null); }).catch(()=>{});
     const st = await relay("kvget",{key:"state"});
     const s = st.value || st;
     ORG = s.wings||{};
