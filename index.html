@@ -1216,6 +1216,7 @@ function openRoutine(id){
 }
 function renderRoutines(){
   const el=document.getElementById("routines");
+  if(!el) return; // Routines panel removed from UI; function kept for future use
   const paused=_pausedRoutines();
   const rows=ROUTINES.map(r=>{
     const p=paused.has(r.id);
