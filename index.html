@@ -189,6 +189,11 @@ button:hover{transform:translateY(-1px)}
 .ch .chav{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:-6px;margin-right:7px;border:1px solid var(--line2)}
 .cav .sdot{position:absolute;bottom:-1px;right:-1px;width:11px;height:11px;border-radius:50%;border:2px solid var(--s1)}
 .sdot.working{background:var(--green)}.sdot.waiting{background:var(--amber)}.sdot.stuck{background:var(--red)}.sdot.idle{background:var(--faint)}
+.ch small .sdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:1px}
+.msg.typing{padding:10px 14px}
+.tdots i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--dim);margin-right:4px;animation:tdot 1.2s infinite}
+.tdots i:nth-child(2){animation-delay:.2s}.tdots i:nth-child(3){animation-delay:.4s}
+@keyframes tdot{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
 .crow .cbody{flex:1;min-width:0}
 .crow .cn{display:flex;align-items:baseline;gap:8px;font-size:13.5px;font-weight:700}
 .crow .cn .cwhen{margin-left:auto;font-size:10.5px;color:var(--faint);font-weight:400}
@@ -531,12 +536,23 @@ function updateChatHead(){
     h.innerHTML = `${icon("chat")}Chats<small>Emma + your agents</small>`;
   } else {
     const nm = chatTarget ? chatTarget.nm : "Emma";
-    const sub = chatTarget ? "direct line" : "Front Office";
     const aid = chatTarget ? chatTarget.id : "emma";
+    const ag = findAgent(aid);
+    const st = ag ? ag.status : null;
+    const stTxt = st==="working" ? "working"+(ag.status_detail?" — "+ag.status_detail:"")
+      : st==="stuck" ? "stuck"+(ag.status_detail?" — "+ag.status_detail:"")
+      : st==="waiting" ? "waiting"+(ag.status_detail?" — "+ag.status_detail:"")
+      : "online";
+    const sub = `<span class="sdot ${st||"idle"}"></span>${esc(stTxt)}`;
     h.innerHTML = `<img class="chav" src="avatars/${esc(aid)}.jpg?v=2" alt="" onerror="this.remove()">${esc(nm)}<small>${sub}</small><span id="chatback">‹ all chats</span>`;
     document.getElementById("chatback").onclick = showList;
     document.getElementById("chatin").placeholder = chatTarget ? `Message ${chatTarget.nm}…` : "Message Emma…";
   }
+}
+function findAgent(id){
+  for(const depts of Object.values(ORG)) for(const list of Object.values(depts))
+    for(const a of list) if(a.id===id) return a;
+  return null;
 }
 function askChat(agentId){
   let found=null;
@@ -643,9 +659,15 @@ async function sendMsg(ev){
     }
     const text = chatTarget ? `@${chatTarget.id} ${t}` : t;
     await relay("send",{},{room:"hq",sender:"Devon",text});
-    loadChat();
+    loadChat(); fastPoll();
   }catch(e){ toast("Send failed"); }
   return false;
+}
+let fastT=null;
+function fastPoll(){
+  clearInterval(fastT);
+  const until = Date.now()+3*60*1000;
+  fastT = setInterval(()=>{ if(Date.now()>until) clearInterval(fastT); else loadChat(); }, 4000);
 }
 async function loadChat(){
   const r = await relay("poll",{room:"hq",limit:120});
@@ -668,6 +690,12 @@ function renderConv(){
     return `<div class="msg ${m.sender==="Devon"?"me":""}"><div class="who">${esc(m.sender)}<span class="when">${ago(m.ts)}</span></div>${esc(txt)}${
       atts.map(([k,n])=>`<div class="att" data-k="${esc(k)}" data-n="${esc(n)}">loading…</div>`).join("")}</div>`;
   }).join("");
+  const last = msgs[msgs.length-1];
+  if(last && last.sender==="Devon" && Date.now()-new Date(last.ts).getTime() < 5*60*1000){
+    const nm = chatTarget ? chatTarget.nm : "Emma";
+    document.getElementById("msgs").innerHTML +=
+      `<div class="msg typing"><div class="who">${esc(nm)}</div><span class="tdots"><i></i><i></i><i></i></span></div>`;
+  }
   const el=document.getElementById("msgs"); el.scrollTop=el.scrollHeight;
   hydrateAtts();
 }
@@ -736,6 +764,7 @@ async function tick(){
     renderInbox(s.jobs||[], stuckFromWings(ORG));
     renderCluster();
     renderProjects(s.projects||[], s.jobs||[]);
+    updateChatHead();
     document.getElementById("gen").textContent = "synced "+ago(s.generated);
     document.getElementById("statdot").className="livedot ok"; document.getElementById("stattxt").textContent="live";
     loadChat();
