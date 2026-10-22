@@ -213,6 +213,13 @@ button:hover{transform:translateY(-1px)}
 .att a{display:inline-flex;align-items:center;gap:6px;color:#b8a3ff;background:var(--s3);border:1px solid var(--line2);border-radius:9px;padding:6px 11px;font-size:12px;text-decoration:none}
 #attprev{display:none;align-items:center;gap:8px;margin:0 14px;padding:7px 11px;background:var(--s2);border:1px dashed rgba(124,92,255,.4);border-radius:10px;font-size:12px;color:var(--dim)}
 #attprev .x{cursor:pointer;color:var(--red);font-weight:800;margin-left:auto;padding:0 4px}
+.msg .q{border-left:3px solid var(--v);background:rgba(124,92,255,.08);border-radius:0 6px 6px 0;padding:4px 9px;margin:2px 0 6px;font-size:12px;color:var(--dim);white-space:pre-wrap}
+.msg .qbtn{float:right;cursor:pointer;color:var(--faint);font-size:13px;line-height:1;margin-left:8px;padding:0 3px;user-select:none}
+.msg .qbtn:hover{color:#b8a3ff}
+#qprev{display:none;align-items:center;gap:8px;margin:0 14px 6px;padding:7px 11px;background:var(--s2);border-left:3px solid var(--v);border-radius:10px;font-size:12px;color:var(--dim)}
+#qprev .qt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#qprev .qw{font-weight:700;color:#b8a3ff;flex:0 0 auto}
+#qprev .x{cursor:pointer;color:var(--red);font-weight:800;padding:0 4px}
 #chatform{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);align-items:center}
 #attbtn{background:var(--s2);border:1px solid var(--line2);border-radius:10px;width:37px;height:37px;display:flex;align-items:center;justify-content:center;padding:0;flex:0 0 auto}
 #attbtn svg{width:17px;height:17px}
@@ -298,6 +305,7 @@ button:hover{transform:translateY(-1px)}
     <div class="ch" id="chathead">Front Office<small>Penny answers here</small></div>
     <div id="chatlist"></div>
     <div id="msgs"></div>
+    <div id="qprev"></div>
     <div id="attprev"></div>
     <form id="chatform" onsubmit="return sendMsg(event)">
       <button type="button" id="attbtn" title="Attach file" onclick="document.getElementById('attfile').click()"></button>
@@ -536,10 +544,12 @@ function applyChatView(){
   document.getElementById("msgs").style.display = list?"none":"flex";
   document.getElementById("chatform").style.display = list?"none":"flex";
   document.getElementById("attprev").style.display = (!list && pendingFile)?"flex":"none";
+  document.getElementById("qprev").style.display = (!list && pendingQuote)?"flex":"none";
   updateChatHead();
 }
 function showList(){ chatView="list"; chatTarget=null; applyChatView(); renderChatList(); }
 function openAgentChat(a){
+  clearQuote();
   chatTarget = (a.id==="penny") ? null : {id:a.id, nm:shortName(a.title)};
   chatView="conv"; applyChatView(); renderConv();
   if(window.innerWidth<=1000) setTab("chat");
@@ -550,6 +560,7 @@ function openEmmaChat(){ openAgentChat({id:"penny", title:"Penny"}); }
 const CREW = [["emma","E.M.M.A"],["sage","S.A.G.E"],["pitch","Cold Outreach"],
   ["meta_copilot","Meta Copilot"],["cs_bot","Naturally Wyld CS"],["carol","Bookkeeper"]];
 function openCrewChat(id, nm){
+  clearQuote();
   chatTarget = {id, nm};
   chatView="conv"; applyChatView(); renderConv();
   if(window.innerWidth<=1000) setTab("chat");
@@ -559,6 +570,7 @@ let PROJECTS=[];
 function openProjectChat(pid){
   const p = PROJECTS.find(x=>x.id===pid);
   if(!p) return;
+  clearQuote();
   chatTarget = {id:"project_"+p.id, nm:p.title.length>26?p.title.slice(0,24)+"…":p.title, proj:p};
   chatView="conv"; applyChatView(); renderConv();
   if(window.innerWidth<=1000) setTab("chat");
@@ -612,7 +624,7 @@ function threadLast(id){
 }
 function preview(m, id){
   let t=m.text; if(id&&m.sender==="Devon") t=t.replace("@"+id+" ","");
-  t=t.replace(FILE_RE,"Attachment").trim();
+  t=t.replace(FILE_RE,"Attachment").replace(/^(?:> .*\n?)+/,"").trim();
   return (m.sender==="Devon"?"You: ":"")+t;
 }
 function renderChatList(){
@@ -661,6 +673,36 @@ function renderChatList(){
     }).join("");
   }
   document.getElementById("chatlist").innerHTML = html;
+}
+
+/* ── quote-reply ── */
+let pendingQuote = null, CONVMSGS = [];
+function quoteMsg(i, ev){
+  ev.stopPropagation();
+  const m = CONVMSGS[i]; if(!m) return;
+  const sel = (window.getSelection()||"").toString().trim();
+  let t = sel || m.text.replace(FILE_RE,"").replace(/^(?:> .*\n?)+/,"").trim();
+  t = t.replace(/\n+/g," ");
+  if(t.length>300) t = t.slice(0,299)+"…";
+  if(!t) return;
+  pendingQuote = {who: m.sender==="Devon"?"Devon":m.sender, text: t};
+  const qv = document.getElementById("qprev");
+  qv.style.display = "flex";
+  qv.innerHTML = `<span class="qw">❝ ${esc(pendingQuote.who)}</span><span class="qt">${esc(pendingQuote.text)}</span><span class="x" onclick="clearQuote()">✕</span>`;
+  document.getElementById("chatin").focus();
+}
+function clearQuote(){
+  pendingQuote = null;
+  const qv = document.getElementById("qprev");
+  if(qv){ qv.style.display="none"; qv.innerHTML=""; }
+}
+/* split a rendered message into leading "> [Who] …" quote block + body */
+function splitQuote(txt){
+  const lines = txt.split("\n");
+  const q = [];
+  while(lines.length && lines[0].startsWith("> ")) q.push(lines.shift().slice(2));
+  if(!q.length || !q[0].startsWith("[")) return {q:null, body:txt};
+  return {q:q.join("\n"), body:lines.join("\n").trim()};
 }
 
 /* ── attachments ── */
@@ -713,6 +755,10 @@ async function sendMsg(ev){
   if(!t && !pendingFile) return false;
   inp.value="";
   try{
+    if(pendingQuote){
+      t = `> [${pendingQuote.who}] ${pendingQuote.text}\n${t}`;
+      clearQuote();
+    }
     if(pendingFile){
       const key="file:"+Date.now();
       await relay("kvset",{},{key, value:pendingFile});
@@ -747,9 +793,12 @@ function renderConv(){
   } else {
     msgs = all.filter(m => (m.sender==="Devon" && !m.text.startsWith("@")) || m.sender==="Emma" || m.sender==="Penny");
   }
-  document.getElementById("msgs").innerHTML = msgs.map(m=>{
+  CONVMSGS = msgs;
+  document.getElementById("msgs").innerHTML = msgs.map((m,i)=>{
     const atts=[]; const txt = m.text.replace(FILE_RE,(_,k,n)=>{ atts.push([k,n]); return ""; }).trim();
-    return `<div class="msg ${m.sender==="Devon"?"me":""}"><div class="who">${esc(m.sender)}<span class="when">${ago(m.ts)}</span></div>${esc(txt)}${
+    const {q, body} = splitQuote(txt);
+    return `<div class="msg ${m.sender==="Devon"?"me":""}"><div class="who">${esc(m.sender)}<span class="when">${ago(m.ts)}</span><span class="qbtn" title="Quote" onclick="quoteMsg(${i},event)">❝</span></div>${
+      q?`<div class="q">${esc(q)}</div>`:""}${esc(body)}${
       atts.map(([k,n])=>`<div class="att" data-k="${esc(k)}" data-n="${esc(n)}">loading…</div>`).join("")}</div>`;
   }).join("");
   const last = msgs[msgs.length-1];
