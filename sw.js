@@ -1,5 +1,5 @@
 /* Agent Alley service worker — network-first for HTML (no stale cache ever), cache-first for images/fonts only */
-const V = "aa-v3-2026-10-22-network-first-html";
+const V = "aa-v3-2026-10-22-cos-flat-cluster";
 
 self.addEventListener("install", (ev)=>{
   // Don't pre-cache the HTML. Just activate immediately.

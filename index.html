@@ -211,11 +211,25 @@ button:hover{transform:translateY(-1px)}
 .cnode:hover .orb svg{filter:drop-shadow(0 0 11px var(--ng))}
 .cnode .nm{font-size:12px;font-weight:600;text-align:center;max-width:120px;line-height:1.25}
 .cnode .sub{font-size:10.5px;color:var(--faint);text-align:center;max-width:130px;margin-top:-2px}
-.cnode.hub .orb{width:106px;height:106px;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--nc) 34%,transparent),var(--s2) 72%);border-color:color-mix(in srgb,var(--nc) 55%,transparent);box-shadow:0 0 36px var(--ng)}
+.cnode.hub .orb{width:116px;height:116px;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--nc) 34%,transparent),var(--s2) 72%);border-color:color-mix(in srgb,var(--nc) 55%,transparent);box-shadow:0 0 36px var(--ng)}
 .cnode.hub{cursor:default}
+.cnode.hub.cos{cursor:pointer}
+.cnode.hub.cos:hover .orb{transform:scale(1.05);box-shadow:0 0 54px var(--ng)}
+.cnode.hub.cos .orb{box-shadow:0 0 46px var(--ng),inset 0 0 20px rgba(255,255,255,.05)}
+.cnode .orb .oimg{position:absolute;inset:3px;width:calc(100% - 6px);height:calc(100% - 6px);object-fit:cover;border-radius:50%;z-index:1}
+.cnode.hub.cos .orb .cosbadge{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--nc);background:var(--bg);padding:2px 8px;border-radius:999px;border:1px solid color-mix(in srgb,var(--nc) 55%,transparent);white-space:nowrap;z-index:3}
+
+/* ── fleet filter pills (Chief of Staff home) ── */
+#fleetfilter{display:flex;gap:6px;padding:4px 0 8px;justify-content:center}
+#fleetfilter .ff{background:transparent;border:1px solid var(--line);color:var(--dim);border-radius:999px;padding:5px 18px;font-size:12px;font-weight:600;cursor:pointer;transition:border-color .15s,color .15s,background .15s;font-family:inherit}
+#fleetfilter .ff:hover{color:var(--txt);border-color:var(--line2)}
+#fleetfilter .ff.on{background:rgba(124,92,255,.14);border-color:rgba(124,92,255,.45);color:var(--txt);box-shadow:0 0 10px rgba(124,92,255,.18)}
+body:not([data-view="home"]) #fleetfilter{display:none}
 .cnode.wingn .orb{width:92px;height:92px}
 .cnode.deptn .orb{width:74px;height:74px}
 .cnode.agentn .orb{width:62px;height:62px}
+.cnode.agentn.fleet .orb{width:78px;height:78px}
+.cnode.agentn.fleet .nm{font-size:12.5px;font-weight:700}
 .badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;z-index:2}
 .badge.red{background:var(--red);color:#1a0505;box-shadow:0 0 10px rgba(248,113,113,.7)}
 .badge.green{background:rgba(74,222,128,.92);color:#05260f}
@@ -383,10 +397,11 @@ body.dragging #chat,body.dragging main{pointer-events:none}
   body[data-tab="chat"] #alleytab,body[data-tab="chat"] #projectstab,body[data-tab="chat"] #taskstab,body[data-tab="chat"] #habitstab,body[data-tab="chat"] #inbox,body[data-tab="chat"] #top3{display:none}
   body[data-tab="chat"] #chat{display:flex;height:calc(100dvh - 185px);min-height:420px}
   #cluster{height:420px}
-  .cnode.hub .orb{width:84px;height:84px}
+  .cnode.hub .orb{width:94px;height:94px}
   .cnode.wingn .orb{width:70px;height:70px}
   .cnode.deptn .orb{width:60px;height:60px}
   .cnode.agentn .orb{width:52px;height:52px}
+  .cnode.agentn.fleet .orb{width:64px;height:64px}
   .cnode .nm{font-size:11px;max-width:90px}
   .cnode .sub{display:none}
   .toast{bottom:92px}
@@ -406,7 +421,7 @@ body.dragging #chat,body.dragging main{pointer-events:none}
 }
 </style>
 </head>
-<body data-tab="alley">
+<body data-tab="alley" data-view="home">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <linearGradient id="igV" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d6c7ff"/><stop offset="1" stop-color="#7C5CFF"/></linearGradient>
 <linearGradient id="igG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#86efac"/><stop offset="1" stop-color="#10b981"/></linearGradient>
@@ -435,8 +450,13 @@ body.dragging #chat,body.dragging main{pointer-events:none}
     </div>
     <section class="tile" id="alleytab">
       <div id="crumb"></div>
+      <div id="fleetfilter">
+        <button class="ff on" data-f="all" onclick="setFleetFilter('all')">All</button>
+        <button class="ff" data-f="business" onclick="setFleetFilter('business')">Business</button>
+        <button class="ff" data-f="personal" onclick="setFleetFilter('personal')">Personal</button>
+      </div>
       <div id="cluster"><svg id="clines"></svg><div id="cnodes"></div></div>
-      <div class="hint" id="chint">click a cluster to open it · click an agent to talk to them</div>
+      <div class="hint" id="chint">tap Emma to chat · tap an agent to open their line</div>
       <div id="usagecard"></div>
       <div id="recapcard"></div>
     </section>
@@ -599,6 +619,9 @@ function mkNode(spec, x, y){
   el.style.setProperty("--nc", clr.c); el.style.setProperty("--ng", clr.glow);
   if(spec.delay) el.style.animationDelay=spec.delay+"ms";
   const orb=document.createElement("div"); orb.className="orb"; orb.innerHTML=spec.ico;
+  if(spec.avatar){ const im=document.createElement("img"); im.className="oimg"; im.src="avatars/"+spec.avatar+".jpg?v=2";
+    im.onerror=()=>im.remove(); orb.appendChild(im); }
+  if(spec.badge){ const b=document.createElement("div"); b.className="cosbadge"; b.textContent=spec.badge; orb.appendChild(b); }
   if(spec.ring){ const r=document.createElement("div"); r.className="ring "+spec.ring; orb.appendChild(r); }
   if(spec.red){ const b=document.createElement("div"); b.className="badge red"; b.textContent=spec.red; orb.appendChild(b); }
   else if(spec.green){ const b=document.createElement("div"); b.className="badge green"; b.textContent=spec.green; orb.appendChild(b); }
@@ -623,11 +646,24 @@ function renderCluster(){
   if(view.level==="wing" && !ORG[view.wing]) view={level:"home"};
   if(view.level==="dept" && !(ORG[view.wing]&&ORG[view.wing][view.dept])) view={level:"home"};
   if(view.level==="home"){
-    center={ico:icon("hub"),nm:"Agent Alley",cls:"hub",clr:VIOLET};
-    children=Object.entries(ORG).map(([w,depts])=>{ const st=wingStats(depts); const clr=wingClr(w);
-      return {ico:icon(P[w]?w:"star", clr.g), nm:WING_LBL[w]||w, sub:Object.keys(depts).length+" departments", cls:"wingn", clr,
-        red:st.stuck||0, green:st.stuck?0:(st.working||0), click:()=>nav({level:"wing",wing:w})}; });
+    document.body.dataset.view = "home";
+    /* Chief-of-Staff hub: Emma centered, Devon's real Telegram crew orbit her, filterable. */
+    const emmaAg = findAgent("emma");
+    center = {ico:"", avatar:"penny", nm:"Emma", cls:"hub cos", clr:VIOLET, badge:"Chief of Staff",
+      ring: emmaAg && emmaAg.status && emmaAg.status!=="idle" ? emmaAg.status : null,
+      click: openEmmaChat};
+    const fleet = CREW.filter(([id,nm,w]) => id!=="emma" && (fleetFilter==="all" || w===fleetFilter));
+    children = fleet.map(([id,nm,w])=>{
+      const clr=wingClr(w); const ag=findAgent(id);
+      return {ico:icon("agent",clr.g), avatar:id, nm, cls:"agentn fleet", clr,
+        ring: ag && ag.status && ag.status!=="idle" ? ag.status : null,
+        click:()=>openCrewChat(id, nm)};
+    });
+    if(!children.length){
+      children = [{ico:icon("star"), nm:"No agents in this view", cls:"agentn", clr:VIOLET}];
+    }
   } else if(view.level==="wing"){
+    document.body.dataset.view = "wing";
     const depts=ORG[view.wing]; const clr=wingClr(view.wing);
     crumb.push([WING_LBL[view.wing]||view.wing,()=>nav({level:"wing",wing:view.wing})]);
     center={ico:icon(P[view.wing]?view.wing:"star", clr.g), nm:WING_LBL[view.wing]||view.wing, cls:"hub", clr};
@@ -635,6 +671,7 @@ function renderCluster(){
       return {ico:icon(P[d]?d:"folder", clr.g), nm:dl(d), sub:agents.length+(agents.length===1?" agent":" agents"), cls:"deptn", clr,
         red:st.stuck||0, green:st.stuck?0:(st.working||0), click:()=>nav({level:"dept",wing:view.wing,dept:d})}; });
   } else {
+    document.body.dataset.view = "dept";
     const agents=ORG[view.wing][view.dept]; const clr=wingClr(view.wing);
     crumb.push([WING_LBL[view.wing]||view.wing,()=>nav({level:"wing",wing:view.wing})]);
     crumb.push([dl(view.dept),null]);
@@ -745,9 +782,17 @@ function openAgentChat(a){
   document.getElementById("chatin").focus();
 }
 function openEmmaChat(){ openAgentChat({id:"penny", title:"Penny"}); }
-/* Devon's real Telegram crew — pinned, word-for-word names (ids = poller FLEET routing) */
-const CREW = [["emma","E.M.M.A"],["sage","S.A.G.E"],["pitch","Cold Outreach"],
-  ["meta_copilot","Meta Copilot"],["cs_bot","Naturally Wyld CS"],["carol","Bookkeeper"]];
+/* Devon's real Telegram crew — pinned, word-for-word names (ids = poller FLEET routing).
+   Third element = wing for Chief-of-Staff cluster filter (All / Business / Personal). */
+const CREW = [["emma","E.M.M.A","business"],["sage","S.A.G.E","personal"],["pitch","Cold Outreach","business"],
+  ["meta_copilot","Meta Copilot","business"],["cs_bot","Naturally Wyld CS","business"],["carol","Bookkeeper","business"]];
+/* Chief-of-Staff fleet filter (home cluster). Persisted locally. */
+let fleetFilter = localStorage.getItem("ahq_fleet") || "all";
+function setFleetFilter(f){
+  fleetFilter = f; localStorage.setItem("ahq_fleet", f);
+  document.querySelectorAll("#fleetfilter .ff").forEach(b=>b.classList.toggle("on", b.dataset.f===f));
+  _clHash=""; renderCluster();
+}
 function openCrewChat(id, nm){
   clearQuote();
   chatTarget = {id, nm};
@@ -1423,6 +1468,8 @@ async function tick(){
 }
 /* bottom-nav icons */
 document.querySelectorAll("#bnav .bn .bnic").forEach((el,i)=>{ el.outerHTML = icon(["hub","folder","life_ops","star","chat"][i]); });
+/* sync fleet filter button state with persisted selection */
+document.querySelectorAll("#fleetfilter .ff").forEach(b=>b.classList.toggle("on", b.dataset.f===fleetFilter));
 let rsz; window.addEventListener("resize", ()=>{ clearTimeout(rsz); rsz=setTimeout(renderCluster, 150); });
 applyChatView(); setTab(curTab); tick(); setInterval(tick, 20000);
 /* PWA service worker — auto-cleans up any stale SW/cache from previous versions so Devon never has to clear browser cache manually again. One-time self-heal. */
