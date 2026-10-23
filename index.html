@@ -102,8 +102,48 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size
 .al .x{color:var(--faint);font-weight:800;padding:0 2px}
 .al .x:hover{color:var(--red)}
 
-/* ── Tasks tab (DHQ-style day cards) ── */
+/* ── Tasks tab (DHQ-style day cards + list pills) ── */
 #taskstab{padding:16px;display:flex;flex-direction:column;gap:14px}
+
+/* Pill selector (horizontal scroll on mobile): switches which list is visible */
+.tpills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 2px 4px;-webkit-overflow-scrolling:touch}
+.tpills::-webkit-scrollbar{display:none}
+.tpill{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--line);color:var(--dim);border-radius:999px;padding:7px 15px;font:600 12.5px Inter;cursor:pointer;transition:border-color .15s,color .15s,background .15s;white-space:nowrap;font-family:inherit}
+.tpill:hover{color:var(--txt);border-color:var(--line2)}
+.tpill.on{background:rgba(124,92,255,.14);border-color:rgba(124,92,255,.5);color:var(--txt);box-shadow:0 0 12px rgba(124,92,255,.18)}
+.tpill small{font-weight:700;font-size:11px;color:var(--faint);background:rgba(255,255,255,.06);padding:1px 7px;border-radius:999px}
+.tpill.on small{color:#c4b5fd;background:rgba(124,92,255,.22)}
+.tpill.drophot{background:rgba(74,222,128,.18);border-color:rgba(74,222,128,.6);color:#6ee7b7;transform:scale(1.04)}
+
+/* Task row: circle checkbox + title + due + inline actions */
+.tklist{display:flex;flex-direction:column;gap:3px;margin-top:2px}
+.tkr{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;transition:background .12s,opacity .18s;cursor:pointer;position:relative;user-select:none}
+.tkr:hover{background:rgba(255,255,255,.03)}
+.tkr.dragging{opacity:.45}
+.tkr .tbox{flex:0 0 20px;width:20px;height:20px;border-radius:50%;border:1.8px solid var(--faint);display:flex;align-items:center;justify-content:center;font-size:11px;transition:background .15s,border-color .15s,color .15s}
+.tkr:hover .tbox{border-color:#c4b5fd}
+.tkr.done .tbox{background:var(--v);border-color:var(--v);color:#fff}
+.tkr .ttl{flex:1;min-width:0;font-size:13.5px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tkr.done .ttl{text-decoration:line-through;color:var(--faint)}
+.tkr.starred .ttl{font-weight:600}
+.tkr .tdue{flex:0 0 auto;font-size:10.5px;color:var(--faint);font-family:"JetBrains Mono",monospace;padding:2px 7px;border-radius:7px;background:rgba(255,255,255,.04)}
+.tkr .tdue.soon{color:#fcd34d;background:rgba(251,191,36,.1)}
+.tkr .tka{flex:0 0 22px;display:flex;align-items:center;justify-content:center;color:var(--faint);cursor:pointer;font-size:14px;line-height:1;padding:3px;border-radius:5px;opacity:0;transition:color .15s,opacity .15s,background .15s}
+.tkr:hover .tka{opacity:1}
+.tkr.starred .tstar{opacity:1;color:#fcd34d}
+.tkr .tka:hover{color:var(--txt);background:rgba(255,255,255,.07)}
+.tkr .tstar:hover{color:#fcd34d}
+.tkr .tdragh{flex:0 0 10px;color:var(--faint);cursor:grab;opacity:0;font-size:12px;letter-spacing:1px;line-height:1}
+.tkr:hover .tdragh{opacity:.5}
+.tkr .tdragh:active{cursor:grabbing}
+.tkmenu{position:absolute;right:36px;top:34px;background:var(--s2);border:1px solid var(--line2);border-radius:10px;padding:4px;z-index:5;box-shadow:0 8px 24px rgba(0,0,0,.5);display:flex;flex-direction:column;min-width:150px}
+.tkmenu button{background:transparent;border:none;color:var(--txt);text-align:left;padding:7px 12px;font:500 12.5px Inter;border-radius:6px;cursor:pointer;font-family:inherit}
+.tkmenu button:hover{background:rgba(255,255,255,.06)}
+.tkmenu button.danger{color:#f87171}
+.tkmenu button.danger:hover{background:rgba(248,113,113,.1)}
+.tkadd{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;cursor:text;color:var(--faint);font-size:13px;border:1px dashed var(--line);margin-top:4px;transition:border-color .15s,color .15s}
+.tkadd:hover{border-color:var(--line2);color:var(--dim)}
+.tkadd input{flex:1;background:transparent;border:none;outline:none;color:var(--txt);font:13.5px Inter;padding:2px 0}
 .dcard{border:1px solid var(--line2);border-radius:16px;background:var(--s2);padding:14px 16px}
 .dcard.today{border-color:rgba(52,211,153,.35);background:color-mix(in srgb,#34d399 4%,var(--s2))}
 .dcard.dragons{border-color:rgba(251,191,36,.3);background:color-mix(in srgb,#fbbf24 3%,var(--s2))}
@@ -993,7 +1033,7 @@ function updateChatHead(){
   if(chatView==="list"){
     h.innerHTML = `${icon("chat")}Chats<small>Emma + your crew</small>`;
   } else {
-    const nm = chatTarget ? chatTarget.nm : "Penny";
+    const nm = chatTarget ? chatTarget.nm : "Emma";
     const aid = chatTarget ? chatTarget.id : "penny";
     const ag = findAgent(aid);
     let st = ag ? ag.status : null, stTxt;
@@ -1009,7 +1049,7 @@ function updateChatHead(){
     const sub = `<span class="sdot ${st||"idle"}"></span>${esc(stTxt)}`;
     h.innerHTML = `<img class="chav" src="avatars/${esc(aid)}.jpg?v=3" alt="" onerror="this.remove()">${esc(nm)}<small>${sub}</small><span id="chatback">‹ all chats</span>`;
     document.getElementById("chatback").onclick = showList;
-    document.getElementById("chatin").placeholder = chatTarget ? `Message ${chatTarget.nm}…` : "Message Penny…";
+    document.getElementById("chatin").placeholder = chatTarget ? `Message ${chatTarget.nm}…` : "Message Emma…";
   }
 }
 function findAgent(id){
@@ -1308,9 +1348,16 @@ function stuckFromWings(wings){
     e.preventDefault();
     const main=document.querySelector("main").getBoundingClientRect();
     const totalW = main.right - main.left;
-    const w=Math.max(0, Math.min(totalW-60, main.right-22-e.clientX));
+    const raw = main.right - 22 - e.clientX;
+    let w, pane;
+    /* snap edges + enforce a 340px floor on the left column so the orb
+       cluster doesn't crush/overlap in intermediate narrow states */
+    if(raw < 80){ w = 0; pane = "full-alley"; }
+    else if(raw > totalW - 240){ w = totalW - 60; pane = "full-chat"; }
+    else { w = Math.min(totalW - 340, raw); pane = "split"; }
     document.documentElement.style.setProperty("--chatw", w+"px");
-    setPane(w, totalW);
+    document.body.dataset.pane = pane;
+    localStorage.setItem("ahq_pane", pane);
   });
   d.addEventListener("pointerup", end);
   d.addEventListener("pointercancel", end);
@@ -1355,7 +1402,7 @@ function renderRecap(r){
    pending overlay bridges until the next tasks_sync refresh of kv "tasks". ── */
 const DQEP="https://emmalindsay--fa014b18bbba11f19dfa1607ee4eb77e.web.val.run", DQK="dhq-x7k2-rls84m-v9q3";
 const DQLISTS={"Daily Dragons":"MTgxMjMxMjg3Nzk3MzI5ODc0NTU6MDow","Tomorrow":"OE9DeWdFMm5jdXhocDRx","This Week":"Qm1lM3gxUW5sUmNaejVhNA","This Month":"UUt5ZlpxdXJKUkp3NTRBXw","At Some Point":"WEJaZ3ZWOFI1NHhMOFZWTA"};
-let TASKS=null, TROWS=[], openPill=localStorage.getItem("ahq_pill")||"";
+let TASKS=null, TROWS=[], openPill=localStorage.getItem("ahq_pill")||"today";
 let nextOpen = localStorage.getItem("ahq_next")!=="0";
 function toggleNext(){ nextOpen=!nextOpen; localStorage.setItem("ahq_next",nextOpen?"1":"0"); renderTasks(); }
 let TPEND={};
@@ -1380,12 +1427,17 @@ function taskRow(t,ri){
   const done=p.done!=null?p.done:false;
   const star=p.star!=null?p.star:!!t.star;
   const title=p.title!=null?p.title:t.title;
-  return `<div class="tkr${done?" done":""}${star?" starred":""}" onclick="tToggle(${ri})">
-    <span class="tbox">${done?"✓":""}</span><span class="ttl">${esc(title)}</span>
-    ${t.due?`<span class="tdue">${esc(t.due.slice(5))}</span>`:""}
-    <span class="tka tstar" onclick="tStar(${ri},event)">${star?"★":"☆"}</span>
-    <span class="tka" onclick="tEdit(${ri},event)">✎</span>
-    <span class="tka" onclick="tMove(${ri},event)">↪</span></div>`;
+  const due = t.due ? t.due.slice(5) : "";
+  const soon = t.due && (new Date(t.due+"T00:00:00").getTime() - Date.now() < 2*86400000);
+  return `<div class="tkr${done?" done":""}${star?" starred":""}" data-ri="${ri}" data-id="${esc(t.id)}" draggable="true"
+      ondragstart="tDragStart(event,${ri})" ondragend="tDragEnd(event)">
+    <span class="tbox" onclick="tToggle(${ri},event)">${done?"✓":""}</span>
+    <span class="ttl" onclick="tEdit(${ri},event)">${esc(title)}</span>
+    ${due?`<span class="tdue${soon?" soon":""}">${esc(due)}</span>`:""}
+    <span class="tka tstar" onclick="tStar(${ri},event)" title="Star">${star?"★":"☆"}</span>
+    <span class="tka" onclick="tMore(${ri},event)" title="More">⋯</span>
+    <span class="tdragh" title="Drag to move list">⋮⋮</span>
+  </div>`;
 }
 function pendStar(t){ const p=TPEND[t.id]; return p&&p.star!=null?p.star:!!t.star; }
 function liveCount(key){ return (TASKS.tabs[key]||[]).filter(t=>!(TPEND[t.id]&&(TPEND[t.id].done||TPEND[t.id].gone))).length; }
@@ -1396,8 +1448,9 @@ function rowsFor(key,listName){
     TROWS.push(Object.assign({},t,{lid:t.lid||DQLISTS[listName]}));
     return taskRow(TROWS[ri],ri); }).join("");
 }
-function togglePill(k){ openPill=openPill===k?"":k; localStorage.setItem("ahq_pill",openPill); renderTasks(); }
-const TPILLS=[["tomorrow","🌄","tomorrow","Tomorrow"],["week","🗓","week","This Week"],["month","📆","month","This Month"],["some","🗃","some point","At Some Point"]];
+function togglePill(k){ openPill=k; localStorage.setItem("ahq_pill",k); renderTasks(); }
+/* Pill order: Today first (default). Each entry = [key, icon, label, Google-Tasks-list-name] */
+const TPILLS=[["today","✦","Today","Daily Dragons"],["tomorrow","🌄","Tomorrow","Tomorrow"],["week","🗓","Week","This Week"],["month","📆","Month","This Month"],["some","🗃","Someday","At Some Point"]];
 /* ── Routines panel (left sidebar) ── */
 /* Each routine: name, icon, cron-ish schedule, kv key for latest run content */
 const ROUTINES = [
@@ -1517,23 +1570,99 @@ function renderTasks(){
   tpSweep(); TROWS=[];
   const td=TASKS.today, up=TASKS.upcoming||[];
   let h="";
-  /* TODAY — calendar */
+  /* TODAY — calendar events (not tasks) */
   h+=`<div class="dcard today"><div class="dhead">${icon("life_ops","igG")}Today <small>${esc(td?td.label:"")}</small></div>`;
   h+= td&&td.events.length ? td.events.map(e=>evRow(e)).join("") : `<div class="tempty">nothing on the calendar</div>`;
   h+=`</div>`;
-  /* NEXT FEW DAYS — collapsible */
+  /* NEXT FEW DAYS — calendar events (collapsible) */
   h+=`<div class="dcard next"><div class="dhead" onclick="toggleNext()">${icon("personal","igC")}Next few days<span class="dcaret">${nextOpen?"▾":"▸"}</span></div>`;
   if(nextOpen) h+= up.length ? up.map(d=>`<div class="dayhead">${esc(d.label)}</div>`+d.events.map(e=>evRow(e)).join("")).join("") : `<div class="tempty">clear skies ahead</div>`;
   h+=`</div>`;
-  /* DAILY DRAGONS — real Google Tasks + in-place list pills */
-  h+=`<div class="dcard dragons"><div class="dhead">${icon("star","igA")}Today's Tasks <small>${liveCount("today")} left</small></div>`;
-  h+= (TASKS.tabs.today||[]).length ? rowsFor("today","Today's Tasks") : `<div class="tempty">no tasks today</div>`;
-  h+=`<div class="tpills">`+TPILLS.map(([k,ic,lb])=>
-    `<span class="tpill${openPill===k?" on":""}" onclick="togglePill('${k}')">${ic} ${lb} · ${liveCount(k)}</span>`).join("")+`</div>`;
-  for(const [k,,,ln] of TPILLS)
-    if(openPill===k) h+=`<div class="tpanel">`+(rowsFor(k,ln)||`<div class="tempty">empty</div>`)+`</div>`;
+  /* TASKS — Google Tasks lists with prominent pill switcher + drag-and-drop */
+  h+=`<div class="dcard dragons"><div class="dhead">${icon("star","igA")}Google Tasks <small id="tklive"></small></div>`;
+  h+=`<div class="tpills" id="tpillrow">`+TPILLS.map(([k,ic,lb])=>
+    `<button class="tpill${openPill===k?" on":""}" data-k="${k}" onclick="togglePill('${k}')"
+       ondragover="tDragOver(event,'${k}')" ondragleave="tDragLeave(event)" ondrop="tDrop(event,'${k}')">${ic} ${esc(lb)}<small>${liveCount(k)}</small></button>`).join("")+`</div>`;
+  const activeDef = TPILLS.find(p=>p[0]===openPill) || TPILLS[0];
+  const rows = rowsFor(activeDef[0], activeDef[3]);
+  h+=`<div class="tklist">${rows || `<div class="tempty">no tasks in ${esc(activeDef[2])}</div>`}</div>`;
+  h+=`<div class="tkadd" onclick="tAddFocus(event)"><span class="tbox" style="opacity:.5">+</span><input id="tkaddin" placeholder="add to ${esc(activeDef[2])}…" onkeydown="tAddKey(event,'${activeDef[0]}')"></div>`;
   h+=`</div>`;
   el.innerHTML=h;
+  const live=document.getElementById("tklive"); if(live) live.textContent = liveCount(activeDef[0]) + " in " + activeDef[2];
+}
+function tAddFocus(ev){ const i=document.getElementById("tkaddin"); if(i) i.focus(); }
+async function tAddKey(ev, pillKey){
+  if(ev.key!=="Enter") return;
+  const inp = ev.target; const title = inp.value.trim(); if(!title) return;
+  inp.value = ""; inp.blur();
+  const def = TPILLS.find(p=>p[0]===pillKey); if(!def) return;
+  dq("taskadd",{title, lid: DQLISTS[def[3]]});
+  _askToast("added to " + def[2]);
+}
+/* ── drag-and-drop between pills ── */
+let _tDragId=null, _tDragFromLid=null;
+function tDragStart(ev, ri){
+  const t = TROWS[ri]; if(!t) return;
+  _tDragId = t.id; _tDragFromLid = t.lid;
+  ev.dataTransfer.effectAllowed = "move";
+  try{ ev.dataTransfer.setData("text/plain", t.id); }catch(e){}
+  ev.currentTarget.classList.add("dragging");
+}
+function tDragEnd(ev){
+  ev.currentTarget.classList.remove("dragging");
+  document.querySelectorAll(".tpill.drophot").forEach(p=>p.classList.remove("drophot"));
+  _tDragId=null; _tDragFromLid=null;
+}
+function tDragOver(ev, pillKey){
+  if(!_tDragId) return;
+  ev.preventDefault(); ev.dataTransfer.dropEffect = "move";
+  ev.currentTarget.classList.add("drophot");
+}
+function tDragLeave(ev){ ev.currentTarget.classList.remove("drophot"); }
+function tDrop(ev, pillKey){
+  ev.preventDefault();
+  const id = _tDragId; const fromLid = _tDragFromLid;
+  ev.currentTarget.classList.remove("drophot");
+  if(!id) return;
+  const def = TPILLS.find(p=>p[0]===pillKey); if(!def) return;
+  const toLid = DQLISTS[def[3]];
+  if(!toLid || toLid===fromLid){ return; }
+  const t = TROWS.find(x=>x.id===id);
+  dq("taskmove",{id, lid:fromLid, to:toLid, title: t?t.title:""});
+  tpAdd(id, {gone:true});
+  _askToast("moved to " + def[2]);
+  renderTasks();
+}
+/* ── more menu per task (star / edit / delete) ── */
+function tMore(ri, ev){
+  ev.stopPropagation();
+  const row = ev.target.closest(".tkr");
+  const existing = row.querySelector(".tkmenu");
+  if(existing){ existing.remove(); return; }
+  document.querySelectorAll(".tkmenu").forEach(m=>m.remove());
+  const t = TROWS[ri]; if(!t) return;
+  const m = document.createElement("div"); m.className="tkmenu"; m.onclick=e=>e.stopPropagation();
+  const b1 = document.createElement("button"); b1.textContent = "✎ Rename";
+  b1.onclick = e=>{ e.stopPropagation(); m.remove(); tEdit(ri, {stopPropagation:()=>{}}); };
+  m.appendChild(b1);
+  for(const [k,ic,lb,ln] of TPILLS){
+    if(DQLISTS[ln]===t.lid) continue;
+    const b = document.createElement("button"); b.textContent = "↪ Move to " + lb;
+    b.onclick = e=>{ e.stopPropagation(); m.remove();
+      dq("taskmove",{id:t.id, lid:t.lid, to:DQLISTS[ln], title:t.title});
+      tpAdd(t.id, {gone:true}); renderTasks(); };
+    m.appendChild(b);
+  }
+  const d = document.createElement("button"); d.className="danger"; d.textContent="🗑 Delete";
+  d.onclick = e=>{ e.stopPropagation(); m.remove();
+    if(!confirm("Delete this task?")) return;
+    dq("taskdel",{id:t.id, lid:t.lid, title:t.title});
+    tpAdd(t.id, {gone:true}); renderTasks(); };
+  m.appendChild(d);
+  row.appendChild(m);
+  /* close on outside click */
+  setTimeout(()=>document.addEventListener("click", function cl(){ m.remove(); document.removeEventListener("click", cl); }, {once:true}), 10);
 }
 function tToggle(ri){
   const t=TROWS[ri]; if(!t||!t.id) return;

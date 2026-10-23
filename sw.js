@@ -1,5 +1,5 @@
 /* Agent Alley service worker — network-first for HTML (no stale cache ever), cache-first for images/fonts only */
-const V = "aa-v3-2026-10-22-wave2-ask-voice-notif";
+const V = "aa-v3-2026-10-23-wave3-tasks-slider-emma";
 
 self.addEventListener("install", (ev)=>{
   // Don't pre-cache the HTML. Just activate immediately.
