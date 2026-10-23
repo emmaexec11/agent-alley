@@ -136,6 +136,11 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size
 .tkr .tdragh{flex:0 0 14px;color:var(--faint);cursor:grab;opacity:.35;font-size:14px;letter-spacing:1px;line-height:1}
 .tkr:hover .tdragh{opacity:.75;color:#c4b5fd}
 .tkr .tdragh:active{cursor:grabbing}
+/* Custom pointer-based drag ghost + dragging state */
+body.tk-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
+body.tk-dragging .tkr{pointer-events:none}
+body.tk-dragging .tpill{pointer-events:auto}
+.tkghost{background:rgba(124,92,255,.22);color:var(--txt);border:1px solid rgba(124,92,255,.6);border-radius:8px;padding:7px 12px;font:600 12.5px Inter;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 8px 24px rgba(0,0,0,.5),0 0 20px rgba(124,92,255,.3)}
 .tkmenu{position:absolute;right:36px;top:34px;background:var(--s2);border:1px solid var(--line2);border-radius:10px;padding:4px;z-index:5;box-shadow:0 8px 24px rgba(0,0,0,.5);display:flex;flex-direction:column;min-width:150px}
 .tkmenu button{background:transparent;border:none;color:var(--txt);text-align:left;padding:7px 12px;font:500 12.5px Inter;border-radius:6px;cursor:pointer;font-family:inherit}
 .tkmenu button:hover{background:rgba(255,255,255,.06)}
@@ -1958,8 +1963,7 @@ function taskRow(t,ri){
   const title=p.title!=null?p.title:t.title;
   const due = t.due ? t.due.slice(5) : "";
   const soon = t.due && (new Date(t.due+"T00:00:00").getTime() - Date.now() < 2*86400000);
-  return `<div class="tkr${done?" done":""}${star?" starred":""}" data-ri="${ri}" data-id="${esc(t.id)}" draggable="true"
-      ondragstart="tDragStart(event,${ri})" ondragend="tDragEnd(event)">
+  return `<div class="tkr${done?" done":""}${star?" starred":""}" data-ri="${ri}" data-id="${esc(t.id)}" data-lid="${esc(t.lid||"")}">
     <span class="tbox" onclick="tToggle(${ri},event)">${done?"✓":""}</span>
     <span class="ttl" onclick="tEdit(${ri},event)">${esc(title)}</span>
     ${due?`<span class="tdue${soon?" soon":""}">${esc(due)}</span>`:""}
@@ -2132,26 +2136,102 @@ async function tAddKey(ev, pillKey){
   dq("taskadd", payload);
   _askToast("added to " + def[2]);
 }
-/* ── drag-and-drop between pills ── */
-let _tDragId=null, _tDragFromLid=null;
-function tDragStart(ev, ri){
-  const t = TROWS[ri]; if(!t) return;
-  _tDragId = t.id; _tDragFromLid = t.lid;
-  ev.dataTransfer.effectAllowed = "move";
-  try{ ev.dataTransfer.setData("text/plain", t.id); }catch(e){}
-  ev.currentTarget.classList.add("dragging");
+/* ── Task drag between pills — pointer-based (works mouse, trackpad, touch).
+   HTML5 drag API fought with Chromebook trackpads + mobile. This replacement:
+   long-press 180ms OR 8px movement starts drag; follow pointer; drop on pill target.
+   One handler works everywhere. ── */
+let _tDragId=null, _tDragFromLid=null, _tDragRow=null, _tDragStart=null, _tDragPreview=null, _tDragArmed=false, _tDragTimer=null;
+function _tDragGhost(title){
+  const g = document.createElement("div");
+  g.className = "tkghost";
+  g.textContent = title;
+  g.style.position = "fixed"; g.style.left="-9999px"; g.style.top="-9999px";
+  g.style.pointerEvents = "none"; g.style.zIndex="999";
+  document.body.appendChild(g);
+  return g;
 }
-function tDragEnd(ev){
-  ev.currentTarget.classList.remove("dragging");
+function _tDragActivate(ev){
+  if(_tDragArmed) return;
+  _tDragArmed = true;
+  _tDragRow.classList.add("dragging");
+  _tDragPreview = _tDragGhost((TROWS[_tDragRow.dataset.ri]||{}).title || "task");
+  document.body.classList.add("tk-dragging");
+}
+function _tDragUpdatePreview(x, y){
+  if(!_tDragPreview) return;
+  _tDragPreview.style.left = (x + 14) + "px";
+  _tDragPreview.style.top  = (y - 14) + "px";
+}
+function _tDragFindPill(x, y){
+  const el = document.elementFromPoint(x, y);
+  if(!el) return null;
+  return el.closest(".tpill");
+}
+function _tDragHighlight(pill){
+  document.querySelectorAll(".tpill.drophot").forEach(p=>{ if(p!==pill) p.classList.remove("drophot"); });
+  if(pill) pill.classList.add("drophot");
+}
+function _tDragReset(){
+  if(_tDragTimer){ clearTimeout(_tDragTimer); _tDragTimer=null; }
+  if(_tDragRow) _tDragRow.classList.remove("dragging");
+  if(_tDragPreview){ _tDragPreview.remove(); _tDragPreview=null; }
   document.querySelectorAll(".tpill.drophot").forEach(p=>p.classList.remove("drophot"));
-  _tDragId=null; _tDragFromLid=null;
+  document.body.classList.remove("tk-dragging");
+  _tDragId=null; _tDragFromLid=null; _tDragRow=null; _tDragStart=null; _tDragArmed=false;
 }
-function tDragOver(ev, pillKey){
-  if(!_tDragId) return;
-  ev.preventDefault(); ev.dataTransfer.dropEffect = "move";
-  ev.currentTarget.classList.add("drophot");
+function _tDragOnDown(ev){
+  const row = ev.target.closest(".tkr");
+  if(!row) return;
+  /* Ignore pointerdown on interactive children (checkbox, edit, star, more menu, due) */
+  if(ev.target.closest(".tbox, .tka, .tdue, .tkmenu")) return;
+  const ri = parseInt(row.dataset.ri||"-1",10);
+  const t = TROWS[ri]; if(!t || !t.id) return;
+  _tDragRow = row; _tDragId = t.id; _tDragFromLid = t.lid;
+  _tDragStart = {x: ev.clientX, y: ev.clientY};
+  _tDragArmed = false;
+  /* long-press timer: activate after 180ms even without movement (helps touch) */
+  _tDragTimer = setTimeout(()=>_tDragActivate(ev), 180);
 }
-function tDragLeave(ev){ ev.currentTarget.classList.remove("drophot"); }
+function _tDragOnMove(ev){
+  if(!_tDragStart) return;
+  const dx = ev.clientX - _tDragStart.x, dy = ev.clientY - _tDragStart.y;
+  const dist = Math.hypot(dx, dy);
+  if(!_tDragArmed){
+    if(dist > 8) _tDragActivate(ev);
+    else return;
+  }
+  _tDragUpdatePreview(ev.clientX, ev.clientY);
+  _tDragHighlight(_tDragFindPill(ev.clientX, ev.clientY));
+  /* prevent native scroll while dragging on touch */
+  if(ev.cancelable) ev.preventDefault();
+}
+function _tDragOnUp(ev){
+  if(!_tDragArmed){ _tDragReset(); return; }
+  const pill = _tDragFindPill(ev.clientX, ev.clientY);
+  const id = _tDragId, fromLid = _tDragFromLid;
+  const t = TROWS.find(x=>x.id===id);
+  _tDragReset();
+  if(!pill || !id) return;
+  const pillKey = pill.dataset.k;
+  const def = TPILLS.find(p=>p[0]===pillKey); if(!def) return;
+  const toLid = DQLISTS[def[3]]; if(!toLid) return;
+  const due = _dueForPill(pillKey);
+  if(toLid === fromLid){
+    if(due !== undefined){ dq("taskedit",{id, lid:fromLid, title:t?t.title:"", due}); _askToast("due date updated"); renderTasks(); }
+    return;
+  }
+  dq("taskmove",{id, lid:fromLid, to:toLid, title:t?t.title:"", due});
+  tpAdd(id, {gone:true});
+  _askToast("moved to " + def[2]);
+  renderTasks();
+}
+/* Bind once at the document level — handles all task rows via delegation */
+document.addEventListener("pointerdown", _tDragOnDown);
+document.addEventListener("pointermove", _tDragOnMove, {passive:false});
+document.addEventListener("pointerup", _tDragOnUp);
+document.addEventListener("pointercancel", _tDragReset);
+/* Legacy stubs so old onclick="tDragStart(...)" doesn't crash if any leftover HTML still has them */
+function tDragStart(){} function tDragEnd(){} function tDragOver(){} function tDragLeave(){}
 /* Compute an RFC3339 due date for the pill we're dropping on.
    Today → today, Tomorrow → tomorrow, Week → coming Sunday, Month → end of month, Someday → clear.
    This way "drop on Tomorrow" also sets due=tomorrow so the Daily Dragons sync picks it up at 5am. */
