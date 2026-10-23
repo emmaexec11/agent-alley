@@ -1496,7 +1496,9 @@ let fastT=null;
 function fastPoll(){
   clearInterval(fastT);
   const until = Date.now()+3*60*1000;
-  fastT = setInterval(()=>{ if(Date.now()>until) clearInterval(fastT); else loadChat(); }, 4000);
+  /* 1.5s active-chat poll — chases down the response latency after a Devon send
+     (reduced from 4s per Devon 2026-10-23: dashboard felt slower than Telegram). */
+  fastT = setInterval(()=>{ if(Date.now()>until) clearInterval(fastT); else loadChat(); }, 1500);
 }
 async function loadChat(){
   const r = await relay("poll",{room:"hq",limit:120});
