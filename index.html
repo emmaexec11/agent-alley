@@ -919,7 +919,7 @@ function _saveDismissedChips(set){ localStorage.setItem(_todayKey(), JSON.string
 function dismissStripChip(key, ev){ if(ev){ ev.stopPropagation(); ev.preventDefault(); }
   const d=_getDismissedChips(); d.add(key); _saveDismissedChips(d); renderStrip(); }
 function renderStrip(){
-  const evs = (TASKS && TASKS.today && TASKS.today.events) ? TASKS.today.events.filter(e=>e.all_day) : [];
+  const evs = (TASKS && TASKS.today && TASKS.today.events) ? TASKS.today.events.filter(e=>e.all_day && e.title && e.title.trim()) : [];
   const dismissed = _getDismissedChips();
   const parts = evs.filter(e=>!dismissed.has(e.title)).map(e=>{
     const bday = /birthday/i.test(e.title);
