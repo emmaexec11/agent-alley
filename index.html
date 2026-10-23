@@ -1198,6 +1198,21 @@ function _saveDismissedChips(set){ localStorage.setItem(_todayKey(), JSON.string
 function dismissStripChip(key, ev){ if(ev){ ev.stopPropagation(); ev.preventDefault(); }
   const d=_getDismissedChips(); d.add(key); _saveDismissedChips(d); renderStrip(); }
 function renderStrip(){
+  let html = "";
+  
+  /* Agent status chips — recent/active agents */
+  if(CREW && CREW.length){
+    CREW.forEach(([id,nm,w])=>{
+      const ag = findAgent(id);
+      const st = ag ? ag.status : "idle";
+      const clr = wingClr(w || "business");
+      const dotClass = st==="working"?"working":st==="stuck"?"stuck":st==="waiting"?"waiting":"idle";
+      html += `<div class="chip" style="border-color:color-mix(in srgb,${clr.c} 45%,transparent)" onclick="askChat('${esc(id)}')">
+        <div class="cdot ${dotClass}"></div>${esc(nm)}<small>${st==="idle"?"":""+st}</small></div>`;
+    });
+  }
+  
+  /* Event/birthday chips */
   const evs = (TASKS && TASKS.today && TASKS.today.events) ? TASKS.today.events.filter(e=>{
     if(!e.all_day) return false;
     const t = (e.title||"").trim();
@@ -1211,10 +1226,12 @@ function renderStrip(){
     const key = e.title.replace(/'/g,"&#39;").replace(/"/g,'&quot;');
     return `<div class="chip" style="border-color:rgba(251,191,36,.35);color:#fde68a;cursor:default">${bday?"🎂":"📅"} ${esc(e.title)}<small>today</small><span class="x" onclick="dismissStripChip('${key}', event)" title="Dismiss">✕</span></div>`;
   });
-  if(!parts.length){ document.getElementById("astrip").innerHTML=""; return; }
+  
+  html += parts.join("");
+  if(!html){ document.getElementById("astrip").innerHTML=""; return; }
   const tgl = `<div class="chip off tgl" onclick="toggleChips()" title="${chipsOpen?"Hide":"Show"} today's notes">${
     chipsOpen?"▾":`▸<small>${parts.length} today</small>`}</div>`;
-  document.getElementById("astrip").innerHTML = chipsOpen ? tgl+parts.join("") : tgl;
+  document.getElementById("astrip").innerHTML = tgl + html;
 }
 
 /* ── inbox (compact) ── */
