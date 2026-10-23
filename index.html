@@ -172,9 +172,27 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size
 .tempty{color:var(--faint);font-size:12px;padding:4px 2px}
 .tnote{font-size:10.5px;color:var(--faint);margin-top:6px}
 
-/* ── Habit Tracker tab ── */
-#habitstab{padding:14px}
-#habitstab #goalscard{margin:0}
+/* ── Goals tab (was Habit Tracker — Devon 2026-10-23: habits live in morning/night updates, goals get their own tab) ── */
+#habitstab{padding:16px}
+#habitstab #goalscard{margin:0 0 14px}
+#goalspage{display:flex;flex-direction:column;gap:12px}
+#goalspage .gcat{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:14px 16px;transition:border-color .15s}
+#goalspage .gcat:hover{border-color:var(--line2)}
+#goalspage .gcat .ghead{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+#goalspage .gcat .gic{font-size:22px;line-height:1}
+#goalspage .gcat .gnm{font-weight:800;font-size:16px;letter-spacing:-.2px}
+#goalspage .gcat .gstar{color:var(--dim);font-size:12.5px;margin-left:30px;margin-bottom:10px}
+#goalspage .gcat .gitems{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+#goalspage .gcat .gi{display:flex;align-items:center;gap:11px;padding:7px 2px 7px 8px;border-left:2px solid rgba(124,92,255,.4);font-size:13.5px}
+#goalspage .gcat .gi .ginm{flex:1;min-width:0;color:var(--txt)}
+#goalspage .gcat .gi .gtgt{flex:0 0 auto;font-family:"JetBrains Mono",monospace;font-size:11px;color:#c4b5fd;padding:2px 9px;border-radius:999px;background:rgba(124,92,255,.14);border:1px solid rgba(124,92,255,.3);font-weight:700}
+#goalspage .gcat .gi.lag .gtgt{color:#fcd34d;background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.3)}
+#goalspage .gcat .gi.lead{border-left-color:#34d399}
+#goalspage .gcat .gi.lead .gtgt{color:#6ee7b7;background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.3)}
+#goalspage .gempty{color:var(--faint);font-size:13px;text-align:center;padding:30px 10px;border:1px dashed var(--line);border-radius:12px}
+#goalspage .gheader{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+#goalspage .gheader h2{font-size:18px;font-weight:800;letter-spacing:-.3px}
+#goalspage .gheader small{color:var(--dim);font-weight:500;font-size:12px}
 
 /* ── new project / finish ── */
 .npbtn{display:inline-flex;align-items:center;gap:7px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.45);color:#c4b5fd;border-radius:10px;padding:8px 15px;font-size:12.5px;font-weight:700;margin-bottom:12px}
@@ -782,7 +800,7 @@ body[data-tab="chat"] #askbar{display:none}
       <button class="lt on" data-t="alley" onclick="setTab('alley')">Alley</button>
       <button class="lt" data-t="projects" onclick="setTab('projects')">Projects</button>
       <button class="lt" data-t="tasks" onclick="setTab('tasks')">Tasks</button>
-      <button class="lt" data-t="habits" onclick="setTab('habits')">Habit Tracker</button>
+      <button class="lt" data-t="habits" onclick="setTab('habits')">Goals</button>
     </div>
     <section class="tile" id="alleytab">
       <div id="crumb"></div>
@@ -807,7 +825,7 @@ body[data-tab="chat"] #askbar{display:none}
     </section>
     <section class="tile" id="projectstab"><div id="projwrap"></div></section>
     <section id="taskstab"></section>
-    <section class="tile" id="habitstab"><div id="goalscard"></div></section>
+    <section class="tile" id="habitstab"><div id="goalspage"><div class="gempty">loading goals…</div></div></section>
   </div>
   <div id="drag"></div>
   <aside class="tile" id="chat">
@@ -834,7 +852,7 @@ body[data-tab="chat"] #askbar{display:none}
   <button class="bn on" data-t="alley" onclick="setTab('alley')"><span class="bnic"></span>Alley<span class="bbadge" id="bnavbadge" style="display:none"></span></button>
   <button class="bn" data-t="projects" onclick="setTab('projects')"><span class="bnic"></span>Projects</button>
   <button class="bn" data-t="tasks" onclick="setTab('tasks')"><span class="bnic"></span>Tasks</button>
-  <button class="bn" data-t="habits" onclick="setTab('habits')"><span class="bnic"></span>Habits</button>
+  <button class="bn" data-t="habits" onclick="setTab('habits')"><span class="bnic"></span>Goals</button>
   <button class="bn" data-t="chat" onclick="setTab('chat')"><span class="bnic"></span>Chat</button>
 </nav>
 <div class="toast" id="toast"></div>
@@ -918,6 +936,7 @@ function setTab(t){
   document.querySelectorAll("#bnav .bn").forEach(b=>b.classList.toggle("on", b.dataset.t===t));
   if(t==="alley") requestAnimationFrame(renderCluster);
   if(t==="chat"){ const el=document.getElementById("msgs"); el.scrollTop=el.scrollHeight; }
+  if(t==="habits") renderGoalsPage();
 }
 
 /* ── top strip: critical-only (today's birthdays / all-day events) ──
@@ -1020,10 +1039,25 @@ function renderCluster(){
     /* Short labels for mobile — "Naturally Wyld CS" wraps at narrow widths */
     const SHORT = {cs_bot:"Wyld CS",meta_copilot:"Meta",pitch:"Outreach",carol:"Books",sage:"SAGE"};
     const narrow = window.innerWidth<=1000;
+    /* Devon's rule 2026-10-23: pulse should be a VALUABLE SIGNAL, not noise.
+       Always-on crons (CS inbox watcher, Meta refresh) perpetually mark themselves "working" —
+       that becomes meaningless flashing. Only pulse the orb for exceptional states:
+         - "stuck" → red pulse (ALWAYS)
+         - "working" → green pulse ONLY if NOT a background-cron agent
+       Everything else = calm. */
+    const BG_CRON_AGENTS = new Set(["cs_bot","meta_copilot","carol","pitch"]);
+    const _pulseRing = (ag) => {
+      if(!ag || !ag.status || ag.status==="idle") return null;
+      if(ag.status==="stuck") return "stuck";
+      if(ag.status==="waiting") return "waiting";
+      /* working: suppress for always-on cron agents */
+      if(ag.status==="working" && BG_CRON_AGENTS.has(ag.id)) return null;
+      return ag.status;
+    };
     children = fleet.map(([id,nm,w])=>{
       const clr=wingClr(w); const ag=findAgent(id);
       return {ico:icon("agent",clr.g), avatar:id, nm: narrow && SHORT[id] ? SHORT[id] : nm, cls:"agentn fleet", clr,
-        ring: ag && ag.status && ag.status!=="idle" ? ag.status : null,
+        ring: _pulseRing(ag),
         click:()=>openCrewChat(id, nm)};
     });
     if(!children.length){
@@ -1237,50 +1271,87 @@ function openEmmaChat(){
    cs_bot (Review/Escalations/Trends), meta_copilot (Today/Cut List/Creative/Pacing),
    carol (CEO glance/Channel P&L/Fee drag/Anomalies), pitch (Drafts/Pipeline/Campaigns).
    SAGE spec placeholder until she picks hers. */
+/* Hub specs — cards grouped per tab (tabs now actually show different content when clicked) */
 const HUB_SPECS = {
-  carol: {title:"Bookkeeper",  tabs:["CEO glance","Channel P&L","Fee drag","Anomalies"], tag:"wyld",
-    cards:[
-      {k:"cash_runway", lbl:"Cash runway",        kv:"carol.cash_runway"},
-      {k:"gm_mtd",      lbl:"Gross margin MTD",   kv:"carol.gm_mtd_pct"},
-      {k:"ad_vs_rev",   lbl:"Ad spend / revenue", kv:"carol.ad_vs_rev"},
-      {k:"rev_today",   lbl:"Revenue today",      kv:"shopify_today.revenue", fmt:"money"},
-      {k:"orders_today",lbl:"Orders today",       kv:"shopify_today.orders"},
-      {k:"rev_mtd",     lbl:"Revenue MTD",        kv:"shopify_mo.revenue",    fmt:"money"},
-      {k:"top_sku",     lbl:"Top SKU this wk",    kv:"shopify_wk.top_sku"}
-    ]},
-  meta_copilot: {title:"Meta Copilot", tabs:["Today","Cut List","Creative Health","Pacing"], tag:"meta",
-    cards:[
-      {k:"cpa_today",   lbl:"CPA vs $15 target",  kv:"meta_today.cpa"},
-      {k:"spend_vs_bud",lbl:"Spend / budget",     kv:"meta_today.spend_vs_budget"},
-      {k:"purch_today", lbl:"Purchases today",    kv:"meta_today.purchases"},
-      {k:"rev_today",   lbl:"Revenue today",      kv:"meta_today.revenue",   fmt:"money"},
-      {k:"spend_today", lbl:"Spend today",        kv:"meta_today.spend",     fmt:"money"},
-      {k:"cac_7d",      lbl:"CAC 7d rolling",     kv:"meta_today.cac_7d",    fmt:"money"},
-      {k:"cuts",        lbl:"Cut-list candidates",kv:"meta_today.cuts"}
-    ]},
-  cs_bot: {title:"Customer Service", tabs:["Review queue","Escalations","Trends"], tag:"cs",
-    cards:[
-      {k:"drafts",      lbl:"Drafts to review",   kv:"cs.drafts"},
-      {k:"oldest_draft",lbl:"Oldest draft",       kv:"cs.oldest_draft"},
-      {k:"gorgias_open",lbl:"Gorgias open",       kv:"cs.gorgias_open"},
-      {k:"auto_send",   lbl:"Auto-send status",   kv:"cs.auto_send"},
-      {k:"sent_today",  lbl:"Sent today",         kv:"cs.sent_today"},
-      {k:"approval_rate",lbl:"Approval rate 7d",  kv:"cs.approval_rate"}
-    ]},
-  pitch: {title:"Cold Outreach", tabs:["Needs you","Pipeline","Campaigns"],
-    cards:[
-      {k:"drafts_wait", lbl:"Drafts awaiting you",kv:"pitch.drafts_wait"},
-      {k:"sent_wk",     lbl:"Sent this week",     kv:"pitch.sent_wk"},
-      {k:"reply_rate",  lbl:"Reply rate wk",      kv:"pitch.reply_rate"},
-      {k:"live_convo",  lbl:"Live conversations", kv:"pitch.live_convo"},
-      {k:"meetings",    lbl:"Meetings booked",    kv:"pitch.meetings"}
-    ]},
-  sage: {title:"S.A.G.E", tabs:["Daily","Training","Meals"],
-    cards:[
-      {k:"habits",      lbl:"Habits today",       placeholder:"wiring"},
-      {k:"workout",     lbl:"Next workout",       placeholder:"wiring"},
-      {k:"meals",       lbl:"Meals logged",       placeholder:"wiring"}
-    ]}
+  carol: {title:"Bookkeeper", tag:"wyld",
+    tabs: {
+      "CEO glance": [
+        {k:"cash_runway", lbl:"Cash runway",        kv:"carol.cash_runway"},
+        {k:"gm_mtd",      lbl:"Gross margin MTD",   kv:"carol.gm_mtd_pct"},
+        {k:"ad_vs_rev",   lbl:"Ad spend / revenue", kv:"carol.ad_vs_rev"}
+      ],
+      "Shopify": [
+        {k:"rev_today",   lbl:"Revenue today",      kv:"shopify_today.revenue", fmt:"money"},
+        {k:"orders_today",lbl:"Orders today",       kv:"shopify_today.orders"},
+        {k:"rev_wtd",     lbl:"Revenue WTD",        kv:"shopify_wk.revenue",    fmt:"money"},
+        {k:"rev_mtd",     lbl:"Revenue MTD",        kv:"shopify_mo.revenue",    fmt:"money"},
+        {k:"top_sku",     lbl:"Top SKU this wk",    kv:"shopify_wk.top_sku"}
+      ],
+      "P&L":      [{k:"gm_mtd", lbl:"Gross margin MTD", kv:"carol.gm_mtd_pct"}],
+      "Anomalies":[{k:"anomalies", lbl:"Expense anomalies", placeholder:"wiring"}]
+    }},
+  meta_copilot: {title:"Meta Copilot", tag:"meta",
+    tabs: {
+      "Today": [
+        {k:"cpa_today",   lbl:"CPA vs $15 target",  kv:"meta_today.cpa"},
+        {k:"spend_vs_bud",lbl:"Spend / budget",     kv:"meta_today.spend_vs_budget"},
+        {k:"purch_today", lbl:"Purchases today",    kv:"meta_today.purchases"},
+        {k:"rev_today",   lbl:"Revenue today",      kv:"meta_today.revenue",   fmt:"money"},
+        {k:"spend_today", lbl:"Spend today",        kv:"meta_today.spend",     fmt:"money"}
+      ],
+      "Cut List": [
+        {k:"cuts",        lbl:"Cut-list candidates",kv:"meta_today.cuts"},
+        {k:"cut_detail",  lbl:"≥$22 spend, 0 sales",placeholder:"wiring list"}
+      ],
+      "Creative Health": [
+        {k:"top_ad",      lbl:"Top creative 7d",   placeholder:"wiring"},
+        {k:"andromeda",   lbl:"Andromeda cluster health", placeholder:"wiring"}
+      ],
+      "Pacing": [
+        {k:"cac_7d",      lbl:"CAC 7d rolling",     kv:"meta_today.cac_7d",    fmt:"money"},
+        {k:"bump_elig",   lbl:"Budget bump eligible", placeholder:"wiring"},
+        {k:"friday_cnt",  lbl:"Friday batch countdown", placeholder:"wiring"}
+      ]
+    }},
+  cs_bot: {title:"Customer Service", tag:"cs",
+    tabs: {
+      "Review queue": [
+        {k:"drafts",      lbl:"Drafts to review",   kv:"cs.drafts"},
+        {k:"oldest_draft",lbl:"Oldest draft",       kv:"cs.oldest_draft"},
+        {k:"gorgias_open",lbl:"Gorgias open",       kv:"cs.gorgias_open"},
+        {k:"auto_send",   lbl:"Auto-send status",   kv:"cs.auto_send"}
+      ],
+      "Escalations": [
+        {k:"escalations", lbl:"Escalations open",   placeholder:"wiring"},
+        {k:"validator",   lbl:"Validator blocks",   placeholder:"wiring"}
+      ],
+      "Trends": [
+        {k:"sent_today",  lbl:"Sent today",         kv:"cs.sent_today"},
+        {k:"approval_rate",lbl:"Approval rate 7d",  kv:"cs.approval_rate"},
+        {k:"top_issue",   lbl:"Top inquiry wk",     placeholder:"wiring"}
+      ]
+    }},
+  pitch: {title:"Cold Outreach",
+    tabs: {
+      "Needs you": [
+        {k:"drafts_wait", lbl:"Drafts awaiting you",kv:"pitch.drafts_wait"}
+      ],
+      "Pipeline": [
+        {k:"sent_wk",     lbl:"Sent this week",     kv:"pitch.sent_wk"},
+        {k:"reply_rate",  lbl:"Reply rate wk",      kv:"pitch.reply_rate"},
+        {k:"live_convo",  lbl:"Live conversations", kv:"pitch.live_convo"},
+        {k:"meetings",    lbl:"Meetings booked",    kv:"pitch.meetings"}
+      ],
+      "Campaigns": [
+        {k:"camp_perf",   lbl:"Per-campaign stats", placeholder:"wiring"}
+      ]
+    }},
+  sage: {title:"S.A.G.E",
+    tabs: {
+      "Daily": [{k:"habits", lbl:"Habits today", placeholder:"wiring"}],
+      "Training": [{k:"workout", lbl:"Next workout", placeholder:"wiring"}],
+      "Meals": [{k:"meals", lbl:"Meals logged", placeholder:"wiring"}]
+    }}
 };
 let activeAgentHub = null, activeHubTab = 0;
 let HUB_KV = {};  /* backend-populated kv blobs the hubs read from */
@@ -1312,9 +1383,13 @@ function renderAgentHub(){
   const spec = HUB_SPECS[activeAgentHub]; if(!spec) return;
   const el = document.getElementById("agenthub");
   const tag = spec.tag || "";
-  const tabsBar = spec.tabs ? `<div class="hbtabs">`+spec.tabs.map((t,i)=>
+  /* Tabs: look up cards per tab key so clicking a tab actually swaps content */
+  const tabNames = spec.tabs ? Object.keys(spec.tabs) : [];
+  const activeTabName = tabNames[activeHubTab] || tabNames[0];
+  const tabsBar = tabNames.length ? `<div class="hbtabs">`+tabNames.map((t,i)=>
     `<button class="hbtab${i===activeHubTab?" on":""}" onclick="setHubTab(${i})">${esc(t)}</button>`).join("")+`</div>` : "";
-  const cards = (spec.cards||[]).map(c=>{
+  const activeCards = (spec.tabs && spec.tabs[activeTabName]) || [];
+  const cards = activeCards.map(c=>{
     const v = _fmtHubVal(c);
     const isWip = !c.kv || _kvGet(c.kv)==null;
     return `<div class="hbcard ${tag}${isWip?" wip":""}">
@@ -2625,6 +2700,38 @@ async function renderDayUpdate(mode){
   }
 }
 function _duWakeConfirm(btn){ btn.textContent = "☀️ nice — you're up"; btn.style.opacity="0.6"; btn.disabled=true; }
+
+/* ── Goals tab (DHQ goals2 kv — categories, items, leading vs lagging) ──
+   Devon's rule 2026-10-23: leading indicators > lagging ones. Visual priority to
+   min/wk + days commitments (lead), target as the lag outcome. */
+async function renderGoalsPage(){
+  const page = document.getElementById("goalspage");
+  if(!page) return;
+  let data = null;
+  try{ data = await _dqKvGet("goals2"); }catch(e){}
+  const cats = (data && Array.isArray(data.cats)) ? data.cats : [];
+  if(!cats.length){
+    page.innerHTML = `<div class="gempty">no goals set yet — add one from the DHQ goals coach or chat Emma to seed them</div>`;
+    return;
+  }
+  const html = cats.map(cat=>{
+    const items = (cat.items||[]).map(it=>{
+      const isLead = (it.min || it.days) && !!(it.min || (it.days && it.days.length));
+      const tgt = it.tgt && it.min && it.tgt !== it.min
+        ? `${it.min}-${it.tgt}/${it.per||"wk"}`
+        : it.min ? `${it.min}/${it.per||"wk"}` : "";
+      const cls = isLead ? "lead" : "lag";
+      return `<div class="gi ${cls}"><span class="ginm">${esc(it.name||it.id||"")}</span>${tgt?`<span class="gtgt">${esc(tgt)}</span>`:""}</div>`;
+    }).join("");
+    return `<div class="gcat">
+      <div class="ghead"><span class="gic">${esc(cat.icon||"🎯")}</span><span class="gnm">${esc(cat.name||cat.id||"")}</span></div>
+      ${cat.star?`<div class="gstar">${esc(cat.star)}</div>`:""}
+      ${items?`<div class="gitems">${items}</div>`:`<div class="gempty" style="padding:12px 0;border:none">no items yet</div>`}
+    </div>`;
+  }).join("");
+  page.innerHTML = `<div class="gheader"><h2>Goals</h2><small>${cats.length} categories · leading indicators green, lagging amber</small></div>${html}`;
+}
+/* Refresh goals whenever user switches to the tab (keeps data fresh without 24/7 polling) */
 function _duPinSave(ev){
   const v = ev.target.value.trim();
   localStorage.setItem("ahq_dayfocus", v);
