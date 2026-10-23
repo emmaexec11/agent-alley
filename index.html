@@ -745,6 +745,17 @@ body[data-tab="chat"] #askbar{display:none}
 #dayupdate .duddrow .duddt{flex:1;min-width:0;font-size:13.5px}
 #dayupdate .duddrow.ck .duddt{text-decoration:line-through;color:var(--faint)}
 #dayupdate .dustar{color:#fcd34d;font-size:12px}
+/* Habits list rows (added 2026-10-23) — same spacing as dragons, tappable 3-state circle */
+#dayupdate .duhrow{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;transition:background .12s;cursor:pointer;min-height:32px}
+#dayupdate .duhrow:hover{background:rgba(255,255,255,.03)}
+#dayupdate .duhrow .duhchk{flex:0 0 20px;width:20px;height:20px;border-radius:50%;border:1.8px solid var(--faint);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;transition:background .15s,border-color .15s;background:transparent}
+#dayupdate .duhrow:hover .duhchk{border-color:#c4b5fd}
+#dayupdate .duhrow.done .duhchk{background:#22c55e;border-color:#22c55e;color:#052e0f}
+#dayupdate .duhrow.skip .duhchk{background:#3b82f6;border-color:#3b82f6;color:#061227}
+#dayupdate .duhrow .duhic{flex:0 0 auto;font-size:14px;opacity:.9}
+#dayupdate .duhrow .duht{flex:1;min-width:0;font-size:13.5px;color:var(--txt)}
+#dayupdate .duhrow.done .duht{color:var(--faint)}
+#dayupdate .duhrow.skip .duht{color:var(--faint);font-style:italic}
 /* Recap chips + lines use the dashboard rchip2 / rline look */
 #dayupdate .duchips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
 #dayupdate .duchip{font-size:10.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line2);color:var(--faint)}
@@ -2790,10 +2801,12 @@ async function _dqKvSet(key, value){
    Writes to the same habits table render.py reads from, so goals toggled here
    show up in the morning/night cards automatically. */
 async function _dqHabitSet(day, habit, done){
+  /* Returns true on 2xx, false on network error or non-ok response. Callers that need
+     revert-on-failure (e.g. _gCycleHabit) should check the boolean, not try/catch. */
   try{
-    await fetch(`${DQ_RELAY}/?k=${DQ_KEY}&action=habitset`,
+    const r = await fetch(`${DQ_RELAY}/?k=${DQ_KEY}&action=habitset`,
       {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({day, habit, done:done?1:0})});
-    return true;
+    return r.ok;
   }catch(e){ return false; }
 }
 async function _dqHabitRange(start, end){
@@ -3037,9 +3050,8 @@ async function _gCycleHabit(cid, iid, dd, cycleFull){
   _gDraw();
   _rerenderDayUpdateHabits();
 
-  try {
-    await Promise.all(writes.map(w => _dqHabitSet(dd, w.habit, w.done)));
-  } catch(e){
+  const results = await Promise.all(writes.map(w => _dqHabitSet(dd, w.habit, w.done)));
+  if(results.some(ok => !ok)){
     row[K1] = prev.K1; row[K2] = prev.K2;
     _gDraw(); _rerenderDayUpdateHabits();
     toast("save failed — reverted");
@@ -3299,9 +3311,8 @@ function _gWireEvents(){
       });
       _gDraw();
       _rerenderDayUpdateHabits();
-      try {
-        await Promise.all(cat.items.map(it => _dqHabitSet(today, _gk(cid, it.id), want)));
-      } catch(e){
+      const results = await Promise.all(cat.items.map(it => _dqHabitSet(today, _gk(cid, it.id), want)));
+      if(results.some(ok => !ok)){
         cat.items.forEach(it => { GOALS_STATE.days[today][_gk(cid, it.id)] = prev[it.id]; });
         _gDraw(); _rerenderDayUpdateHabits();
         toast("save failed — reverted");
