@@ -393,8 +393,9 @@ body.agent-hub #top3{display:none !important}
 #crumb .c:hover{background:var(--s3);color:var(--txt)}
 #crumb .c.cur{color:var(--txt);cursor:default}
 #crumb .sep{color:var(--faint)}
-#cluster{position:relative;height:500px;touch-action:none;overflow:hidden;cursor:grab}
-#cluster.panning{cursor:grabbing}
+#cluster{position:relative;height:500px;overflow:visible}
+#cluster .cnode.hub.cos{cursor:grab}
+#cluster.panning .cnode.hub.cos{cursor:grabbing}
 #cnodes,#clines{transition:transform .25s ease-out}
 #cluster.panning #cnodes,#cluster.panning #clines{transition:none}
 #clines{position:absolute;inset:0;width:100%;height:100%}
@@ -2734,40 +2735,56 @@ let rsz; window.addEventListener("resize", ()=>{ clearTimeout(rsz); rsz=setTimeo
   const lines = document.getElementById("clines");
   if(!cont || !nodes) return;
   let panX = 0, panY = 0, startX = 0, startY = 0, baseX = 0, baseY = 0;
-  let panning = false, pointerId = null;
+  let panning = false, pointerId = null, startedOnHub = false, hubTapTime = 0;
   const apply = ()=>{
     const t = `translate(${panX}px, ${panY}px)`;
     nodes.style.transform = t; lines.style.transform = t;
   };
   const reset = ()=>{ panX = 0; panY = 0; apply(); };
+  /* Devon's rule 2026-10-23: pan ONLY when grabbing Emma (the center hub).
+     Background taps/scrolls pass through normally so page scroll works.
+     Short tap on Emma still fires her onclick (open chat); only sustained drag pans. */
   cont.addEventListener("pointerdown", (e)=>{
-    if(e.target.closest(".cnode")) return; // only pan when grabbing background
-    panning = true; pointerId = e.pointerId;
+    const hubEl = e.target.closest(".cnode.hub");
+    if(!hubEl) return;  // background/other orbs — don't capture, let scroll + click work normally
+    startedOnHub = true;
+    hubTapTime = Date.now();
+    pointerId = e.pointerId;
     startX = e.clientX; startY = e.clientY; baseX = panX; baseY = panY;
-    cont.setPointerCapture(e.pointerId);
-    cont.classList.add("panning");
-  });
+    panning = false;  // not yet — only activate once movement exceeds threshold
+  }, {passive:true});
   cont.addEventListener("pointermove", (e)=>{
-    if(!panning || e.pointerId !== pointerId) return;
-    panX = baseX + (e.clientX - startX);
-    panY = baseY + (e.clientY - startY);
+    if(!startedOnHub || e.pointerId !== pointerId) return;
+    const dx = e.clientX - startX, dy = e.clientY - startY;
+    const dist = Math.hypot(dx, dy);
+    if(!panning && dist < 6) return;  // under threshold = still a potential tap/click
+    if(!panning){
+      panning = true;
+      cont.classList.add("panning");
+      try{ cont.setPointerCapture(e.pointerId); }catch(_){}
+    }
+    panX = baseX + dx; panY = baseY + dy;
     apply();
+    if(e.cancelable) e.preventDefault();
   });
-  const endPan = (e)=>{
-    if(!panning) return;
-    panning = false; pointerId = null;
-    cont.classList.remove("panning");
+  const endPan = ()=>{
+    if(panning){
+      panning = false;
+      cont.classList.remove("panning");
+    }
+    startedOnHub = false;
+    pointerId = null;
   };
   cont.addEventListener("pointerup", endPan);
   cont.addEventListener("pointercancel", endPan);
-  /* double-click/double-tap on background = recenter */
+  /* double-tap on Emma = recenter */
   let lastTap = 0;
   cont.addEventListener("pointerdown", (e)=>{
-    if(e.target.closest(".cnode")) return;
+    if(!e.target.closest(".cnode.hub")) return;
     const t = Date.now();
     if(t - lastTap < 320){ reset(); }
     lastTap = t;
-  });
+  }, {passive:true});
 })();
 
 /* ── Chat text zoom (wheel + pinch) ──
