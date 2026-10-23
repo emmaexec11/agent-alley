@@ -1324,8 +1324,11 @@ async function decide(id, what){
   }catch(e){ toast("Failed — check connection"); }
 }
 
-/* ── chat (Telegram-style: list of conversations → conversation) ── */
-let chatTarget = null, chatView = "list", ALLMSGS = [];
+/* ── chat (Telegram-style: list of conversations → conversation) ──
+   Devon's rule 2026-10-23: default landing opens Emma's chat directly.
+   He talks to Emma 99% of the time (she delegates); the fleet list is secondary.
+   Tap "‹ all chats" in the chat header to reach specialists. */
+let chatTarget = null, chatView = "conv", ALLMSGS = [];
 function applyChatView(){
   const list = chatView==="list";
   document.getElementById("chatlist").style.display = list?"block":"none";
@@ -2444,7 +2447,9 @@ function goHome(){
     document.documentElement.style.removeProperty("--chatw");
     localStorage.removeItem("ahq_chatw");
     document.body.removeAttribute("data-pane");
-    if(typeof applyChatView === "function") applyChatView();
+    /* Devon's rule 2026-10-23: home = Emma's chat open (not the fleet list) */
+    if(typeof closeAgentHub === "function") closeAgentHub();
+    if(typeof openEmmaChat === "function") openEmmaChat();
     window.scrollTo({top:0, behavior:"smooth"});
   }catch(e){}
 }
