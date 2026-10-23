@@ -654,6 +654,7 @@ body.dragging #chat,body.dragging main{pointer-events:none}
 .msg .who .when{float:right;color:var(--faint);font-weight:400;margin-left:10px}
 /* ── chat list (Telegram-style) ── */
 #chatlist{flex:1;overflow-y:auto;display:none}
+#chat.conv #chatlist{display:flex !important;flex-direction:column;border-top:1px solid var(--line);padding-top:8px;margin-top:auto;max-height:200px;overflow-y:auto}
 .crow{display:flex;align-items:center;gap:11px;padding:10px 15px;cursor:pointer;border-bottom:1px solid var(--line);transition:background .12s}
 .crow:hover{background:var(--s2)}
 .cav{position:relative;flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:var(--s2);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center}
@@ -1476,11 +1477,16 @@ async function decide(id, what){
 let chatTarget = null, chatView = "conv", ALLMSGS = [];
 function applyChatView(){
   const list = chatView==="list";
+  const chat = document.getElementById("chat");
   document.getElementById("chatlist").style.display = list?"block":"none";
   document.getElementById("msgs").style.display = list?"none":"flex";
   document.getElementById("chatform").style.display = list?"none":"flex";
   document.getElementById("attprev").style.display = (!list && pendingFile)?"flex":"none";
   document.getElementById("qprev").style.display = (!list && pendingQuote)?"flex":"none";
+  if(chat){
+    if(list) chat.classList.remove("conv");
+    else chat.classList.add("conv");
+  }
   updateChatHead();
 }
 function showList(){ chatView="list"; chatTarget=null; applyChatView(); renderChatList(); }
@@ -2020,6 +2026,11 @@ async function startLongPoll(){
           if(ALLMSGS.length > 300) ALLMSGS = ALLMSGS.slice(-300);
           renderChatList();
           if(chatView==="conv") renderConv();
+          /* Ensure scroll to bottom after new messages */
+          requestAnimationFrame(()=>{
+            const el=document.getElementById("msgs");
+            if(el) el.scrollTop=el.scrollHeight;
+          });
           onNewRemoteMessages(msgs);  /* trigger push if backgrounded */
         }
       } catch(e) {
@@ -2061,6 +2072,8 @@ function renderConv(){
     msgs = all.filter(m => (m.sender==="Devon" && !m.text.startsWith("@")) || m.sender==="Emma" || m.sender==="Penny");
   }
   CONVMSGS = msgs;
+  const el=document.getElementById("msgs");
+  const wasAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
   document.getElementById("msgs").innerHTML = msgs.map((m,i)=>{
     const atts=[]; const txt = m.text.replace(FILE_RE,(_,k,n)=>{ atts.push([k,n]); return ""; }).trim();
     const {q, body} = splitQuote(txt);
@@ -2074,10 +2087,10 @@ function renderConv(){
     document.getElementById("msgs").innerHTML +=
       `<div class="msg typing"><div class="who">${esc(nm)}</div><span class="tdots"><i></i><i></i><i></i></span></div>`;
   }
-  const el=document.getElementById("msgs");
-  const wasAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
-  requestAnimationFrame(()=>{ if(wasAtBottom) el.scrollTop=el.scrollHeight; });
-  hydrateAtts();
+  requestAnimationFrame(()=>{ 
+    el.scrollTop=el.scrollHeight;
+    hydrateAtts();
+  });
 }
 function stuckFromWings(wings){
   const out=[];
