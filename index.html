@@ -339,6 +339,36 @@ body:not([data-view="home"]) #fleetfilter{display:none}
 .ring.stuck{border-color:var(--red);animation:pulse 1.2s infinite}
 .hint{font-size:11px;color:var(--faint);text-align:center;padding:2px 0 4px}
 
+/* ── agent data hub (replaces cluster when an agent orb is tapped) ── */
+#agenthub{display:none;padding:4px 0 8px}
+body.agent-hub #cluster,
+body.agent-hub #chint,
+body.agent-hub #fleetfilter{display:none}
+body.agent-hub #agenthub{display:block}
+.hbhead{display:flex;align-items:center;gap:12px;padding:6px 2px 14px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.hbhead .hbback{background:transparent;border:1px solid var(--line2);color:var(--dim);border-radius:9px;padding:6px 12px;font:600 12px Inter;cursor:pointer;font-family:inherit}
+.hbhead .hbback:hover{color:var(--txt);border-color:var(--v)}
+.hbhead .hbav{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid var(--line2)}
+.hbhead .hbtitle{font-weight:800;font-size:15px;flex:1}
+.hbhead .hbtitle small{color:var(--dim);font-weight:500;font-size:12px;margin-left:7px}
+.hbhead .hbmake{background:rgba(124,92,255,.14);border:1px solid rgba(124,92,255,.4);color:#c4b5fd;border-radius:9px;padding:6px 11px;font:700 11.5px Inter;cursor:pointer;font-family:inherit;flex:0 0 auto}
+.hbhead .hbmake:hover{background:rgba(124,92,255,.22)}
+.hbtabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:0 2px 10px}
+.hbtabs::-webkit-scrollbar{display:none}
+.hbtab{flex:0 0 auto;background:transparent;border:1px solid var(--line);color:var(--dim);border-radius:999px;padding:5px 12px;font:600 11.5px Inter;cursor:pointer;font-family:inherit;white-space:nowrap}
+.hbtab.on{background:rgba(124,92,255,.14);border-color:rgba(124,92,255,.45);color:var(--txt)}
+.hbgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}
+.hbcard{background:var(--s2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0;transition:border-color .15s}
+.hbcard:hover{border-color:var(--line2)}
+.hbcard .hblbl{font-size:10.5px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:var(--dim)}
+.hbcard .hbval{font-size:19px;font-weight:800;margin-top:4px;font-family:"JetBrains Mono",monospace;color:var(--txt)}
+.hbcard .hbsub{font-size:11px;color:var(--faint);margin-top:3px}
+.hbcard.wyld{border-color:rgba(52,211,153,.3)}.hbcard.wyld .hbval{color:#6ee7b7}
+.hbcard.meta{border-color:rgba(96,165,250,.3)}.hbcard.meta .hbval{color:#93c5fd}
+.hbcard.cs{border-color:rgba(251,191,36,.3)}.hbcard.cs .hbval{color:#fcd34d}
+.hbcard.wip .hbval{opacity:.5}
+.hbnote{font-size:11.5px;color:var(--faint);text-align:center;padding:14px 4px;border:1px dashed var(--line);border-radius:10px;margin-top:12px}
+
 /* ── projects tab (pill-switched row list, mirrors Tasks UX) ── */
 #projectstab{padding:16px}
 .ppills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 2px 10px;-webkit-overflow-scrolling:touch}
@@ -624,7 +654,8 @@ body[data-tab="chat"] #askbar{display:none}
         <button class="ff" data-f="personal" onclick="setFleetFilter('personal')">Personal</button>
       </div>
       <div id="cluster"><svg id="clines"></svg><div id="cnodes"></div></div>
-      <div class="hint" id="chint">tap Emma to chat · tap an agent to open their line</div>
+      <div class="hint" id="chint">tap Emma to chat · tap an agent to open their hub + chat</div>
+      <div id="agenthub"></div>
       <div id="usagecard"></div>
       <div id="recapcard"></div>
     </section>
@@ -998,7 +1029,114 @@ function openAgentChat(a){
   if(window.innerWidth<=1000) setTab("chat");
   document.getElementById("chatin").focus();
 }
-function openEmmaChat(){ openAgentChat({id:"penny", title:"Penny"}); }
+function openEmmaChat(){
+  closeAgentHub();  /* Emma = Alley cluster view */
+  openAgentChat({id:"penny", title:"Penny"});
+}
+
+/* ── Agent data hub — appears in the Alley tab when an agent orb is tapped. ── */
+const HUB_SPECS = {
+  carol: {title:"Bookkeeper",   tabs:["Overview","Shopify","P&L"],       tag:"wyld",
+    cards:[
+      {k:"rev_today",   lbl:"Revenue today",    kv:"shopify_today.revenue", fmt:"money"},
+      {k:"orders_today",lbl:"Orders today",     kv:"shopify_today.orders"},
+      {k:"rev_wtd",     lbl:"Revenue WTD",      kv:"shopify_wk.revenue",    fmt:"money"},
+      {k:"rev_mtd",     lbl:"Revenue MTD",      kv:"shopify_mo.revenue",    fmt:"money"},
+      {k:"top_sku",     lbl:"Top SKU this wk",  kv:"shopify_wk.top_sku"},
+      {k:"runway",      lbl:"Cash runway",      placeholder:"—"}
+    ]},
+  meta_copilot: {title:"Meta Copilot", tabs:["Today","Pacing","Creative"], tag:"meta",
+    cards:[
+      {k:"spend_today", lbl:"Spend today",      kv:"meta_today.spend",     fmt:"money"},
+      {k:"sales_today", lbl:"Sales today",      kv:"meta_today.sales",     fmt:"money"},
+      {k:"cac_today",   lbl:"CAC today",        kv:"meta_today.cac",       fmt:"money"},
+      {k:"roas_today",  lbl:"ROAS today",       kv:"meta_today.roas"},
+      {k:"top_ad",      lbl:"Top creative",     placeholder:"wiring"},
+      {k:"pacing",      lbl:"Daily pacing",     placeholder:"wiring"}
+    ]},
+  cs_bot: {title:"Customer Service", tabs:["Inbox","Drafts","Trends"],   tag:"cs",
+    cards:[
+      {k:"open",        lbl:"Open tickets",     kv:"cs.open"},
+      {k:"drafts",      lbl:"Drafts ready",     kv:"cs.drafts"},
+      {k:"responded",   lbl:"Responded today",  kv:"cs.responded_today"},
+      {k:"avg_time",    lbl:"Avg response",     placeholder:"wiring"},
+      {k:"top_issue",   lbl:"Top issue (wk)",   placeholder:"wiring"}
+    ]},
+  pitch: {title:"Cold Outreach", tabs:["Pipeline","Replies"],
+    cards:[
+      {k:"sent_wk",     lbl:"Pitches sent (wk)",placeholder:"wiring"},
+      {k:"replies",     lbl:"Replies (wk)",     placeholder:"wiring"},
+      {k:"meetings",    lbl:"Meetings booked",  placeholder:"wiring"}
+    ]},
+  sage: {title:"S.A.G.E", tabs:["Daily","Training","Meals"],
+    cards:[
+      {k:"habits",      lbl:"Habits today",     placeholder:"wiring"},
+      {k:"workout",     lbl:"Next workout",     placeholder:"wiring"},
+      {k:"meals",       lbl:"Meals logged",     placeholder:"wiring"}
+    ]}
+};
+let activeAgentHub = null, activeHubTab = 0;
+let HUB_KV = {};  /* backend-populated kv blobs the hubs read from */
+function _kvGet(path){ /* dot-path lookup in HUB_KV */
+  if(!path) return undefined;
+  return path.split(".").reduce((o,k)=>(o==null?o:o[k]), HUB_KV);
+}
+function _fmtHubVal(card){
+  const v = card.kv ? _kvGet(card.kv) : undefined;
+  if(v==null) return card.placeholder || "—";
+  if(card.fmt==="money") return "$"+Math.round(v).toLocaleString();
+  return String(v);
+}
+function openAgentHub(id, nm){
+  const spec = HUB_SPECS[id];
+  if(!spec){ closeAgentHub(); return; }
+  activeAgentHub = id; activeHubTab = 0;
+  document.body.classList.add("agent-hub");
+  renderAgentHub();
+}
+function closeAgentHub(){
+  activeAgentHub = null;
+  document.body.classList.remove("agent-hub");
+  const el = document.getElementById("agenthub"); if(el) el.innerHTML="";
+}
+function setHubTab(i){ activeHubTab = i; renderAgentHub(); }
+function renderAgentHub(){
+  if(!activeAgentHub) return;
+  const spec = HUB_SPECS[activeAgentHub]; if(!spec) return;
+  const el = document.getElementById("agenthub");
+  const tag = spec.tag || "";
+  const tabsBar = spec.tabs ? `<div class="hbtabs">`+spec.tabs.map((t,i)=>
+    `<button class="hbtab${i===activeHubTab?" on":""}" onclick="setHubTab(${i})">${esc(t)}</button>`).join("")+`</div>` : "";
+  const cards = (spec.cards||[]).map(c=>{
+    const v = _fmtHubVal(c);
+    const isWip = !c.kv || _kvGet(c.kv)==null;
+    return `<div class="hbcard ${tag}${isWip?" wip":""}">
+      <div class="hblbl">${esc(c.lbl)}</div>
+      <div class="hbval">${esc(v)}</div>
+      ${isWip?`<div class="hbsub">wiring soon</div>`:""}
+    </div>`;
+  }).join("");
+  el.innerHTML = `
+    <div class="hbhead">
+      <button class="hbback" onclick="closeAgentHub()">‹ Alley</button>
+      <img class="hbav" src="avatars/${esc(activeAgentHub)}.jpg?v=3" onerror="this.remove()">
+      <div class="hbtitle">${esc(spec.title)}<small>live hub</small></div>
+      <button class="hbmake" onclick="hubMakeProgram()">+ Make a program</button>
+    </div>
+    ${tabsBar}
+    <div class="hbgrid">${cards}</div>
+    <div class="hbnote">placeholder cards — backend wiring per hub comes next. tap "+ Make a program" to ask Emma to spin up a workflow for this agent.</div>`;
+}
+function hubMakeProgram(){
+  const spec = HUB_SPECS[activeAgentHub]; if(!spec) return;
+  const idea = prompt(`What should ${spec.title} start doing on a schedule?\n\n(examples: "email me a weekly P&L", "pause ads if CAC >$30")`);
+  if(!idea || !idea.trim()) return;
+  const txt = `@${activeAgentHub} new program idea: ${idea.trim()}`;
+  relay("send",{},{room:"hq",sender:"Devon",text:txt}).then(()=>{
+    _askToast("sent to " + spec.title);
+    loadChat(); fastPoll();
+  }).catch(()=>_askToast("failed"));
+}
 /* Devon's real Telegram crew — pinned, word-for-word names (ids = poller FLEET routing).
    Third element = wing for Chief-of-Staff cluster filter (All / Business / Personal). */
 const CREW = [["emma","E.M.M.A","business"],["sage","S.A.G.E","personal"],["pitch","Cold Outreach","business"],
@@ -1080,6 +1218,7 @@ function openCrewChat(id, nm){
   clearQuote();
   chatTarget = {id, nm};
   chatView="conv"; applyChatView(); renderConv();
+  openAgentHub(id, nm);  /* also replace left panel with the role's data hub */
   if(window.innerWidth<=1000) setTab("chat");
   document.getElementById("chatin").focus();
 }
@@ -1867,6 +2006,8 @@ async function tick(){
     relay("kvget",{key:"usage"}).then(g=>{ renderUsage(g.value||null); }).catch(()=>{});
     relay("kvget",{key:"kpis"}).then(g=>{ renderKpis(g.value||null); }).catch(()=>renderKpis(null));
     relay("kvget",{key:"decisions"}).then(g=>{ DECISIONS = Array.isArray(g.value) ? g.value : []; renderBellBadge(); if(NOTIF_OPEN) renderNotif(); }).catch(()=>{});
+    /* Agent-hub data blobs. Each key populated by a backend cron (follow-up work). */
+    relay("kvget",{key:"hub_data"}).then(g=>{ HUB_KV = (g.value && typeof g.value==="object") ? g.value : {}; if(activeAgentHub) renderAgentHub(); }).catch(()=>{});
     relay("kvget",{key:"tasks"}).then(g=>{ TASKS=g.value||null; renderTasks(); renderStrip(); renderTop3(); }).catch(()=>{});
     relay("kvget",{key:"alerts"}).then(g=>{ ALERTS=Array.isArray(g.value)?g.value:[]; renderAlerts(); }).catch(()=>{});
     const st = await relay("kvget",{key:"state"});
