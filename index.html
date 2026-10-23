@@ -2399,8 +2399,20 @@ async function renderDayUpdate(mode){
   const dragons = (TASKS && TASKS.tabs && TASKS.tabs.today) || [];
   const pinLocal = localStorage.getItem("ahq_dayfocus") || "";
   const recap = window._lastRecap || null;
-  const liveEvents = (td && td.events || []).filter(e=>!e.all_day);
-  const alldayEvents = (td && td.events || []).filter(e=>e.all_day);
+  /* Hide events that have already passed — Devon only wants to see what's ahead. */
+  const _toMin = (t) => {
+    const m = String(t||"").trim().match(/^(\d{1,2}):?(\d{2})?\s*([aApP])?/);
+    if(!m) return null;
+    let h = parseInt(m[1]||"0"), mn = parseInt(m[2]||"0");
+    const ap = (m[3]||"").toLowerCase();
+    if(ap === "p" && h !== 12) h += 12;
+    if(ap === "a" && h === 12) h = 0;
+    return h*60 + mn;
+  };
+  const nowMin = now.getHours()*60 + now.getMinutes();
+  const _upcoming = e => { const em = _toMin(e.time); return em==null || em >= nowMin; };
+  const liveEvents = (td && td.events || []).filter(e=>!e.all_day && _upcoming(e));
+  const alldayEvents = (td && td.events || []).filter(e=>e.all_day && e.title && e.title.trim());
   /* Shell render first so the modal appears instantly, DHQ data fills in */
   const ig = mode==="morn" ? "igA" : "igV";  /* amber/violet dashboard gradients */
   const sections = [];
@@ -2420,8 +2432,20 @@ async function renderDayUpdate(mode){
     sections.push(`<div class="dusec"><div class="duk">${icon("life_ops","igG")} TODAY</div>${liveEvents.length ? liveEvents.map(e=>`<div class="duevrow"><span class="duevt">${esc(e.time)}</span><span class="duevn">${esc(e.title)}</span></div>`).join("") : `<div class="duempty">nothing scheduled</div>`}</div>`);
     sections.push(`<div class="dusec"><div class="duk">${icon("star","igA")} WAKE ANCHOR</div><div class="duwake"><button class="duwakebtn" onclick="_duWakeConfirm(this)">I'm up</button><div class="dunote">10 min outside before 9am · same wake time beats more sleep</div></div></div>`);
   } else {
+    /* Night: show events STILL AHEAD today (e.g. 6pm dinner when viewed at 5pm) + tomorrow + day-after */
+    if(liveEvents.length){
+      sections.push(`<div class="dusec"><div class="duk">${icon("life_ops","igG")} LATER TODAY</div>${liveEvents.map(e=>`<div class="duevrow"><span class="duevt">${esc(e.time)}</span><span class="duevn">${esc(e.title)}</span></div>`).join("")}</div>`);
+    }
     const tomEvs = up.length ? (up[0].events || []).filter(e=>!e.all_day) : [];
-    sections.push(`<div class="dusec"><div class="duk">${icon("life_ops","igC")} TOMORROW</div>${tomEvs.length ? tomEvs.map(e=>`<div class="duevrow"><span class="duevt">${esc(e.time)}</span><span class="duevn">${esc(e.title)}</span></div>`).join("") : `<div class="duempty">tomorrow is clear</div>`}</div>`);
+    const tomLbl = up.length ? (up[0].label || "tomorrow") : "tomorrow";
+    sections.push(`<div class="dusec"><div class="duk">${icon("life_ops","igC")} TOMORROW <small>${esc(tomLbl)}</small></div>${tomEvs.length ? tomEvs.map(e=>`<div class="duevrow"><span class="duevt">${esc(e.time)}</span><span class="duevn">${esc(e.title)}</span></div>`).join("") : `<div class="duempty">tomorrow is clear</div>`}</div>`);
+    /* day-after preview (if any) */
+    if(up.length > 1){
+      const d2Evs = (up[1].events || []).filter(e=>!e.all_day);
+      if(d2Evs.length){
+        sections.push(`<div class="dusec"><div class="duk">${icon("life_ops","igC")} ${esc((up[1].label||"day after").toUpperCase())}</div>${d2Evs.map(e=>`<div class="duevrow"><span class="duevt">${esc(e.time)}</span><span class="duevn">${esc(e.title)}</span></div>`).join("")}</div>`);
+      }
+    }
   }
   /* Daily Dragons */
   sections.push(`<div class="dusec"><div class="duk">${icon("star", ig)} DAILY DRAGONS${dragons.length?`<small>${dragons.length} to slay</small>`:""}</div>${dragons.length ? dragons.slice(0,10).map(t=>{
