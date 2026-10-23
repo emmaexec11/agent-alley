@@ -42,6 +42,33 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size
 .livedot{width:8px;height:8px;border-radius:50%;background:var(--red)}
 .livedot.ok{background:var(--green);box-shadow:0 0 10px rgba(74,222,128,.7)}
 
+/* ── bell + notifications panel ── */
+.bell{position:relative;background:transparent;border:none;color:var(--dim);padding:5px 6px;cursor:pointer;border-radius:9px;display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s;margin-right:6px}
+.bell:hover{color:var(--txt);background:rgba(255,255,255,.04)}
+.bell svg{width:18px;height:18px}
+.bellbadge{position:absolute;top:1px;right:1px;min-width:14px;height:14px;border-radius:7px;background:var(--red);color:#1a0505;font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 3px;box-shadow:0 0 8px rgba(248,113,113,.6)}
+#notifscrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:35;opacity:0;pointer-events:none;transition:opacity .18s}
+#notifscrim:not(.off){opacity:1;pointer-events:auto}
+#notifpanel{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:92vw;background:var(--s1);border-left:1px solid var(--line2);z-index:36;transform:translateX(100%);transition:transform .22s cubic-bezier(.2,.9,.3,1.02);display:flex;flex-direction:column;box-shadow:-8px 0 32px rgba(0,0,0,.4)}
+#notifpanel:not(.off){transform:translateX(0)}
+#notifpanel .nhead{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);font-weight:800;letter-spacing:.3px}
+#notifpanel #nclose{margin-left:auto;cursor:pointer;color:var(--dim);font-size:17px;padding:3px 7px;border-radius:7px}
+#notifpanel #nclose:hover{color:var(--red);background:rgba(248,113,113,.1)}
+#notifpanel .nbody{flex:1;overflow-y:auto;padding:14px 16px 24px;display:flex;flex-direction:column;gap:14px}
+.nsec{font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim);padding:2px 2px 6px;border-bottom:1px solid var(--line)}
+.ncard{background:var(--s2);border:1px solid var(--line);border-radius:10px;padding:10px 13px}
+.ncard .nct{font-weight:700;font-size:13px;margin-bottom:4px}
+.ncard .ncd{color:var(--dim);font-size:12px;line-height:1.4}
+.ncard .ncm{color:var(--faint);font-size:10.5px;margin-top:5px;font-family:"JetBrains Mono",monospace}
+.nempty{color:var(--faint);font-size:12px;text-align:center;padding:14px 4px}
+.dlog{display:flex;flex-direction:column;gap:7px}
+.drow{display:flex;align-items:flex-start;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line);font-size:12.5px}
+.drow:last-child{border-bottom:none}
+.drow .dag{font-weight:700;color:#b8a3ff;flex:0 0 auto;min-width:68px}
+.drow .dac{flex:1;min-width:0;color:var(--txt)}
+.drow .dac em{font-style:normal;color:var(--dim)}
+.drow .dt{flex:0 0 auto;color:var(--faint);font-size:10.5px;font-family:"JetBrains Mono",monospace;margin-left:auto}
+
 /* ── agent status strip ── */
 #astrip{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:12px 22px 0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
 #astrip::-webkit-scrollbar{display:none}
@@ -411,6 +438,22 @@ body.dragging #chat,body.dragging main{pointer-events:none}
 #chatin:focus{border-color:var(--v);box-shadow:0 0 0 3px rgba(124,92,255,.15)}
 #chatform button[type=submit]{background:linear-gradient(120deg,#8b6cff,#6c4ce0);color:#fff}
 
+/* ── ask-the-fleet bar (always visible, routes to Emma) ── */
+#askbar{position:fixed;z-index:28;right:24px;bottom:24px;display:flex;align-items:center;gap:6px;background:rgba(16,16,24,.92);backdrop-filter:blur(18px);border:1px solid rgba(124,92,255,.4);border-radius:999px;padding:5px 5px 5px 10px;box-shadow:0 8px 28px rgba(0,0,0,.5),0 0 20px rgba(124,92,255,.14);transition:box-shadow .18s,border-color .18s,width .18s;min-width:260px}
+#askbar:focus-within{border-color:var(--v);box-shadow:0 8px 32px rgba(0,0,0,.6),0 0 26px rgba(124,92,255,.3)}
+#askbar #askmic{background:transparent;border:none;color:var(--dim);padding:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%;width:30px;height:30px;transition:color .15s,background .15s;flex:0 0 30px}
+#askbar #askmic svg{width:17px;height:17px}
+#askbar #askmic:hover{color:var(--txt)}
+#askbar #askmic.on{color:#f87171;background:rgba(248,113,113,.18);animation:pulse 1.1s infinite}
+#askform{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+#askin{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--txt);font:13px Inter;padding:7px 2px}
+#askin::placeholder{color:var(--faint)}
+#askform button[type=submit]{background:linear-gradient(120deg,#8b6cff,#6c4ce0);color:#fff;border-radius:50%;width:30px;height:30px;padding:0;flex:0 0 30px;font-size:13px;font-weight:800}
+#askform button[type=submit]:hover{box-shadow:0 0 14px var(--vglow)}
+#asktoast{position:fixed;z-index:29;right:24px;bottom:76px;background:rgba(16,16,24,.95);border:1px solid rgba(74,222,128,.4);color:#6ee7b7;border-radius:10px;padding:8px 14px;font-size:12.5px;display:none;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+body[data-tab="chat"] #askbar{display:none}
+@media(min-width:1001px){#askbar{display:none}}
+
 /* ── bottom nav (mobile) ── */
 #bnav{display:none}
 
@@ -444,6 +487,8 @@ body.dragging #chat,body.dragging main{pointer-events:none}
   .cnode .sub{display:none}
   .cnode.hub.cos .sub{display:block}
   .toast{bottom:92px}
+  #askbar{right:10px;left:10px;bottom:calc(66px + env(safe-area-inset-bottom));min-width:0}
+  #asktoast{right:10px;bottom:calc(118px + env(safe-area-inset-bottom))}
   #bnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:25;background:rgba(10,10,15,.82);backdrop-filter:blur(18px);border-top:1px solid var(--line);padding:7px 10px calc(7px + env(safe-area-inset-bottom))}
   #bnav .bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--faint);font-size:10.5px;font-weight:600;padding:5px 0;position:relative}
   #bnav .bn svg{width:21px;height:21px;filter:none;opacity:.65}
@@ -473,8 +518,16 @@ body.dragging #chat,body.dragging main{pointer-events:none}
 <header>
   <div class="logo">Agent <em>Alley</em></div>
   <span class="gen mono" id="gen"></span>
-  <div class="right"><span id="statdot" class="livedot"></span><span id="stattxt">connecting…</span></div>
+  <div class="right">
+    <button id="bellbtn" class="bell" title="Notifications" onclick="toggleNotif()"><span id="bellbadge" class="bellbadge" style="display:none"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15.5V11a6 6 0 0112 0v4.5l1.5 2.2H4.5zM10 20.5a2 2 0 004 0"/></svg></button>
+    <span id="statdot" class="livedot"></span><span id="stattxt">connecting…</span>
+  </div>
 </header>
+<div id="notifpanel" class="off">
+  <div class="nhead"><span>Notifications</span><span id="nclose" onclick="toggleNotif()">✕</span></div>
+  <div class="nbody" id="nbody"></div>
+</div>
+<div id="notifscrim" class="off" onclick="toggleNotif()"></div>
 <div id="astrip"></div>
 <div id="alertbar"></div>
 <main>
@@ -522,6 +575,13 @@ body.dragging #chat,body.dragging main{pointer-events:none}
     </form>
   </aside>
 </main>
+<div id="askbar">
+  <button type="button" id="askmic" title="Voice (hold)"></button>
+  <form id="askform" onsubmit="return askSubmit(event)">
+    <input id="askin" placeholder="ask Emma anything…" autocomplete="off">
+    <button type="submit">↑</button>
+  </form>
+</div>
 <nav id="bnav">
   <button class="bn on" data-t="alley" onclick="setTab('alley')"><span class="bnic"></span>Alley<span class="bbadge" id="bnavbadge" style="display:none"></span></button>
   <button class="bn" data-t="projects" onclick="setTab('projects')"><span class="bnic"></span>Projects</button>
@@ -1274,6 +1334,8 @@ function renderUsage(u){
   el.innerHTML=h;
 }
 function renderRecap(r){
+  window._lastRecap = r || null;
+  if(NOTIF_OPEN) renderNotif();
   const el=document.getElementById("recapcard");
   if(!r||!r.lines){ el.innerHTML=""; return; }
   const today=new Date().toISOString().slice(0,10);
@@ -1562,6 +1624,7 @@ async function tick(){
     relay("kvget",{key:"recap"}).then(g=>{ renderRecap(g.value||null); }).catch(()=>{});
     relay("kvget",{key:"usage"}).then(g=>{ renderUsage(g.value||null); }).catch(()=>{});
     relay("kvget",{key:"kpis"}).then(g=>{ renderKpis(g.value||null); }).catch(()=>renderKpis(null));
+    relay("kvget",{key:"decisions"}).then(g=>{ DECISIONS = Array.isArray(g.value) ? g.value : []; renderBellBadge(); if(NOTIF_OPEN) renderNotif(); }).catch(()=>{});
     relay("kvget",{key:"tasks"}).then(g=>{ TASKS=g.value||null; renderTasks(); renderStrip(); renderTop3(); }).catch(()=>{});
     relay("kvget",{key:"alerts"}).then(g=>{ ALERTS=Array.isArray(g.value)?g.value:[]; renderAlerts(); }).catch(()=>{});
     const st = await relay("kvget",{key:"state"});
@@ -1583,6 +1646,113 @@ async function tick(){
 }
 /* bottom-nav icons */
 document.querySelectorAll("#bnav .bn .bnic").forEach((el,i)=>{ el.outerHTML = icon(["hub","folder","life_ops","star","chat"][i]); });
+
+/* ── Notifications panel: recap + alerts + decision log, all in-app (no telegram push). ── */
+let NOTIF_OPEN=false, DECISIONS=[], NOTIF_SEEN = +(localStorage.getItem("ahq_notif_seen")||"0");
+function toggleNotif(){
+  NOTIF_OPEN=!NOTIF_OPEN;
+  document.getElementById("notifpanel").classList.toggle("off", !NOTIF_OPEN);
+  document.getElementById("notifscrim").classList.toggle("off", !NOTIF_OPEN);
+  if(NOTIF_OPEN){
+    const lastTs = DECISIONS.length ? new Date(DECISIONS[0].ts).getTime() : Date.now();
+    NOTIF_SEEN = Math.max(NOTIF_SEEN, lastTs);
+    localStorage.setItem("ahq_notif_seen", String(NOTIF_SEEN));
+    renderBellBadge();
+    renderNotif();
+  }
+}
+function renderBellBadge(){
+  const b = document.getElementById("bellbadge");
+  const unread = DECISIONS.filter(d=>new Date(d.ts).getTime() > NOTIF_SEEN).length;
+  if(unread>0){ b.style.display="flex"; b.textContent = unread>99?"99+":unread; }
+  else b.style.display="none";
+}
+function _recapCard(r){
+  if(!r || !r.lines) return `<div class="nempty">no recap yet — nightly job hasn't run</div>`;
+  const c=r.counts||{};
+  const chips = `<div class="rchips"><span class="rchip2"><b>${c.done||0}</b> done</span><span class="rchip2"><b>${c.moved||0}</b> moving</span><span class="rchip2"><b>${c.stuck||0}</b> stuck</span>${r.goals!=null?`<span class="rchip2">goals <b>${r.goals}%</b></span>`:""}</div>`;
+  const lines = r.lines.map(l=>`<div class="rline ${l.startsWith("✓")?"done":l.startsWith("⚠")?"stuck":""}">${esc(l)}</div>`).join("");
+  return `<div class="ncard"><div class="nct">Nightly recap <small style="color:var(--faint);font-weight:400;margin-left:4px">${esc(r.date||"")}</small></div>${chips}${lines}</div>`;
+}
+function _alertsBlock(){
+  if(!ALERTS || !ALERTS.length) return `<div class="nempty">no active alerts</div>`;
+  return ALERTS.map(a=>`<div class="ncard"><div class="nct">${esc(a.title||a.kind||"Alert")}</div>${a.detail?`<div class="ncd">${esc(a.detail)}</div>`:""}${a.ts?`<div class="ncm">${esc(ago(a.ts))}</div>`:""}</div>`).join("");
+}
+function _dlogBlock(){
+  if(!DECISIONS || !DECISIONS.length) return `<div class="nempty">decision log empty — autonomous calls will stream here</div>`;
+  return `<div class="dlog">`+DECISIONS.slice(0,40).map(d=>
+    `<div class="drow"><span class="dag">${esc(d.agent||"emma")}</span><span class="dac">${esc(d.action||"")}${d.target?` <em>→ ${esc(d.target)}</em>`:""}${d.reason?`<br><em style="font-size:11px">${esc(d.reason)}</em>`:""}</span><span class="dt">${esc(ago(d.ts))}</span></div>`
+  ).join("")+`</div>`;
+}
+function renderNotif(){
+  const el = document.getElementById("nbody");
+  const recap = window._lastRecap || null;
+  el.innerHTML =
+    `<div><div class="nsec">Nightly recap</div>${_recapCard(recap)}</div>`+
+    `<div><div class="nsec">Alerts</div>${_alertsBlock()}</div>`+
+    `<div><div class="nsec">Decision log</div>${_dlogBlock()}</div>`;
+}
+
+/* ── Ask-the-fleet bar: always-visible shortcut that sends to Emma (chatTarget=null).
+   Routing honors "@agent " prefix exactly like the main chat input. ── */
+P.mic = '<path d="M12 3a3 3 0 00-3 3v6a3 3 0 006 0V6a3 3 0 00-3-3z"/><path d="M5.5 11.5a6.5 6.5 0 0013 0M12 18.5v3M8.5 21.5h7"/>';
+document.getElementById("askmic").innerHTML = icon("mic");
+async function askSubmit(ev){
+  ev.preventDefault();
+  const inp = document.getElementById("askin"); const t = inp.value.trim();
+  if(!t) return false;
+  inp.value = "";
+  try{
+    await relay("send",{},{room:"hq",sender:"Devon",text:t});
+    _askToast("sent to " + (t.startsWith("@") ? t.split(" ")[0].slice(1) : "Emma"));
+    loadChat(); fastPoll();
+  }catch(e){ _askToast("failed — check connection"); }
+  return false;
+}
+function _askToast(msg){
+  const el=document.getElementById("asktoast") || (()=>{const d=document.createElement("div"); d.id="asktoast"; document.body.appendChild(d); return d;})();
+  el.textContent = msg; el.style.display="block";
+  clearTimeout(el._t); el._t=setTimeout(()=>el.style.display="none", 2200);
+}
+/* Keyboard shortcut: "/" focuses the ask bar from anywhere (except inside another input) */
+document.addEventListener("keydown", (e)=>{
+  if(e.key!=="/" || e.ctrlKey||e.metaKey||e.altKey) return;
+  const ae = document.activeElement;
+  if(ae && (ae.tagName==="INPUT" || ae.tagName==="TEXTAREA" || ae.isContentEditable)) return;
+  e.preventDefault();
+  document.getElementById("askin").focus();
+});
+
+/* ── Voice input (Web Speech API, native, no backend). Hold-to-talk UX. ── */
+(function initVoice(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const mic = document.getElementById("askmic"); const inp = document.getElementById("askin");
+  if(!SR){ mic.style.display="none"; return; }
+  let rec = null, active=false, baseText="";
+  const start = ()=>{
+    if(active) return;
+    try{
+      rec = new SR(); rec.lang="en-US"; rec.continuous=true; rec.interimResults=true;
+      baseText = inp.value;
+      rec.onresult = (ev)=>{
+        let fin="", intr="";
+        for(let i=ev.resultIndex;i<ev.results.length;i++){
+          const r=ev.results[i]; (r.isFinal?fin:(intr))+=r[0].transcript;
+          if(r.isFinal) fin+=r[0].transcript; else intr+=r[0].transcript;
+        }
+        inp.value = (baseText + (baseText && (fin||intr) ? " " : "") + fin + intr).replace(/\s+/g," ").trim();
+      };
+      rec.onend = ()=>{ if(active) try{rec.start()}catch(e){} };
+      rec.onerror = (e)=>{ _askToast("mic: "+e.error); stop(); };
+      rec.start(); active=true; mic.classList.add("on");
+    } catch(e){ _askToast("mic unavailable"); }
+  };
+  const stop = ()=>{ active=false; mic.classList.remove("on"); if(rec) try{rec.stop()}catch(e){} inp.focus(); };
+  mic.addEventListener("pointerdown", e=>{ e.preventDefault(); start(); });
+  mic.addEventListener("pointerup", stop);
+  mic.addEventListener("pointercancel", stop);
+  mic.addEventListener("pointerleave", ()=>{ if(active) stop(); });
+})();
 /* sync fleet filter button state with persisted selection */
 document.querySelectorAll("#fleetfilter .ff").forEach(b=>b.classList.toggle("on", b.dataset.f===fleetFilter));
 let rsz; window.addEventListener("resize", ()=>{ clearTimeout(rsz); rsz=setTimeout(renderCluster, 150); });
