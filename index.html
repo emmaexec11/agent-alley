@@ -644,7 +644,11 @@ body.dragging #chat,body.dragging main{pointer-events:none}
 .ch svg{width:15px;height:15px;vertical-align:-3px;margin-right:5px;filter:drop-shadow(0 0 5px rgba(124,92,255,.5))}
 #chatback{float:right;cursor:pointer;color:var(--v);font-size:11px;font-weight:600;padding:2px 8px;border:1px solid rgba(124,92,255,.35);border-radius:7px}
 #chatback:hover{background:rgba(124,92,255,.14)}
-#msgs{flex:1;overflow-y:auto;padding:4px 14px 10px;display:flex;flex-direction:column;gap:10px}
+#msgs{flex:1;overflow-y:auto;padding:4px 14px 10px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+#scrollbtn{position:absolute;bottom:130px;right:24px;width:40px;height:40px;border-radius:50%;background:rgba(124,92,255,.2);border:1.5px solid rgba(124,92,255,.5);color:#c4b5fd;display:none;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:background .2s,border-color .2s,opacity .2s;z-index:10}
+#scrollbtn:hover{background:rgba(124,92,255,.35);border-color:rgba(124,92,255,.7)}
+#scrollbtn.show{display:flex;opacity:1}
+#scrollbtn.hidden{opacity:.3;pointer-events:none}
 /* Telegram-style bubbles: comfortable padding, rounded, text selectable for copy/paste. */
 .msg{max-width:88%;border-radius:16px;padding:10px 14px;font-size:14px;background:var(--s2);border:1px solid var(--line);align-self:flex-start;overflow-wrap:break-word;line-height:1.42;-webkit-user-select:text;user-select:text}
 .msg.me{align-self:flex-end;background:rgba(124,92,255,.18);border-color:rgba(124,92,255,.35)}
@@ -1015,6 +1019,7 @@ body[data-tab="chat"] #askbar{display:none}
     <div class="ch" id="chathead">Front Office<small>Emma answers here</small></div>
     <div id="chatlist"></div>
     <div id="msgs"></div>
+    <div id="scrollbtn" title="Scroll to bottom" onclick="scrollChatToBottom()">↓</div>
     <div id="qprev"></div>
     <div id="attprev"></div>
     <form id="chatform" onsubmit="return sendMsg(event)">
@@ -2030,6 +2035,7 @@ async function startLongPoll(){
           requestAnimationFrame(()=>{
             const el=document.getElementById("msgs");
             if(el) el.scrollTop=el.scrollHeight;
+            updateScrollBtn();
           });
           onNewRemoteMessages(msgs);  /* trigger push if backgrounded */
         }
@@ -2090,8 +2096,26 @@ function renderConv(){
   requestAnimationFrame(()=>{ 
     el.scrollTop=el.scrollHeight;
     hydrateAtts();
+    updateScrollBtn();
   });
 }
+function scrollChatToBottom(){
+  const el = document.getElementById("msgs");
+  el.scrollTop = el.scrollHeight;
+  updateScrollBtn();
+}
+function updateScrollBtn(){
+  const el = document.getElementById("msgs");
+  const btn = document.getElementById("scrollbtn");
+  if(!el || !btn) return;
+  const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  if(atBottom) btn.classList.remove("show");
+  else btn.classList.add("show");
+}
+document.addEventListener("DOMContentLoaded",()=>{
+  const el = document.getElementById("msgs");
+  if(el) el.addEventListener("scroll", updateScrollBtn);
+});
 function stuckFromWings(wings){
   const out=[];
   for(const depts of Object.values(wings)) for(const agents of Object.values(depts))
