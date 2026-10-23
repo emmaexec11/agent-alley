@@ -339,8 +339,32 @@ body:not([data-view="home"]) #fleetfilter{display:none}
 .ring.stuck{border-color:var(--red);animation:pulse 1.2s infinite}
 .hint{font-size:11px;color:var(--faint);text-align:center;padding:2px 0 4px}
 
-/* ── projects tab ── */
+/* ── projects tab (pill-switched row list, mirrors Tasks UX) ── */
 #projectstab{padding:16px}
+.ppills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 2px 10px;-webkit-overflow-scrolling:touch}
+.ppills::-webkit-scrollbar{display:none}
+.ppill{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--line);color:var(--dim);border-radius:999px;padding:7px 15px;font:600 12.5px Inter;cursor:pointer;transition:border-color .15s,color .15s,background .15s;white-space:nowrap;font-family:inherit}
+.ppill:hover{color:var(--txt);border-color:var(--line2)}
+.ppill.on{background:rgba(124,92,255,.14);border-color:rgba(124,92,255,.5);color:var(--txt);box-shadow:0 0 12px rgba(124,92,255,.18)}
+.ppill small{font-weight:700;font-size:11px;color:var(--faint);background:rgba(255,255,255,.06);padding:1px 7px;border-radius:999px}
+.ppill.on small{color:#c4b5fd;background:rgba(124,92,255,.22)}
+.plist{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.pr{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--s1);border:1px solid var(--line);border-left:3px solid var(--line);border-radius:10px;cursor:pointer;transition:border-color .15s,background .12s}
+.pr:hover{border-color:var(--line2);background:var(--s2)}
+.pr .prmain{flex:1;min-width:0}
+.pr .pt{font-weight:700;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr .psub{font-size:11.5px;color:var(--dim);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr .psub .pstage{color:#93c5fd}
+.pr .psub .pwhen{color:var(--faint);font-family:"JetBrains Mono",monospace;font-size:10.5px}
+.pr .practs{flex:0 0 auto;display:flex;gap:6px}
+.pr .practs button{padding:6px 11px;font-size:11.5px}
+.prempty{color:var(--faint);font-size:12.5px;text-align:center;padding:24px 4px;border:1px dashed var(--line);border-radius:10px}
+.pradd{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px dashed var(--line);border-radius:10px;cursor:text;transition:border-color .15s}
+.pradd:hover{border-color:var(--line2)}
+.pradd .padico{color:var(--faint);font-size:18px;font-weight:300;flex:0 0 auto}
+.pradd input{flex:1;background:transparent;border:none;outline:none;color:var(--txt);font:13px Inter;padding:2px 0}
+.pradd input::placeholder{color:var(--faint)}
+.pradd select{background:var(--s2);border:1px solid var(--line2);color:var(--txt);font:11.5px Inter;padding:5px 8px;border-radius:7px;outline:none;flex:0 0 auto;font-family:inherit}
 .gsec{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.6px;margin:14px 0 9px}
 .gsec:first-child{margin-top:0}
 .gsec.ready{color:#b8a3ff}.gsec.active{color:var(--green)}.gsec.launched{color:var(--dim)}.gsec.parked{color:var(--amber)}
@@ -880,38 +904,72 @@ async function finishProject(pid, ev){
     toast("✓ Marked finished"); setTimeout(tick,4000);
   }catch(e){ toast("Failed — check connection"); }
 }
+/* Projects tab — pill-switched scannable row list. Mirrors Tasks UX.
+   Pills map to project.status buckets. "Done" merges launched + parked. */
+const PPILLS = [
+  {k:"ready", lbl:"Needs me", ico:"⚡", statuses:["ready"]},
+  {k:"active", lbl:"Working", ico:"↻", statuses:["active"]},
+  {k:"queued", lbl:"Queued", ico:"▦", statuses:["queued"]},
+  {k:"done", lbl:"Done", ico:"✓", statuses:["launched","parked"]}
+];
+let activeProjPill = localStorage.getItem("ahq_ppill") || "ready";
+function setProjPill(k){ activeProjPill=k; localStorage.setItem("ahq_ppill",k); renderProjects(PROJECTS, LASTJOBS); }
+function _pStageText(p, jobs){
+  const pj = jobs.filter(j=>j.project_id===p.id);
+  if(!pj.length) return "waiting to start";
+  const latest = pj[0];
+  if(p.status==="launched") return "launched";
+  if(p.status==="parked") return "parked";
+  if(p.status==="ready") return "ready to launch";
+  return STAGE_LBL[latest.stage] || latest.stage;
+}
 function renderProjects(projects, jobs){
-  const f=document.getElementById("npform");
-  if(f && f.classList.contains("on")) return; // don't wipe the form mid-typing
-  const card = (p, fin) => {
+  if(!projects) return;
+  const wrap = document.getElementById("projwrap");
+  /* Pills + counts */
+  const counts = Object.fromEntries(PPILLS.map(p=>[p.k, projects.filter(x=>p.statuses.includes(x.status)).length]));
+  const pills = `<div class="ppills">`+PPILLS.map(p=>
+    `<button class="ppill${activeProjPill===p.k?" on":""}" data-k="${p.k}" onclick="setProjPill('${p.k}')">${p.ico} ${esc(p.lbl)}<small>${counts[p.k]||0}</small></button>`
+  ).join("")+`</div>`;
+  /* Rows for active pill */
+  const activeDef = PPILLS.find(p=>p.k===activeProjPill) || PPILLS[0];
+  const list = projects.filter(p=>activeDef.statuses.includes(p.status));
+  const rows = list.length ? list.map(p=>{
     const pj = jobs.filter(j=>j.project_id===p.id);
-    const furthest = Math.max(0, ...pj.map(j=>STAGES.indexOf(j.stage==="sent_back"?"working":j.stage)));
     const latest = pj[0];
     const wc = wingClr(p.wing||"business").c;
-    return `<div class="tile proj st-${esc(p.status)}" style="border-left-color:${wc};cursor:pointer" onclick="openProjectChat(${p.id})"><div class="top"><div class="pt">${esc(p.title)}</div><span class="pill ${esc(p.status)}">${esc(p.status).replace("_"," ")}</span></div>
-      <div class="pd">${esc(dl(p.dept))}${p.detail?` — ${esc(p.detail)}`:""}</div>
-      <div class="strip">${STAGES.slice(0,5).map((s,i)=>`<span class="seg ${pj.length&&i<=furthest?"done":""}"></span>`).join("")}<span class="lbl">${pj.length?esc(STAGE_LBL[latest.stage]||latest.stage):"no jobs yet"}</span></div>
-      ${latest?`<div class="latest">↳ ${esc(latest.title)} · ${ago(latest.updated)}</div>`:""}
-      ${fin?`<button class="pfin" onclick="finishProject(${p.id},event)">✓ Mark finished</button>`:""}</div>`;
-  };
-  let html=`<button class="npbtn" onclick="toggleNpForm()">＋ New project</button>
-    <form id="npform" onsubmit="return newProject(event)">
-      <input id="npname" placeholder="Project name…" autocomplete="off">
-      <select id="npdept">${NP_DEPTS.map(([d,w,l])=>`<option value="${d}|${w}">${l}</option>`).join("")}</select>
-      <button type="submit" class="b-approve">Create</button>
-    </form>`;
-  for(const [st,lbl] of [["ready","Ready for you"],["active","In motion"]]){
-    const g=projects.filter(p=>p.status===st);
-    if(g.length) html += `<div class="gsec ${st}">${lbl}</div><div class="projgrid">${g.map(p=>card(p,true)).join("")}</div>`;
-  }
-  const done=projects.filter(p=>p.status==="launched"||p.status==="parked");
-  if(done.length){
-    html += `<div class="donetgl" onclick="toggleDone()">${doneOpen?"▾":"▸"} Done & parked (${done.length})</div>`;
-    if(doneOpen) html += `<div class="projgrid">${done.map(p=>card(p,false)).join("")}</div>`;
-  }
-  document.getElementById("projwrap").innerHTML = html;
-  if(!projects.some(p=>p.status==="ready"||p.status==="active"))
-    document.getElementById("projwrap").insertAdjacentHTML("beforeend",`<div style="color:var(--faint);margin-top:8px">No projects in motion.</div>`);
+    const stageText = _pStageText(p, jobs);
+    const needsMe = activeDef.k==="ready";
+    return `<div class="pr" style="border-left-color:${wc}" onclick="openProjectChat(${p.id})">
+      <div class="prmain">
+        <div class="pt">${esc(p.title)}</div>
+        <div class="psub"><span class="pdept">${esc(dl(p.dept))}</span> · <span class="pstage">${esc(stageText)}</span>${latest?` · <span class="pwhen">${esc(ago(latest.updated))}</span>`:""}</div>
+      </div>
+      <div class="practs" onclick="event.stopPropagation()">
+        ${needsMe ? `<button class="b-approve" title="Launch" onclick="finishProject(${p.id},event)">✓ Launch</button>` : ""}
+      </div>
+    </div>`;
+  }).join("") : `<div class="prempty">nothing in ${esc(activeDef.lbl)}</div>`;
+  /* Inline add row (at bottom) */
+  const dept0 = NP_DEPTS[0];
+  const add = `<div class="pradd" onclick="pAddFocus()">
+    <span class="padico">+</span>
+    <input id="pradin" placeholder="queue a project…" onkeydown="pAddKey(event)">
+    <select id="praddept" onclick="event.stopPropagation()">${NP_DEPTS.map(([d,w,l])=>`<option value="${d}|${w}">${l}</option>`).join("")}</select>
+  </div>`;
+  wrap.innerHTML = pills + `<div class="plist">${rows}</div>` + add;
+}
+function pAddFocus(){ const i=document.getElementById("pradin"); if(i) i.focus(); }
+async function pAddKey(ev){
+  if(ev.key!=="Enter") return;
+  const inp = ev.target; const title = inp.value.trim(); if(!title) return;
+  const [dept, wing] = document.getElementById("praddept").value.split("|");
+  inp.value = ""; inp.blur();
+  try{
+    await relay("queue",{},{kind:"add_project", payload:{title, wing, dept}});
+    _askToast("queued: " + title);
+    setTimeout(tick, 3500);
+  }catch(e){ _askToast("queue failed"); }
 }
 async function decide(id, what){
   const note = what==="send_back" ? (prompt("What needs fixing?")||"") : "";
