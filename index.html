@@ -933,6 +933,9 @@ body[data-tab="chat"] #askbar{display:none}
   body[data-chatopen="1"] #chathead{padding-left:60px}
   #chatback{display:none;position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:38;background:rgba(26,26,38,.92);border:1px solid var(--line2);width:38px;height:38px;border-radius:19px;align-items:center;justify-content:center;backdrop-filter:blur(14px);color:var(--txt);cursor:pointer;padding:0}
   body[data-chatopen="1"] #chatback{display:flex}
+  /* Keyboard open → hide bottom nav + askbar so chat gets the entire screen. */
+  body[data-kbd="1"] #bnav{display:none}
+  body[data-kbd="1"] #askbar{display:none}
 }
 @media(min-width:1001px){
   body[data-tab="alley"] #projectstab,body[data-tab="alley"] #taskstab,body[data-tab="alley"] #habitstab,
@@ -1016,14 +1019,14 @@ body[data-tab="chat"] #askbar{display:none}
     <form id="chatform" onsubmit="return sendMsg(event)">
       <button type="button" id="attbtn" title="Attach file" onclick="document.getElementById('attfile').click()"></button>
       <input type="file" id="attfile" hidden>
-      <input id="chatin" placeholder="Message Emma…" autocomplete="off"><button type="submit">Send</button>
+      <input id="chatin" placeholder="Message Emma…" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="true" name="emma_msg" enterkeyhint="send" data-lpignore="true" data-form-type="other"><button type="submit">Send</button>
     </form>
   </aside>
 </main>
 <div id="askbar">
   <button type="button" id="askmic" title="Voice (hold)"></button>
   <form id="askform" onsubmit="return askSubmit(event)">
-    <input id="askin" placeholder="ask Emma anything…" autocomplete="off">
+    <input id="askin" placeholder="ask Emma anything…" autocomplete="off" autocorrect="off" name="emma_ask" enterkeyhint="send" data-lpignore="true" data-form-type="other">
     <button type="submit">↑</button>
   </form>
 </div>
@@ -1144,6 +1147,18 @@ function closeChatFullscreen(){
 window.addEventListener("popstate", ()=>{
   if(document.body.dataset.chatopen==="1"){ closeChatFullscreen(); }
 });
+/* Mobile keyboard detection — hide bottom nav + askbar while keyboard is up so the chat gets the full screen. */
+(function kbdWatch(){
+  if(!window.visualViewport) return;
+  const update = ()=>{
+    const vv = window.visualViewport;
+    const hidden = (window.innerHeight - vv.height) > 150;
+    document.body.dataset.kbd = hidden ? "1" : "0";
+  };
+  window.visualViewport.addEventListener("resize", update);
+  window.visualViewport.addEventListener("scroll", update);
+  update();
+})();
 
 /* ── top strip: critical-only (today's birthdays / all-day events) ──
    agent statuses live in the cluster + chat views, never up here.
