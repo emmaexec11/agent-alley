@@ -1,5 +1,5 @@
 /* Agent Alley service worker — network-first for HTML (no stale cache ever), cache-first for images/fonts only */
-const V = "aa-v3-2026-10-23-wave3-tasks-slider-emma";
+const V = "aa-v3-2026-10-23-longpoll-pushnotif";
 
 self.addEventListener("install", (ev)=>{
   // Don't pre-cache the HTML. Just activate immediately.
@@ -49,4 +49,18 @@ self.addEventListener("fetch", (ev)=>{
       })
     );
   }
+});
+
+/* Notification click: focus an open Agent Alley tab, or open a fresh one. */
+self.addEventListener("notificationclick", (ev)=>{
+  ev.notification.close();
+  ev.waitUntil((async ()=>{
+    const all = await clients.matchAll({type:"window", includeUncontrolled:true});
+    for(const c of all){
+      if(c.url.includes("/agent-alley/")){
+        try { await c.focus(); return; } catch(e){}
+      }
+    }
+    try { await clients.openWindow("/agent-alley/"); } catch(e){}
+  })());
 });

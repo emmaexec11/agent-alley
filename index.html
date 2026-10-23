@@ -1492,19 +1492,60 @@ async function sendMsg(ev){
   }catch(e){ toast("Send failed"); }
   return false;
 }
-let fastT=null;
-function fastPoll(){
-  clearInterval(fastT);
-  const until = Date.now()+3*60*1000;
-  /* 1.5s active-chat poll — chases down the response latency after a Devon send
-     (reduced from 4s per Devon 2026-10-23: dashboard felt slower than Telegram). */
-  fastT = setInterval(()=>{ if(Date.now()>until) clearInterval(fastT); else loadChat(); }, 1500);
+/* Long-poll chat loop — val.town holds the connection up to ~25s and returns
+   instantly when a new row lands. Reconnects immediately, so delivery feels
+   push-like. Replaced setInterval polling (Devon 2026-10-23: 'as fast as telegram'). */
+let _lpAborter = null;
+let _lpBackoff = 500;
+let _lpMaxId = 0;
+async function startLongPoll(){
+  stopLongPoll();
+  const run = async () => {
+    while(_lpAborter && !_lpAborter.signal.aborted){
+      try {
+        const qs = new URLSearchParams({k:KEY, action:"longpoll", room:"hq", since:String(_lpMaxId)});
+        const r = await fetch(`${EP}/?${qs}`, {signal: _lpAborter.signal});
+        if(!r.ok){ throw new Error("http "+r.status); }
+        const j = await r.json();
+        _lpBackoff = 500;
+        const msgs = j.msgs || [];
+        if(msgs.length){
+          _lpMaxId = Math.max(_lpMaxId, ...msgs.map(m=>m.id));
+          /* Merge new messages into ALLMSGS (dedup by id) + re-render */
+          const seen = new Set(ALLMSGS.map(m=>m.id));
+          for(const m of msgs) if(!seen.has(m.id)) ALLMSGS.push(m);
+          if(ALLMSGS.length > 300) ALLMSGS = ALLMSGS.slice(-300);
+          renderChatList();
+          if(chatView==="conv") renderConv();
+          onNewRemoteMessages(msgs);  /* trigger push if backgrounded */
+        }
+      } catch(e) {
+        if(e.name === "AbortError") return;
+        await new Promise(r=>setTimeout(r, _lpBackoff));
+        _lpBackoff = Math.min(10000, _lpBackoff*2);
+      }
+    }
+  };
+  _lpAborter = new AbortController();
+  run();
 }
+function stopLongPoll(){ if(_lpAborter){ _lpAborter.abort(); _lpAborter=null; } }
+function fastPoll(){ /* no-op kept for backward compat with old call sites — longpoll already instant */ }
 async function loadChat(){
   const r = await relay("poll",{room:"hq",limit:120});
   ALLMSGS = r.msgs||[];
+  if(ALLMSGS.length) _lpMaxId = Math.max(_lpMaxId, ...ALLMSGS.map(m=>m.id));
   renderChatList();
   if(chatView==="conv") renderConv();
+}
+/* Hook for push notifications — triggers only when a non-Devon message arrives
+   while the tab is backgrounded. Registered + handled below in the push section. */
+function onNewRemoteMessages(msgs){
+  if(!document.hidden) return;
+  const fromAgent = msgs.filter(m=>m.sender && m.sender.toLowerCase()!=="devon");
+  if(!fromAgent.length) return;
+  const latest = fromAgent[fromAgent.length-1];
+  showLocalNotification(latest.sender, (latest.text||"").replace(/^@\S+\s+/, "").slice(0, 160));
 }
 function renderConv(){
   const all = ALLMSGS;
@@ -2167,6 +2208,43 @@ document.addEventListener("keydown", (e)=>{
 document.querySelectorAll("#fleetfilter .ff").forEach(b=>b.classList.toggle("on", b.dataset.f===fleetFilter));
 let rsz; window.addEventListener("resize", ()=>{ clearTimeout(rsz); rsz=setTimeout(renderCluster, 150); });
 applyChatView(); setTab(curTab); tick(); setInterval(tick, 20000);
+
+/* ── Push / instant notifications ──
+   Two layers: (1) long-poll already keeps the chat live when the tab is open.
+   (2) Web Notifications API fires a desktop/mobile banner when a reply lands
+   while the tab is backgrounded — Telegram-equivalent ping without a VAPID
+   push server. Service worker extends this: notifications persist + wake. */
+let _notifPerm = (typeof Notification !== "undefined") ? Notification.permission : "unsupported";
+function requestNotifPerm(){
+  if(_notifPerm === "unsupported") return;
+  if(_notifPerm === "granted") return;
+  Notification.requestPermission().then(p => {
+    _notifPerm = p;
+    if(p === "granted") toast("notifications on");
+  });
+}
+async function showLocalNotification(sender, body){
+  if(_notifPerm !== "granted") return;
+  const title = `${sender} on Agent Alley`;
+  try {
+    if("serviceWorker" in navigator && navigator.serviceWorker.ready){
+      const reg = await navigator.serviceWorker.ready;
+      await reg.showNotification(title, {
+        body, icon:"avatars/penny.jpg?v=3", badge:"avatars/penny.jpg?v=3",
+        tag:"aa-chat", renotify:true, requireInteraction:false,
+      });
+      return;
+    }
+  } catch(e){ /* fall through */ }
+  try { new Notification(title, {body, icon:"avatars/penny.jpg?v=3"}); } catch(e){}
+}
+/* Ask for permission on first user gesture (any click) to satisfy browser gesture requirement. */
+document.addEventListener("click", ()=>{ requestNotifPerm(); }, {once:true, capture:true});
+/* Kick off the longpoll loop once the key is in and tick has primed state.
+   We keep polling even when tab is hidden so push notifications fire for
+   backgrounded replies — true Telegram parity. Val.town cost = negligible
+   (one 25s connection reused forever = ~3500 reqs/day). */
+setTimeout(()=>{ if(KEY) startLongPoll(); }, 1500);
 /* PWA service worker — auto-cleans up any stale SW/cache from previous versions so Devon never has to clear browser cache manually again. One-time self-heal. */
 if("serviceWorker" in navigator){
   window.addEventListener("load", async ()=>{
