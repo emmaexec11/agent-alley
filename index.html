@@ -659,7 +659,9 @@ body.dragging #chat,body.dragging main{pointer-events:none}
 .msg .who .when{float:right;color:var(--faint);font-weight:400;margin-left:10px}
 /* ── chat list (Telegram-style) ── */
 #chatlist{flex:1;overflow-y:auto;display:none}
-#chat.conv #chatlist{display:flex !important;flex-direction:column;border-top:1px solid var(--line);padding-top:8px;margin-top:auto;max-height:200px;overflow-y:auto}
+#chat.conv #chatlist{display:flex !important;flex-direction:column;border-top:1px solid var(--line);padding-top:8px;margin-top:auto;max-height:160px;overflow-y:auto;gap:2px}
+#chat.conv #chatlist .clsec{font-size:9px;letter-spacing:1.2px;text-transform:uppercase;padding:6px 2px 4px;margin-top:6px;margin-bottom:2px}
+#chat.conv #chatlist .crow{padding:5px 6px;font-size:12px}
 .crow{display:flex;align-items:center;gap:11px;padding:10px 15px;cursor:pointer;border-bottom:1px solid var(--line);transition:background .12s}
 .crow:hover{background:var(--s2)}
 .cav{position:relative;flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:var(--s2);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center}
@@ -1040,7 +1042,7 @@ body[data-tab="chat"] #askbar{display:none}
   </form>
 </div>
 <nav id="bnav">
-  <button class="bn on" data-t="alley" onclick="setTab('alley')"><span class="bnic"></span>Alley<span class="bbadge" id="bnavbadge" style="display:none"></span></button>
+  <button class="bn on" data-t="alley" onclick="setTab('alley')" ondblclick="resetAlleyHome()"><span class="bnic"></span>Alley<span class="bbadge" id="bnavbadge" style="display:none"></span></button>
   <button class="bn" data-t="projects" onclick="setTab('projects')"><span class="bnic"></span>Projects</button>
   <button class="bn" data-t="tasks" onclick="setTab('tasks')"><span class="bnic"></span>Tasks</button>
   <button class="bn" data-t="habits" onclick="setTab('habits')"><span class="bnic"></span>Goals</button>
@@ -1146,6 +1148,22 @@ function setTab(t){
   if(t==="alley") requestAnimationFrame(renderCluster);
   if(t==="chat"){ const el=document.getElementById("msgs"); el.scrollTop=el.scrollHeight; }
   if(t==="habits") renderGoalsPage();
+}
+function resetAlleyHome(){
+  /* Double-click Alley button → scroll to top + reset cluster zoom + go to home view */
+  setTab("alley");
+  document.body.dataset.view = "home";
+  localStorage.setItem("ahq_view", "home");
+  const alleytab = document.getElementById("alleytab");
+  if(alleytab) alleytab.scrollTop = 0;
+  /* Reset cluster panning if it exists */
+  const cnodes = document.getElementById("cnodes");
+  const clines = document.getElementById("clines");
+  if(cnodes && clines){
+    cnodes.style.transform = "translate(0, 0)";
+    clines.style.transform = "translate(0, 0)";
+  }
+  requestAnimationFrame(renderCluster);
 }
 function closeChatFullscreen(){
   document.body.dataset.chatopen = "0";
@@ -1834,18 +1852,21 @@ function renderChatList(){
     const sub = ag && ag.status_detail ? ag.status_detail : "your Telegram agent — full context";
     return row(id, nm, sub, icon("agent",clr.g), clr, ag?ag.status:null, threadLast(id));
   }).join("");
-  const prooms = PROJECTS.filter(p=>p.status==="active"||p.status==="ready");
-  if(prooms.length){
-    html += `<div class="clsec">Project rooms</div>`;
-    html += prooms.map(p=>{
-      const clr=wingClr(p.wing||"business");
-      const last=threadLast("project_"+p.id);
-      return `<div class="crow" onclick="openProjectChat(${p.id})">
-        <div class="cav" style="border-color:color-mix(in srgb,${clr.c} 55%,transparent)">${icon("folder",clr.g)}</div>
-        <div class="cbody"><div class="cn">${esc(p.title)}<span class="cwhen">${last?ago(last.ts):""}</span></div>
-        <div class="cprev">${esc(last?preview(last,"project_"+p.id):dl(p.dept)+" — "+p.status)}</div></div>
-      </div>`;
-    }).join("");
+  /* Only show project rooms in list view, not in conversation footer */
+  if(chatView!=="conv"){
+    const prooms = PROJECTS.filter(p=>p.status==="active"||p.status==="ready");
+    if(prooms.length){
+      html += `<div class="clsec">Project rooms</div>`;
+      html += prooms.map(p=>{
+        const clr=wingClr(p.wing||"business");
+        const last=threadLast("project_"+p.id);
+        return `<div class="crow" onclick="openProjectChat(${p.id})">
+          <div class="cav" style="border-color:color-mix(in srgb,${clr.c} 55%,transparent)">${icon("folder",clr.g)}</div>
+          <div class="cbody"><div class="cn">${esc(p.title)}<span class="cwhen">${last?ago(last.ts):""}</span></div>
+          <div class="cprev">${esc(last?preview(last,"project_"+p.id):dl(p.dept)+" — "+p.status)}</div></div>
+        </div>`;
+      }).join("");
+    }
   }
   document.getElementById("chatlist").innerHTML = html;
 }
