@@ -336,10 +336,16 @@ body:not([data-view="home"]) #fleetfilter{display:none}
 .badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;z-index:2}
 .badge.red{background:var(--red);color:#1a0505;box-shadow:0 0 10px rgba(248,113,113,.7)}
 .badge.green{background:rgba(74,222,128,.92);color:#05260f}
-.ring{position:absolute;inset:-4px;border-radius:50%;border:2px solid transparent;pointer-events:none}
-.ring.working{border-color:var(--green);animation:pulse 2s infinite}
-.ring.waiting{border-color:var(--amber)}
-.ring.stuck{border-color:var(--red);animation:pulse 1.2s infinite}
+.ring{position:absolute;inset:-5px;border-radius:50%;border:2.5px solid transparent;pointer-events:none}
+.ring.working{border-color:var(--green);animation:livepulse 1.8s ease-in-out infinite;box-shadow:0 0 18px rgba(74,222,128,.55),0 0 36px rgba(74,222,128,.3)}
+.ring.waiting{border-color:var(--amber);animation:livepulse 2.4s ease-in-out infinite;box-shadow:0 0 16px rgba(251,191,36,.5)}
+.ring.stuck{border-color:var(--red);animation:livepulse 1s ease-in-out infinite;box-shadow:0 0 20px rgba(248,113,113,.7),0 0 40px rgba(248,113,113,.4)}
+/* Orb body also pulses in sympathy with the ring — glow halo breathes with it */
+.cnode.agentn .orb{transition:box-shadow .3s}
+.cnode.agentn:has(.ring.working) .orb{box-shadow:0 0 28px rgba(74,222,128,.35);animation:livepulse 1.8s ease-in-out infinite}
+.cnode.agentn:has(.ring.stuck) .orb{box-shadow:0 0 32px rgba(248,113,113,.55);animation:livepulse 1s ease-in-out infinite}
+.cnode.agentn:has(.ring.waiting) .orb{box-shadow:0 0 24px rgba(251,191,36,.4);animation:livepulse 2.4s ease-in-out infinite}
+@keyframes livepulse{0%,100%{opacity:.55}50%{opacity:1}}
 .hint{font-size:11px;color:var(--faint);text-align:center;padding:2px 0 4px}
 
 /* ── agent data hub (replaces cluster when an agent orb is tapped) ── */
