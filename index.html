@@ -906,12 +906,17 @@ async function _dfSync(v){
 function _dfApply(v){
   const inp=document.getElementById("dfinput"); const w=document.getElementById("dayfocus");
   if(inp.value!==v) inp.value=v||"";
-  w.classList.toggle("has", !!v);
+  w.classList.toggle("has", !!(v && v.trim()));
 }
 function _dfOnInput(ev){
-  const v=ev.target.value.trim(); _dfApply(v);
-  localStorage.setItem("ahq_dayfocus", v);
-  clearTimeout(_dfTimer); _dfTimer=setTimeout(()=>_dfSync(v), 650);
+  // Keep the raw input value as-is while typing (do NOT trim mid-type — eats spaces).
+  // Only trim when persisting + syncing to kv store.
+  const raw = ev.target.value;
+  const w = document.getElementById("dayfocus");
+  w.classList.toggle("has", !!(raw && raw.trim()));
+  const trimmed = raw.trim();
+  localStorage.setItem("ahq_dayfocus", trimmed);
+  clearTimeout(_dfTimer); _dfTimer=setTimeout(()=>_dfSync(trimmed), 650);
 }
 function _dfClear(){
   document.getElementById("dfinput").value=""; _dfApply("");
