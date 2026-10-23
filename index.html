@@ -1737,7 +1737,7 @@ document.addEventListener("keydown", (e)=>{
       rec.onresult = (ev)=>{
         let fin="", intr="";
         for(let i=ev.resultIndex;i<ev.results.length;i++){
-          const r=ev.results[i]; (r.isFinal?fin:(intr))+=r[0].transcript;
+          const r=ev.results[i];
           if(r.isFinal) fin+=r[0].transcript; else intr+=r[0].transcript;
         }
         inp.value = (baseText + (baseText && (fin||intr) ? " " : "") + fin + intr).replace(/\s+/g," ").trim();
