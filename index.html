@@ -535,12 +535,12 @@ body.dragging #chat,body.dragging main{pointer-events:none}
 #qprev .qt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #qprev .qw{font-weight:700;color:#b8a3ff;flex:0 0 auto}
 #qprev .x{cursor:pointer;color:var(--red);font-weight:800;padding:0 4px}
-#chatform{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);align-items:center}
-#attbtn{background:var(--s2);border:1px solid var(--line2);border-radius:10px;width:37px;height:37px;display:flex;align-items:center;justify-content:center;padding:0;flex:0 0 auto}
-#attbtn svg{width:17px;height:17px}
-#chatin{flex:1;min-width:0;background:var(--s2);border:1px solid var(--line2);border-radius:10px;padding:9px 12px;color:var(--txt);font:13px Inter;outline:none}
+#chatform{display:flex;gap:10px;padding:14px 14px;border-top:1px solid var(--line);align-items:center}
+#attbtn{background:var(--s2);border:1px solid var(--line2);border-radius:12px;width:46px;height:46px;display:flex;align-items:center;justify-content:center;padding:0;flex:0 0 auto}
+#attbtn svg{width:20px;height:20px}
+#chatin{flex:1;min-width:0;background:var(--s2);border:1px solid var(--line2);border-radius:12px;padding:12px 14px;color:var(--txt);font:15px Inter;outline:none;min-height:46px}
 #chatin:focus{border-color:var(--v);box-shadow:0 0 0 3px rgba(124,92,255,.15)}
-#chatform button[type=submit]{background:linear-gradient(120deg,#8b6cff,#6c4ce0);color:#fff}
+#chatform button[type=submit]{background:linear-gradient(120deg,#8b6cff,#6c4ce0);color:#fff;height:46px;min-width:72px;padding:0 20px;font-size:14px;font-weight:800;border-radius:12px}
 
 /* ── ask-the-fleet bar (always visible, routes to Emma) ── */
 #askbar{position:fixed;z-index:28;right:24px;bottom:24px;display:flex;align-items:center;gap:6px;background:rgba(16,16,24,.92);backdrop-filter:blur(18px);border:1px solid rgba(124,92,255,.4);border-radius:999px;padding:5px 5px 5px 10px;box-shadow:0 8px 28px rgba(0,0,0,.5),0 0 20px rgba(124,92,255,.14);transition:box-shadow .18s,border-color .18s,width .18s;min-width:260px}
