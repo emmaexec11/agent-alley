@@ -177,27 +177,104 @@ body.tk-dragging .tpill{pointer-events:auto}
 .tempty{color:var(--faint);font-size:12px;padding:4px 2px}
 .tnote{font-size:10.5px;color:var(--faint);margin-top:6px}
 
-/* ── Goals tab (was Habit Tracker — Devon 2026-10-23: habits live in morning/night updates, goals get their own tab) ── */
+/* ── Goals tab — full DHQ parity (Devon 2026-10-23: proper rebuild w/ heatmap + interactivity)
+   Pulls `goals2` kv + habitrange from DHQ relay. Writes go through same keys as render.py
+   (G.{cid}.{iid} done + S.{cid}.{iid} skip) so toggles here reflect in DHQ morning/night cards. */
 #habitstab{padding:16px}
 #habitstab #goalscard{margin:0 0 14px}
 #goalspage{display:flex;flex-direction:column;gap:12px}
-#goalspage .gcat{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:14px 16px;transition:border-color .15s}
-#goalspage .gcat:hover{border-color:var(--line2)}
-#goalspage .gcat .ghead{display:flex;align-items:center;gap:10px;margin-bottom:4px}
-#goalspage .gcat .gic{font-size:22px;line-height:1}
-#goalspage .gcat .gnm{font-weight:800;font-size:16px;letter-spacing:-.2px}
-#goalspage .gcat .gstar{color:var(--dim);font-size:12.5px;margin-left:30px;margin-bottom:10px}
-#goalspage .gcat .gitems{display:flex;flex-direction:column;gap:6px;margin-top:8px}
-#goalspage .gcat .gi{display:flex;align-items:center;gap:11px;padding:7px 2px 7px 8px;border-left:2px solid rgba(124,92,255,.4);font-size:13.5px}
-#goalspage .gcat .gi .ginm{flex:1;min-width:0;color:var(--txt)}
-#goalspage .gcat .gi .gtgt{flex:0 0 auto;font-family:"JetBrains Mono",monospace;font-size:11px;color:#c4b5fd;padding:2px 9px;border-radius:999px;background:rgba(124,92,255,.14);border:1px solid rgba(124,92,255,.3);font-weight:700}
-#goalspage .gcat .gi.lag .gtgt{color:#fcd34d;background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.3)}
-#goalspage .gcat .gi.lead{border-left-color:#34d399}
-#goalspage .gcat .gi.lead .gtgt{color:#6ee7b7;background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.3)}
-#goalspage .gempty{color:var(--faint);font-size:13px;text-align:center;padding:30px 10px;border:1px dashed var(--line);border-radius:12px}
-#goalspage .gheader{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+
+/* Summary header */
+#goalspage .gheader{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:2px}
 #goalspage .gheader h2{font-size:18px;font-weight:800;letter-spacing:-.3px}
 #goalspage .gheader small{color:var(--dim);font-weight:500;font-size:12px}
+#goalspage .gstats{margin-left:auto;display:flex;gap:14px;color:var(--dim);font-size:12px;font-family:"JetBrains Mono",monospace}
+#goalspage .gstats b{color:var(--txt);font-weight:700;margin-right:4px}
+#goalspage .gstats .gpct{color:var(--v)}
+#goalspage .gstats .gpct.green{color:var(--green)}
+#goalspage .gstats .gpct.amber{color:var(--amber)}
+#goalspage .gstats .gpct.red{color:var(--red)}
+
+/* Category card */
+#goalspage .gcat{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:12px 14px;transition:border-color .15s}
+#goalspage .gcat:hover{border-color:var(--line2)}
+#goalspage .gcat.open{border-color:rgba(124,92,255,.35)}
+#goalspage .gcathead{display:flex;align-items:center;gap:11px;cursor:pointer;user-select:none}
+#goalspage .gcirc{flex:0 0 20px;width:20px;height:20px;border-radius:50%;border:1.8px solid rgba(124,92,255,.5);background:transparent;display:inline-flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s;cursor:pointer}
+#goalspage .gcirc:hover{border-color:var(--v)}
+#goalspage .gcirc.ghalf{background:rgba(124,92,255,.25);border-color:var(--v)}
+#goalspage .gcirc.gon{background:var(--v);border-color:var(--v);box-shadow:0 0 10px var(--vglow)}
+#goalspage .gcirc.gon::after{content:"✓";color:#0a0a0f;font-size:12px;font-weight:900}
+#goalspage .gcatmain{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+#goalspage .gcatnamewrap{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+#goalspage .gic{font-size:17px;line-height:1}
+#goalspage .gnm{font-weight:700;font-size:14.5px;letter-spacing:-.2px}
+#goalspage .gstar{color:var(--dim);font-size:11.5px;font-weight:500}
+#goalspage .ghll{display:flex;gap:7px;flex-wrap:wrap;font-size:10.5px;color:var(--faint)}
+#goalspage .ghlag{color:var(--amber)}
+#goalspage .ghlead{color:var(--green)}
+#goalspage .gcatpct{flex:0 0 auto;font-size:13px;font-weight:800;font-family:"JetBrains Mono",monospace;color:var(--v)}
+#goalspage .gcatpct.green{color:var(--green)}
+#goalspage .gcatpct.amber{color:var(--amber)}
+#goalspage .gcatpct.red{color:var(--red)}
+#goalspage .gchev{color:var(--faint);font-size:12px;transition:transform .15s;flex:0 0 auto}
+#goalspage .gcat.open .gchev{transform:rotate(180deg)}
+
+/* Category body (expanded) */
+#goalspage .gcatbody{display:none;padding-top:11px;margin-top:10px;border-top:1px solid var(--line);flex-direction:column;gap:9px}
+#goalspage .gcat.open .gcatbody{display:flex}
+#goalspage .gll{display:flex;flex-direction:column;gap:5px;background:var(--s2);border-radius:9px;padding:8px 10px;font-size:12px}
+#goalspage .gllrow{display:flex;align-items:center;gap:8px;color:var(--dim);cursor:pointer}
+#goalspage .gllrow:hover{color:var(--txt)}
+#goalspage .gllk{font-weight:700;font-size:10px;letter-spacing:.5px;padding:2px 7px;border-radius:5px;flex:0 0 auto}
+#goalspage .glllag{background:rgba(251,191,36,.14);color:var(--amber);border:1px solid rgba(251,191,36,.3)}
+#goalspage .glllead{background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.3)}
+#goalspage .gnotebtn{align-self:flex-start;font-size:11.5px;color:var(--dim);background:transparent;border:1px solid var(--line);border-radius:8px;padding:4px 10px;cursor:pointer}
+#goalspage .gnotebtn:hover{color:var(--txt);border-color:var(--line2)}
+#goalspage .gnote{background:var(--s2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:12px;color:var(--dim);white-space:pre-wrap;line-height:1.5;max-height:320px;overflow-y:auto}
+
+/* Items */
+#goalspage .gitem{display:flex;flex-direction:column;gap:4px}
+#goalspage .gitemrow{display:flex;align-items:center;gap:10px;padding:6px 2px 6px 9px;border-left:2px solid rgba(124,92,255,.4);font-size:13px}
+#goalspage .gitem.lag .gitemrow{border-left-color:rgba(251,191,36,.5)}
+#goalspage .gitem.opt .gitemrow{border-left-color:var(--faint);opacity:.75}
+#goalspage .gichk{flex:0 0 20px;width:20px;height:20px;border-radius:50%;border:1.8px solid rgba(124,92,255,.5);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,border-color .15s}
+#goalspage .gichk:hover{border-color:var(--v)}
+#goalspage .gichk.gon{background:var(--v);border-color:var(--v)}
+#goalspage .gichk.gon::after{content:"✓";color:#0a0a0f;font-size:11px;font-weight:900}
+#goalspage .giname{flex:1;min-width:0;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+#goalspage .gitem.opt .giname{color:var(--dim)}
+#goalspage .gitgt{flex:0 0 auto;font-family:"JetBrains Mono",monospace;font-size:10.5px;padding:2px 8px;border-radius:999px;font-weight:700}
+#goalspage .gitgt.lead{color:#c4b5fd;background:rgba(124,92,255,.14);border:1px solid rgba(124,92,255,.3)}
+#goalspage .gitgt.lag{color:#fcd34d;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3)}
+#goalspage .gipct{flex:0 0 auto;font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:700;min-width:38px;text-align:right}
+#goalspage .gipct.green{color:var(--green)}
+#goalspage .gipct.amber{color:var(--amber)}
+#goalspage .gipct.red{color:var(--red)}
+
+/* Mini 28-day heatmap */
+#goalspage .gcal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:6px 0 4px 31px;max-width:300px}
+#goalspage .gchd{font-size:9.5px;color:var(--faint);text-align:center;font-weight:700;letter-spacing:.5px}
+#goalspage .gcell{height:20px;border-radius:4px;background:rgba(255,255,255,.06);font-size:10px;text-align:center;line-height:20px;color:var(--faint);cursor:pointer;transition:transform .1s}
+#goalspage .gcell:hover{transform:scale(1.15)}
+#goalspage .gc-fut{opacity:.4;cursor:default}
+#goalspage .gc-fut:hover{transform:none}
+#goalspage .gc-futsched{background:rgba(124,92,255,.08);border:1px solid rgba(124,92,255,.2)}
+#goalspage .gc-done{background:#22c55e;color:#052e0f}
+#goalspage .gc-miss{background:#dc2626;color:#2a0505}
+#goalspage .gc-skip{background:#3b82f6;color:#061227}
+#goalspage .gc-rest{background:rgba(255,255,255,.04)}
+#goalspage .gleg{font-size:10px;color:var(--faint);padding:3px 0 2px 31px;line-height:1.5}
+
+/* Tools (add goal / add category / edit) */
+#goalspage .gtools{display:flex;flex-wrap:wrap;gap:7px;padding-top:4px}
+#goalspage .gtool{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--dim);background:var(--s2);border:1px solid var(--line);border-radius:8px;padding:5px 11px;cursor:pointer;user-select:none;font-weight:600}
+#goalspage .gtool:hover{color:var(--txt);border-color:rgba(124,92,255,.4);background:rgba(124,92,255,.08)}
+#goalspage .gaddcat{align-self:center;margin-top:4px}
+
+/* Empty / warn */
+#goalspage .gempty{color:var(--faint);font-size:13px;text-align:center;padding:30px 10px;border:1px dashed var(--line);border-radius:12px}
+#goalspage .gwarn{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:9px 13px;font-size:12px;color:#fca5a5}
 
 /* ── new project / finish ── */
 .npbtn{display:inline-flex;align-items:center;gap:7px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.45);color:#c4b5fd;border-radius:10px;padding:8px 15px;font-size:12.5px;font-weight:700;margin-bottom:12px}
@@ -2674,6 +2751,29 @@ async function _dqKvGet(key){
     const j = await r.json(); return j.value;
   }catch(e){ return null; }
 }
+async function _dqKvSet(key, value){
+  try{
+    await fetch(`${DQ_RELAY}/?k=${DQ_KEY}&action=kvset`,
+      {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({key, value})});
+    return true;
+  }catch(e){ return false; }
+}
+/* Set/clear a daily habit mark through DHQ relay. Day is YYYY-MM-DD. done=0/1.
+   Writes to the same habits table render.py reads from, so goals toggled here
+   show up in the morning/night cards automatically. */
+async function _dqHabitSet(day, habit, done){
+  try{
+    await fetch(`${DQ_RELAY}/?k=${DQ_KEY}&action=habitset`,
+      {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({day, habit, done:done?1:0})});
+    return true;
+  }catch(e){ return false; }
+}
+async function _dqHabitRange(start, end){
+  try{
+    const r = await fetch(`${DQ_RELAY}/?k=${DQ_KEY}&action=habitrange&start=${start}&end=${end}`);
+    const j = await r.json(); return (j.rows || []);
+  }catch(e){ return []; }
+}
 function openDayUpdate(mode){
   mode = mode || _duMode() || "morn";
   const el = document.getElementById("dayupdate");
@@ -2781,35 +2881,393 @@ async function renderDayUpdate(mode){
 }
 function _duWakeConfirm(btn){ btn.textContent = "☀️ nice — you're up"; btn.style.opacity="0.6"; btn.disabled=true; }
 
-/* ── Goals tab (DHQ goals2 kv — categories, items, leading vs lagging) ──
-   Devon's rule 2026-10-23: leading indicators > lagging ones. Visual priority to
-   min/wk + days commitments (lead), target as the lag outcome. */
+/* ── Goals tab (DHQ goals2 kv — full feature parity with render.py's night-goals widget)
+   Writes go to the same keys render.py uses (G.{cid}.{iid}, S.{cid}.{iid}) so toggles here
+   show up in Devon's morning.html + night.html automatically. Dashboard chrome only (no DHQ
+   pink/purple pastels). Devon 2026-10-23 asked for proper rebuild, not static placeholders. */
+const GOALS_STATE = { defs:null, days:{}, openCat:null, openItemCal:{}, openNote:null };
+
+/* Local-date helpers. ISO in local tz, matches render.py's `iso()`. */
+function _gIso(d){ return d.toLocaleDateString("en-CA"); }
+function _gToday(){ return _gIso(new Date()); }
+function _gMonday(d){ const m=new Date(d); m.setDate(d.getDate() - ((d.getDay()+6)%7)); m.setHours(0,0,0,0); return m; }
+function _gAddD(k, n){ const d=new Date(k+"T12:00:00"); d.setDate(d.getDate()+n); return _gIso(d); }
+function _gk(c, i){ return "G." + c + "." + i; }
+function _gskk(c, i){ return "S." + c + "." + i; }
+function _gIsSkip(c, i, k){ const row = GOALS_STATE.days[k]; return !!(row && row[_gskk(c,i)]); }
+function _gIsDone(c, i, k){ const row = GOALS_STATE.days[k]; return !!(row && row[_gk(c,i)]); }
+
+/* Period = this week (Mon–Sun) by default, or this month if per==="mo". */
+function _gPeriod(it){
+  const now = new Date();
+  if(it.per === "mo"){
+    const first = new Date(now.getFullYear(), now.getMonth(), 1);
+    const last = new Date(now.getFullYear(), now.getMonth()+1, 0);
+    return { start:first, len:last.getDate() };
+  }
+  return { start:_gMonday(now), len:7 };
+}
+function _gWeekHits(cid, it){
+  const p = _gPeriod(it); const now = new Date(); let n = 0;
+  for(let d = new Date(p.start); d <= now; d.setDate(d.getDate()+1)){
+    if(_gIsDone(cid, it.id, _gIso(d))) n++;
+  }
+  return n;
+}
+function _gItemPct(cid, it){
+  const m = it.min || 1, hits = _gWeekHits(cid, it);
+  return Math.round(hits * 100 / m);
+}
+function _gCatPct(cat){
+  const req = (cat.items||[]).filter(it => !it.opt);
+  if(!req.length) return 100;
+  let s = 0;
+  req.forEach(it => { s += Math.min(100, _gItemPct(cat.id, it)); });
+  return Math.round(s / req.length);
+}
+function _gVerdictCls(pct){ if(pct>=80) return "green"; if(pct>=60) return "amber"; return "red"; }
+
+/* 28-day heatmap for one item. Mirrors render.py's calCells(): Mon-aligned grid,
+   last 4 full weeks ending with the current week's Sunday. */
+function _gCalCells(cid, it){
+  const now = new Date(); const today = _gToday();
+  const todayD = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const end = new Date(now); end.setHours(0,0,0,0);
+  end.setDate(end.getDate() + (7 - ((end.getDay()+6)%7)) - 1);
+  const startC = new Date(end); startC.setDate(end.getDate() - 27);
+  const sched = it.days && it.days.length;
+  let html = '<div class="gcal">';
+  ["M","T","W","T","F","S","S"].forEach(h => { html += `<span class="gchd">${h}</span>`; });
+  for(let d = new Date(startC); d <= end; d.setDate(d.getDate()+1)){
+    const k = _gIso(d);
+    const done = _gIsDone(cid, it.id, k);
+    const skip = _gIsSkip(cid, it.id, k);
+    const onSched = sched && it.days.indexOf(d.getDay()) >= 0;
+    let cls;
+    if(d > todayD) cls = onSched ? "gc-fut gc-futsched" : "gc-fut";
+    else if(done) cls = "gc-done";
+    else if(skip) cls = "gc-skip";
+    else if(sched && onSched && d < todayD) cls = "gc-miss";
+    else if(sched && onSched) cls = "gc-rest gc-futsched";
+    else cls = "gc-rest";
+    const lab = k === today ? "·" : (skip ? "s" : (d.getDate() === 1 ? "1" : ""));
+    html += `<span class="gcell ${cls}" data-d="${k}" data-c="${esc(cid)}" data-i="${esc(it.id)}">${lab}</span>`;
+  }
+  html += '</div>';
+  html += sched
+    ? '<div class="gleg">🟩 done · 🟥 missed · 🟦 skipped · tap: done → skip → clear</div>'
+    : '<div class="gleg">🟩 done · 🟦 skipped · tap: done → skip → clear</div>';
+  return html;
+}
+
 async function renderGoalsPage(){
   const page = document.getElementById("goalspage");
   if(!page) return;
-  let data = null;
-  try{ data = await _dqKvGet("goals2"); }catch(e){}
-  const cats = (data && Array.isArray(data.cats)) ? data.cats : [];
+  page.innerHTML = `<div class="gempty">loading goals…</div>`;
+
+  /* Pull current goal defs + last 35d of habit marks (so the 28-day heatmap has history). */
+  const now = new Date();
+  const start28 = new Date(now); start28.setDate(now.getDate() - 34);
+  const [defs, rows] = await Promise.all([
+    _dqKvGet("goals2"),
+    _dqHabitRange(_gIso(start28), _gIso(now))
+  ]);
+  GOALS_STATE.defs = defs || { cats: [] };
+  GOALS_STATE.days = {};
+  (rows || []).forEach(r => {
+    if(!r.done) return;
+    if(r.habit && (r.habit.indexOf("G.")===0 || r.habit.indexOf("S.")===0)){
+      GOALS_STATE.days[r.day] = GOALS_STATE.days[r.day] || {};
+      GOALS_STATE.days[r.day][r.habit] = 1;
+    }
+  });
+  _gDraw();
+}
+
+function _gDraw(){
+  const page = document.getElementById("goalspage");
+  if(!page) return;
+  const defs = GOALS_STATE.defs;
+  const cats = (defs && Array.isArray(defs.cats)) ? defs.cats : [];
   if(!cats.length){
-    page.innerHTML = `<div class="gempty">no goals set yet — add one from the DHQ goals coach or chat Emma to seed them</div>`;
+    page.innerHTML = `<div class="gempty">no goals set yet — add one below</div>
+      <div class="gtools gaddcat"><span class="gtool" id="gaddcat">＋ category</span></div>`;
+    const addBtn = document.getElementById("gaddcat");
+    if(addBtn) addBtn.onclick = _gAddCat;
     return;
   }
-  const html = cats.map(cat=>{
-    const items = (cat.items||[]).map(it=>{
-      const isLead = (it.min || it.days) && !!(it.min || (it.days && it.days.length));
-      const tgt = it.tgt && it.min && it.tgt !== it.min
-        ? `${it.min}-${it.tgt}/${it.per||"wk"}`
-        : it.min ? `${it.min}/${it.per||"wk"}` : "";
-      const cls = isLead ? "lead" : "lag";
-      return `<div class="gi ${cls}"><span class="ginm">${esc(it.name||it.id||"")}</span>${tgt?`<span class="gtgt">${esc(tgt)}</span>`:""}</div>`;
-    }).join("");
-    return `<div class="gcat">
-      <div class="ghead"><span class="gic">${esc(cat.icon||"🎯")}</span><span class="gnm">${esc(cat.name||cat.id||"")}</span></div>
-      ${cat.star?`<div class="gstar">${esc(cat.star)}</div>`:""}
-      ${items?`<div class="gitems">${items}</div>`:`<div class="gempty" style="padding:12px 0;border:none">no items yet</div>`}
+
+  const today = _gToday();
+  let totPct = 0, totItems = 0, hitItems = 0;
+  cats.forEach(cat => {
+    totPct += _gCatPct(cat);
+    (cat.items||[]).forEach(it => {
+      if(it.opt) return;
+      totItems++;
+      if(_gWeekHits(cat.id, it) >= (it.min||1)) hitItems++;
+    });
+  });
+  const avgPct = cats.length ? Math.round(totPct / cats.length) : 0;
+  const hitPct = totItems ? Math.round(hitItems * 100 / totItems) : 0;
+  const avgCls = _gVerdictCls(avgPct);
+  const sumCls = _gVerdictCls(hitPct);
+
+  const html = cats.map(cat => {
+    const cp = _gCatPct(cat);
+    const cpCls = _gVerdictCls(cp);
+    const items = cat.items || [];
+    const allToday = items.length > 0 && items.every(it => _gIsDone(cat.id, it.id, today));
+    const someToday = items.some(it => _gIsDone(cat.id, it.id, today));
+    const circCls = allToday ? "gon" : (someToday ? "ghalf" : "");
+    const open = GOALS_STATE.openCat === cat.id;
+
+    const llChips = [];
+    if(cat.lag) llChips.push(`<span class="ghlag">🎯 ${esc(cat.lag)}</span>`);
+    if(cat.lead) llChips.push(`<span class="ghlead">⚡ ${esc(cat.lead)}</span>`);
+
+    const head = `<div class="gcathead" data-c="${esc(cat.id)}">
+      <span class="gcirc ${circCls}" data-c="${esc(cat.id)}" data-act="toggleall"></span>
+      <div class="gcatmain">
+        <div class="gcatnamewrap"><span class="gic">${esc(cat.icon||"🎯")}</span><span class="gnm">${esc(cat.name||cat.id||"")}</span>${cat.star?`<span class="gstar">${esc(cat.star)}</span>`:""}</div>
+        ${llChips.length?`<div class="ghll">${llChips.join("")}</div>`:""}
+      </div>
+      <span class="gcatpct ${cpCls}">${cp}%</span>
+      <span class="gchev">▾</span>
     </div>`;
+
+    let body = "";
+    if(open){
+      const noteOpen = GOALS_STATE.openNote === cat.id;
+      body = `<div class="gcatbody">
+        <div class="gll">
+          <div class="gllrow" data-c="${esc(cat.id)}" data-ll="lag"><span class="gllk glllag">🎯 LAG</span><span>${esc(cat.lag || "tap to set")} ✎</span></div>
+          <div class="gllrow" data-c="${esc(cat.id)}" data-ll="lead"><span class="gllk glllead">⚡ LEAD</span><span>${esc(cat.lead || "tap to set")} ✎</span></div>
+        </div>`;
+      if(cat.note){
+        body += `<span class="gnotebtn" data-c="${esc(cat.id)}">${noteOpen?"▴ hide breakdown":"📖 full breakdown"}</span>`;
+        if(noteOpen) body += `<div class="gnote">${esc(cat.note)}</div>`;
+      }
+
+      items.forEach(it => {
+        const hits = _gWeekHits(cat.id, it);
+        const pct = _gItemPct(cat.id, it);
+        const onToday = _gIsDone(cat.id, it.id, today);
+        const per = it.per === "mo" ? "mo" : "wk";
+        /* Lead = frequency commitment (daily domino), Lag = outcome/optional target.
+           Per Devon's 2026-10-23 rule: lead > lag visually. We treat required items with
+           a min/wk as LEAD (green accent), optional items as LAG (amber accent). */
+        const isLead = !it.opt && (it.min || 0) > 0;
+        const cls = (it.opt ? "opt" : (isLead ? "lead" : "lag"));
+        const tgt = it.tgt && it.min && it.tgt !== it.min
+          ? `${it.min}-${it.tgt}/${per}`
+          : it.min ? `${it.min}/${per}` : "";
+        const pctCls = _gVerdictCls(pct);
+        const stat = `${hits}/${it.min||1}`;
+        const calOpen = GOALS_STATE.openItemCal[cat.id + "." + it.id];
+        body += `<div class="gitem ${cls}" data-c="${esc(cat.id)}" data-i="${esc(it.id)}">
+          <div class="gitemrow">
+            <span class="gichk ${onToday?"gon":""}" data-c="${esc(cat.id)}" data-i="${esc(it.id)}" data-act="toggleitem"></span>
+            <span class="giname" data-c="${esc(cat.id)}" data-i="${esc(it.id)}" data-act="togglecal">${esc(it.name||it.id)}</span>
+            ${tgt?`<span class="gitgt ${isLead?"lead":"lag"}">${esc(tgt)}</span>`:""}
+            <span class="gipct ${pctCls}">${stat}</span>
+          </div>
+          ${calOpen ? _gCalCells(cat.id, it) : ""}
+        </div>`;
+      });
+
+      body += `<div class="gtools">
+        <span class="gtool" data-c="${esc(cat.id)}" data-act="additem">＋ goal</span>
+        <span class="gtool" data-c="${esc(cat.id)}" data-act="editcat">✎ category</span>
+      </div></div>`;
+    }
+
+    return `<div class="gcat ${open?"open":""}" data-c="${esc(cat.id)}">${head}${body}</div>`;
   }).join("");
-  page.innerHTML = `<div class="gheader"><h2>Goals</h2><small>${cats.length} categories · leading indicators green, lagging amber</small></div>${html}`;
+
+  page.innerHTML = `
+    <div class="gheader">
+      <h2>Goals</h2>
+      <small>${cats.length} categories · ${totItems} required goals</small>
+      <div class="gstats">
+        <span><b>${hitItems}/${totItems}</b> hit · <span class="gpct ${sumCls}">${hitPct}%</span></span>
+        <span>avg <span class="gpct ${avgCls}">${avgPct}%</span></span>
+      </div>
+    </div>
+    ${html}
+    <div class="gtools gaddcat"><span class="gtool" id="gaddcat">＋ category</span></div>`;
+
+  _gWireEvents();
+}
+
+function _gWireEvents(){
+  const page = document.getElementById("goalspage");
+  if(!page) return;
+
+  /* Cat head → expand/collapse. Big circle inside head is handled separately below. */
+  page.querySelectorAll(".gcathead").forEach(el => {
+    el.onclick = (ev) => {
+      if(ev.target.closest("[data-act=toggleall]")) return;
+      const cid = el.getAttribute("data-c");
+      GOALS_STATE.openCat = GOALS_STATE.openCat === cid ? null : cid;
+      _gDraw();
+    };
+  });
+
+  /* Big cat circle → mark all items in cat done/undone for today. Mirrors render.py line 877. */
+  page.querySelectorAll("[data-act=toggleall]").forEach(el => {
+    el.onclick = async (ev) => {
+      ev.stopPropagation();
+      const cid = el.getAttribute("data-c");
+      const cat = GOALS_STATE.defs.cats.find(c => c.id === cid); if(!cat) return;
+      const today = _gToday();
+      const allOn = cat.items.length > 0 && cat.items.every(it => _gIsDone(cid, it.id, today));
+      const want = allOn ? 0 : 1;
+      GOALS_STATE.days[today] = GOALS_STATE.days[today] || {};
+      const promises = [];
+      cat.items.forEach(it => {
+        GOALS_STATE.days[today][_gk(cid, it.id)] = want;
+        promises.push(_dqHabitSet(today, _gk(cid, it.id), want));
+      });
+      _gDraw();
+      await Promise.all(promises);
+    };
+  });
+
+  /* Item circle → toggle today's done. */
+  page.querySelectorAll("[data-act=toggleitem]").forEach(el => {
+    el.onclick = async (ev) => {
+      ev.stopPropagation();
+      const cid = el.getAttribute("data-c"), iid = el.getAttribute("data-i");
+      const today = _gToday();
+      GOALS_STATE.days[today] = GOALS_STATE.days[today] || {};
+      const cur = GOALS_STATE.days[today][_gk(cid, iid)] ? 1 : 0;
+      const nv = cur ? 0 : 1;
+      GOALS_STATE.days[today][_gk(cid, iid)] = nv;
+      _gDraw();
+      await _dqHabitSet(today, _gk(cid, iid), nv);
+    };
+  });
+
+  /* Item name → expand/collapse 28-day heatmap. */
+  page.querySelectorAll("[data-act=togglecal]").forEach(el => {
+    el.onclick = (ev) => {
+      ev.stopPropagation();
+      const cid = el.getAttribute("data-c"), iid = el.getAttribute("data-i");
+      const k = cid + "." + iid;
+      GOALS_STATE.openItemCal[k] = !GOALS_STATE.openItemCal[k];
+      _gDraw();
+    };
+  });
+
+  /* Heatmap cell → 3-state cycle (empty → done → skip → clear). Mirrors render.py line 948. */
+  page.querySelectorAll(".gcell").forEach(el => {
+    el.onclick = async (ev) => {
+      ev.stopPropagation();
+      if(el.classList.contains("gc-fut")) return;
+      const cid = el.getAttribute("data-c"), iid = el.getAttribute("data-i"), dd = el.getAttribute("data-d");
+      const K1 = _gk(cid, iid), K2 = _gskk(cid, iid);
+      GOALS_STATE.days[dd] = GOALS_STATE.days[dd] || {};
+      if(GOALS_STATE.days[dd][K1]){
+        /* done → skip. Block two-in-a-row skips (render.py line 959). */
+        if(_gIsSkip(cid, iid, _gAddD(dd, -1)) || _gIsSkip(cid, iid, _gAddD(dd, 1))){
+          alert("Can't skip two days in a row — day before or after is already skipped.");
+          GOALS_STATE.days[dd][K1] = 0;
+          await _dqHabitSet(dd, K1, 0);
+        } else {
+          GOALS_STATE.days[dd][K1] = 0;
+          GOALS_STATE.days[dd][K2] = 1;
+          await _dqHabitSet(dd, K1, 0);
+          await _dqHabitSet(dd, K2, 1);
+        }
+      } else if(GOALS_STATE.days[dd][K2]){
+        /* skip → clear */
+        GOALS_STATE.days[dd][K2] = 0;
+        await _dqHabitSet(dd, K2, 0);
+      } else {
+        /* empty → done */
+        GOALS_STATE.days[dd][K1] = 1;
+        await _dqHabitSet(dd, K1, 1);
+      }
+      _gDraw();
+    };
+  });
+
+  /* Note button → expand/collapse full breakdown. */
+  page.querySelectorAll(".gnotebtn").forEach(el => {
+    el.onclick = (ev) => {
+      ev.stopPropagation();
+      const cid = el.getAttribute("data-c");
+      GOALS_STATE.openNote = GOALS_STATE.openNote === cid ? null : cid;
+      _gDraw();
+    };
+  });
+
+  /* Lead/lag inline edit via prompt. */
+  page.querySelectorAll(".gllrow").forEach(el => {
+    el.onclick = async (ev) => {
+      ev.stopPropagation();
+      const cid = el.getAttribute("data-c"), k = el.getAttribute("data-ll");
+      const cat = GOALS_STATE.defs.cats.find(c => c.id === cid); if(!cat) return;
+      const v = prompt(k === "lag" ? "🎯 Lag — the outcome" : "⚡ Lead — the daily domino", cat[k] || "");
+      if(v === null) return;
+      cat[k] = v.trim();
+      await _dqKvSet("goals2", GOALS_STATE.defs);
+      _gDraw();
+    };
+  });
+
+  /* Tool buttons: additem / editcat. */
+  page.querySelectorAll(".gtool[data-act]").forEach(el => {
+    el.onclick = async (ev) => {
+      ev.stopPropagation();
+      const act = el.getAttribute("data-act"), cid = el.getAttribute("data-c");
+      const cat = GOALS_STATE.defs.cats.find(c => c.id === cid); if(!cat) return;
+      if(act === "additem"){
+        const nm = prompt("New goal in " + cat.name); if(!nm || !nm.trim()) return;
+        const fr = prompt("How often? e.g. 3/wk or 1/mo", "3/wk") || "3/wk";
+        const fm = fr.match(/(\d+)\s*\/?\s*(mo|m|wk|w)?/i);
+        const per = (fm && fm[2] && fm[2].toLowerCase().charAt(0) === "m") ? "mo" : "wk";
+        const cap = per === "mo" ? 31 : 7;
+        const mn = Math.min(cap, Math.max(1, fm ? Number(fm[1]) : 3));
+        cat.items = cat.items || [];
+        cat.items.push({ id:"x"+Date.now().toString(36), name:nm.trim(), min:mn, tgt:mn, per:per, days:[] });
+        await _dqKvSet("goals2", GOALS_STATE.defs);
+        _gDraw();
+      } else if(act === "editcat"){
+        const nm = prompt("Category name (empty = delete)", cat.name);
+        if(nm === null) return;
+        if(!nm.trim()){
+          if(!confirm("Delete category " + cat.name + " and all its goals?")) return;
+          GOALS_STATE.defs.cats = GOALS_STATE.defs.cats.filter(c => c.id !== cat.id);
+        } else {
+          cat.name = nm.trim();
+          const ic = prompt("Emoji", cat.icon); if(ic) cat.icon = ic.trim();
+          const sr = prompt("North-star line", cat.star || "");
+          if(sr !== null) cat.star = sr.trim();
+          const lg = prompt("🎯 Lag — the outcome", cat.lag || "");
+          if(lg !== null) cat.lag = lg.trim();
+          const ld = prompt("⚡ Lead — the daily domino", cat.lead || "");
+          if(ld !== null) cat.lead = ld.trim();
+        }
+        await _dqKvSet("goals2", GOALS_STATE.defs);
+        _gDraw();
+      }
+    };
+  });
+
+  /* Bottom-of-page add-category button. */
+  const addBtn = document.getElementById("gaddcat");
+  if(addBtn) addBtn.onclick = _gAddCat;
+}
+
+async function _gAddCat(){
+  if(!GOALS_STATE.defs) return;
+  const nm = prompt("New category name"); if(!nm || !nm.trim()) return;
+  const ic = prompt("Emoji", "⭐") || "⭐";
+  GOALS_STATE.defs.cats = GOALS_STATE.defs.cats || [];
+  GOALS_STATE.defs.cats.push({ id:"c"+Date.now().toString(36), icon:ic.trim(), name:nm.trim(), star:"", items:[] });
+  await _dqKvSet("goals2", GOALS_STATE.defs);
+  _gDraw();
 }
 /* Refresh goals whenever user switches to the tab (keeps data fresh without 24/7 polling) */
 function _duPinSave(ev){
