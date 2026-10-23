@@ -45,6 +45,39 @@ header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px
 header .logo{font-size:17px;font-weight:800;letter-spacing:-.3px}
 header .logo em{font-style:normal;background:linear-gradient(100deg,#a78bfa,#7C5CFF);-webkit-background-clip:text;background-clip:text;color:transparent}
 header .gen{color:var(--faint);font-size:12px}
+header .mantra{color:var(--faint);font-size:11px;font-style:italic;letter-spacing:.2px;margin-left:14px;opacity:.72}
+@media(max-width:720px){header .mantra{display:none}}
+
+/* ── Reminders drawer (sticky-note style, side peek tab) ── */
+#remtab{position:fixed;right:0;top:50%;transform:translateY(-50%);background:linear-gradient(135deg,#7C5CFF,#6c4ce0);color:#fff;padding:12px 7px;border-radius:10px 0 0 10px;font-size:11px;font-weight:700;letter-spacing:1.5px;writing-mode:vertical-rl;text-orientation:mixed;cursor:pointer;z-index:30;box-shadow:-2px 2px 14px rgba(124,92,255,.4);user-select:none;transition:padding .15s}
+#remtab:hover{padding:14px 9px}
+#remdrawer{position:fixed;right:0;top:0;bottom:0;width:340px;max-width:92vw;background:rgba(15,15,23,.98);backdrop-filter:blur(20px);border-left:1px solid rgba(124,92,255,.4);z-index:60;transform:translateX(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(0,0,0,.5)}
+#remdrawer.on{transform:translateX(0)}
+#remhead{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line)}
+#remhead h3{font-size:14px;font-weight:800;letter-spacing:1.2px;color:#c4b5fd;flex:1}
+#remhead .add{background:rgba(124,92,255,.2);border:1px solid rgba(124,92,255,.5);color:#c4b5fd;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer}
+#remhead .add:hover{background:rgba(124,92,255,.3)}
+#remhead .closex{color:var(--faint);cursor:pointer;font-size:18px;padding:0 4px;user-select:none}
+#remhead .closex:hover{color:var(--red)}
+#remlist{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.remcard{border-radius:10px;padding:12px 13px;position:relative;transition:transform .15s;border:1px solid rgba(0,0,0,.2)}
+.remcard:hover{transform:translateY(-1px)}
+.remcard.c-yellow{background:#fde68a;color:#422006}
+.remcard.c-pink{background:#fbcfe8;color:#500724}
+.remcard.c-blue{background:#bfdbfe;color:#172554}
+.remcard.c-green{background:#bbf7d0;color:#052e16}
+.remcard.c-purple{background:#ddd6fe;color:#2e1065}
+.remcard.c-orange{background:#fed7aa;color:#431407}
+.remcard .rtxt{font-size:13.5px;font-weight:600;line-height:1.4;white-space:pre-wrap;word-wrap:break-word;cursor:text;outline:none;min-height:20px}
+.remcard .rtools{display:flex;align-items:center;gap:6px;margin-top:9px}
+.remcard .rcolors{display:flex;gap:4px;flex:1}
+.remcard .rswatch{width:16px;height:16px;border-radius:50%;cursor:pointer;border:1.5px solid rgba(0,0,0,.1);transition:transform .15s}
+.remcard .rswatch:hover{transform:scale(1.2)}
+.remcard .rswatch.sel{border:2px solid rgba(0,0,0,.6)}
+.remcard .rdel{color:rgba(0,0,0,.4);cursor:pointer;font-size:14px;font-weight:800;padding:0 4px;user-select:none}
+.remcard .rdel:hover{color:#b91c1c}
+#remscrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:55;display:none}
+#remscrim.on{display:block}
 header .right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
 .livedot{width:8px;height:8px;border-radius:50%;background:var(--red)}
 .livedot.ok{background:var(--green);box-shadow:0 0 10px rgba(74,222,128,.7)}
@@ -900,6 +933,7 @@ body[data-tab="chat"] #askbar{display:none}
 <div id="keygate"><div style="font-size:19px;font-weight:800">Agent <em style="font-style:normal;color:var(--v)">Alley</em></div><input id="keyin" type="password" placeholder="access key"><button class="b-approve" onclick="saveKey()">Enter</button></div>
 <header>
   <div class="logo" onclick="goHome()" style="cursor:pointer" title="Back to home">Agent <em>Alley</em></div>
+  <span class="mantra">the only thing that matters is doing the work</span>
   <span class="gen mono" id="gen"></span>
   <div class="right">
     <button id="bellbtn" class="bell" title="Notifications" onclick="toggleNotif()"><span id="bellbadge" class="bellbadge" style="display:none"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15.5V11a6 6 0 0112 0v4.5l1.5 2.2H4.5zM10 20.5a2 2 0 004 0"/></svg></button>
@@ -977,6 +1011,16 @@ body[data-tab="chat"] #askbar{display:none}
   <button class="bn" data-t="chat" onclick="setTab('chat')"><span class="bnic"></span>Chat</button>
 </nav>
 <div class="toast" id="toast"></div>
+<div id="remtab" onclick="toggleRem()" title="Reminders">REMINDERS</div>
+<div id="remscrim" onclick="toggleRem()"></div>
+<aside id="remdrawer">
+  <div id="remhead">
+    <h3>★ REMINDERS</h3>
+    <button class="add" onclick="addRem()">+ Add</button>
+    <span class="closex" onclick="toggleRem()">✕</span>
+  </div>
+  <div id="remlist"></div>
+</aside>
 <div id="dayupdate">
   <div class="dubar">
     <span class="dubt" id="dubarlbl">☀️ Morning</span>
@@ -2502,6 +2546,68 @@ function beep(){ try{ const ac=new (window.AudioContext||window.webkitAudioConte
   o.frequency.value=880; g.gain.setValueAtTime(.22,ac.currentTime);
   g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.8); o.start(); o.stop(ac.currentTime+.85); }catch(e){} }
 function notify(t){ try{ if(("Notification" in window)&&Notification.permission==="granted") new Notification("Agent Alley",{body:t}); }catch(e){} }
+
+/* ── Reminders drawer (sticky-note style, side peek tab) ── */
+const REM_COLORS = ["yellow","pink","blue","green","purple","orange"];
+const REM_DEFAULT = [
+  {id:1, text:"The only thing that matters is doing the work.", color:"purple"},
+  {id:2, text:"Morning routine", color:"yellow"},
+  {id:3, text:"Night routine", color:"blue"}
+];
+function _loadRem(){
+  try{ const v = JSON.parse(localStorage.getItem("ahq_reminders")||"null"); if(Array.isArray(v) && v.length) return v; }catch(e){}
+  return REM_DEFAULT.slice();
+}
+function _saveRem(arr){ localStorage.setItem("ahq_reminders", JSON.stringify(arr)); }
+function toggleRem(){
+  const d = document.getElementById("remdrawer");
+  const s = document.getElementById("remscrim");
+  const open = !d.classList.contains("on");
+  d.classList.toggle("on", open);
+  s.classList.toggle("on", open);
+  if(open) renderRem();
+}
+function renderRem(){
+  const list = document.getElementById("remlist");
+  const arr = _loadRem();
+  if(!arr.length){ list.innerHTML = `<div style="color:var(--faint);text-align:center;padding:20px;font-size:13px">No reminders yet.<br>Tap "+ Add" above.</div>`; return; }
+  list.innerHTML = arr.map(r=>`
+    <div class="remcard c-${esc(r.color||"yellow")}" data-id="${r.id}">
+      <div class="rtxt" contenteditable="true" onblur="editRem(${r.id}, this.innerText)" onkeydown="if(event.key==='Escape')this.blur()">${esc(r.text||"")}</div>
+      <div class="rtools">
+        <div class="rcolors">${REM_COLORS.map(c=>{
+          const bg = {yellow:"#fde68a",pink:"#fbcfe8",blue:"#bfdbfe",green:"#bbf7d0",purple:"#ddd6fe",orange:"#fed7aa"}[c];
+          return `<span class="rswatch ${r.color===c?"sel":""}" style="background:${bg}" onclick="colorRem(${r.id},'${c}')" title="${c}"></span>`;
+        }).join("")}</div>
+        <span class="rdel" onclick="deleteRem(${r.id})" title="Delete">✕</span>
+      </div>
+    </div>
+  `).join("");
+}
+function addRem(){
+  const arr = _loadRem();
+  const nextId = arr.length ? Math.max(...arr.map(r=>r.id)) + 1 : 1;
+  arr.push({id:nextId, text:"", color:"yellow"});
+  _saveRem(arr); renderRem();
+  setTimeout(()=>{ const el = document.querySelector(`.remcard[data-id="${nextId}"] .rtxt`); if(el) el.focus(); }, 50);
+}
+function editRem(id, txt){
+  const arr = _loadRem();
+  const r = arr.find(x=>x.id===id); if(!r) return;
+  r.text = (txt||"").trim();
+  _saveRem(arr);
+}
+function colorRem(id, c){
+  const arr = _loadRem();
+  const r = arr.find(x=>x.id===id); if(!r) return;
+  r.color = c;
+  _saveRem(arr); renderRem();
+}
+function deleteRem(id){
+  const arr = _loadRem().filter(r=>r.id!==id);
+  _saveRem(arr); renderRem();
+}
+
 /* Click the "Agent Alley" logo to return to the home view (Alley tab, cluster at root, chat panel on default split) */
 function goHome(){
   try{
