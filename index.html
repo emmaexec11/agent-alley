@@ -1030,14 +1030,14 @@ body[data-tab="chat"] #askbar{display:none}
     <form id="chatform" onsubmit="return sendMsg(event)">
       <button type="button" id="attbtn" title="Attach file" onclick="document.getElementById('attfile').click()"></button>
       <input type="file" id="attfile" hidden>
-      <input id="chatin" placeholder="Message Emma…" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="true" name="emma_msg" enterkeyhint="send" data-lpignore="true" data-form-type="other"><button type="submit">Send</button>
+      <input id="chatin" placeholder="Message Ali…" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="true" name="ali_msg" enterkeyhint="send" data-lpignore="true" data-form-type="other"><button type="submit">Send</button>
     </form>
   </aside>
 </main>
 <div id="askbar">
   <button type="button" id="askmic" title="Voice (hold)"></button>
   <form id="askform" onsubmit="return askSubmit(event)">
-    <input id="askin" placeholder="ask Emma anything…" autocomplete="off" autocorrect="off" name="emma_ask" enterkeyhint="send" data-lpignore="true" data-form-type="other">
+    <input id="askin" placeholder="ask Ali anything…" autocomplete="off" autocorrect="off" name="ali_ask" enterkeyhint="send" data-lpignore="true" data-form-type="other">
     <button type="submit">↑</button>
   </form>
 </div>
@@ -1303,10 +1303,11 @@ function renderCluster(){
     const stuckN = stuckFromWings(ORG).length;
     const inboxN = readyN + stuckN;
     const ceoSub = inboxN ? `${inboxN} need you` : "all clear";
-    center = {ico:"", avatar:"penny", nm:"Emma", sub:ceoSub, cls:"hub cos"+(inboxN?" hot":""), clr:VIOLET, badge:"Chief of Staff",
+    center = {ico:"", avatar:"ali", nm:"Ali", sub:ceoSub, cls:"hub cos"+(inboxN?" hot":""), clr:VIOLET, badge:"Alley Manager",
       ring: emmaAg && emmaAg.status && emmaAg.status!=="idle" ? emmaAg.status : null,
       click: openEmmaChat};
-    const fleet = CREW.filter(([id,nm,w]) => id!=="emma" && (fleetFilter==="all" || w===fleetFilter));
+    /* Ali = center, native-in-Alley manager. All original CREW (incl. Emma) orbit — orbs open their TG chats. */
+    const fleet = CREW.filter(([id,nm,w]) => (fleetFilter==="all" || w===fleetFilter));
     /* Short labels for mobile — "Naturally Wyld CS" wraps at narrow widths */
     const SHORT = {cs_bot:"Wyld CS",meta_copilot:"Meta",pitch:"Outreach",carol:"Books",sage:"SAGE"};
     const narrow = window.innerWidth<=1000;
@@ -1328,8 +1329,8 @@ function renderCluster(){
     children = fleet.map(([id,nm,w])=>{
       const clr=wingClr(w); const ag=findAgent(id);
       return {ico:icon("agent",clr.g), avatar:id, nm: narrow && SHORT[id] ? SHORT[id] : nm, cls:"agentn fleet", clr,
-        ring: _pulseRing(ag),
-        click:()=>openCrewChat(id, nm)};
+        ring: _pulseRing(ag), badge: TG_HANDLES[id] ? "TG" : null,
+        click:()=>openCrewTG(id, nm)};
     });
     if(!children.length){
       children = [{ico:icon("star"), nm:"No agents in this view", cls:"agentn", clr:VIOLET}];
@@ -1705,6 +1706,20 @@ function hubMakeProgram(){
    Third element = wing for Chief-of-Staff cluster filter (All / Business / Personal). */
 const CREW = [["emma","E.M.M.A","business"],["sage","S.A.G.E","personal"],["pitch","Cold Outreach","business"],
   ["meta_copilot","Meta Copilot","business"],["cs_bot","Naturally Wyld CS","business"],["carol","Bookkeeper","business"]];
+/* Telegram deep-link handles — fleet orbs now open each bot's TG chat (hybrid launcher 2026-10-23). */
+const TG_HANDLES = {
+  emma:         "Assistant_cloud_agent_bot",
+  sage:         "sage_wyld_bot",
+  cs_bot:       "WyldCS_bot",
+  meta_copilot: "wyld_meta_copilot_bot",
+  carol:        "Books_Wyld_bot",
+  pitch:        "WyldOutreachBot"
+};
+function openCrewTG(id, nm){
+  const handle = TG_HANDLES[id];
+  if(handle) window.open("https://t.me/"+handle, "_blank", "noopener");
+  openAgentHub(id, nm);  /* keep the data hub visible after launching TG */
+}
 /* ── Pin-the-day: Devon's one-line focus, persisted + synced to agents via kv ── */
 let _dfTimer=null;
 async function _dfSync(v){
@@ -1799,10 +1814,10 @@ function openProjectChat(pid){
 function updateChatHead(){
   const h=document.getElementById("chathead");
   if(chatView==="list"){
-    h.innerHTML = `${icon("chat")}Chats<small>Emma + your crew</small>`;
+    h.innerHTML = `${icon("chat")}Chats<small>Ali + your crew (TG)</small>`;
   } else {
-    const nm = chatTarget ? chatTarget.nm : "Emma";
-    const aid = chatTarget ? chatTarget.id : "penny";
+    const nm = chatTarget ? chatTarget.nm : "Ali";
+    const aid = chatTarget ? chatTarget.id : "ali";
     const ag = findAgent(aid);
     let st = ag ? ag.status : null, stTxt;
     if(chatTarget && chatTarget.proj){
@@ -1821,7 +1836,7 @@ function updateChatHead(){
       btn.textContent = "← All chats";
       btn.onclick = showList;
     }
-    document.getElementById("chatin").placeholder = chatTarget ? `Message ${chatTarget.nm}…` : "Message Emma…";
+    document.getElementById("chatin").placeholder = chatTarget ? `Message ${chatTarget.nm}…` : "Message Ali…";
   }
 }
 function findAgent(id){
@@ -1831,7 +1846,7 @@ function findAgent(id){
 }
 function askChat(agentId){
   const crew = CREW.find(c=>c[0]===agentId);
-  if(crew){ openCrewChat(crew[0], crew[1]); return; }
+  if(crew){ openCrewTG(crew[0], crew[1]); return; }
   let found=null;
   for(const depts of Object.values(ORG)) for(const agents of Object.values(depts))
     for(const a of agents) if(a.id===agentId) found=a;
@@ -1852,22 +1867,22 @@ function preview(m, id){
   return (m.sender==="Devon"?"You: ":"")+t;
 }
 function renderChatList(){
-  const row = (id, nm, sub, av, clr, status, last) => `
-    <div class="crow" onclick="${id==="penny"?"openEmmaChat()":`askChat('${esc(id)}')`}">
+  const row = (id, nm, sub, av, clr, status, last, tg) => `
+    <div class="crow" onclick="${id==="penny"?"openEmmaChat()":(tg?`openCrewTG('${esc(id)}','${esc(nm)}')`:`askChat('${esc(id)}')`)}">
       <div class="cav" style="border-color:color-mix(in srgb,${clr.c} 55%,transparent)">${av}<img class="cimg" src="avatars/${esc(id)}.jpg?v=3" alt="" onerror="this.remove()">${status?`<span class="sdot ${status}"></span>`:""}</div>
-      <div class="cbody"><div class="cn">${esc(nm)}<span class="cwhen">${last?ago(last.ts):""}</span></div>
+      <div class="cbody"><div class="cn">${esc(nm)}${tg?' <span class="cwhen" style="opacity:.6">· TG</span>':""}<span class="cwhen">${last?ago(last.ts):""}</span></div>
       <div class="cprev">${esc(last?preview(last, id==="penny"?null:id):sub)}</div></div>
     </div>`;
-  /* Pinned hub = Emma (same chat as Penny — she IS the Chief of Staff on the dashboard). */
+  /* Pinned hub = Ali, the native-in-Alley fleet manager (routes through Penny thread backend). */
   const le = threadLast("penny");
-  let html = row("penny","Emma","Chief of Staff — Front Desk", icon("hub"), VIOLET, null, le);
-  /* Right-side list mirrors the orb cluster exactly — drop E.M.M.A duplicate, drop ORG extras. */
+  let html = row("penny","Ali","Alley Manager — in-app chat", icon("hub"), VIOLET, null, le, false);
+  /* Right-side list mirrors the orb cluster — fleet rows open each bot's Telegram chat. */
   html += `<div class="clsec">Your crew</div>`;
-  html += CREW.filter(([id])=>id!=="emma").map(([id,nm,w])=>{
+  html += CREW.map(([id,nm,w])=>{
     const ag = findAgent(id);
     const clr = wingClr(w || (ag&&ag.wing) || "business");
-    const sub = ag && ag.status_detail ? ag.status_detail : "your Telegram agent — full context";
-    return row(id, nm, sub, icon("agent",clr.g), clr, ag?ag.status:null, threadLast(id));
+    const sub = ag && ag.status_detail ? ag.status_detail : "opens Telegram — full context";
+    return row(id, nm, sub, icon("agent",clr.g), clr, ag?ag.status:null, threadLast(id), !!TG_HANDLES[id]);
   }).join("");
   /* Only show project rooms in list view, not in conversation footer */
   if(chatView!=="conv"){

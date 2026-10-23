@@ -1,5 +1,5 @@
 /* Agent Alley service worker — network-first for HTML (no stale cache ever), cache-first for images/fonts only */
-const V = "aa-v6-2026-10-23-kbd-aware";
+const V = "aa-v7-2026-10-23-ali-launcher";
 
 self.addEventListener("install", (ev)=>{
   // Don't pre-cache the HTML. Just activate immediately.
