@@ -1526,8 +1526,8 @@ function renderTasks(){
   if(nextOpen) h+= up.length ? up.map(d=>`<div class="dayhead">${esc(d.label)}</div>`+d.events.map(e=>evRow(e)).join("")).join("") : `<div class="tempty">clear skies ahead</div>`;
   h+=`</div>`;
   /* DAILY DRAGONS — real Google Tasks + in-place list pills */
-  h+=`<div class="dcard dragons"><div class="dhead">${icon("star","igA")}Daily Dragons <small>${liveCount("today")} to slay</small></div>`;
-  h+= (TASKS.tabs.today||[]).length ? rowsFor("today","Daily Dragons") : `<div class="tempty">no dragons today</div>`;
+  h+=`<div class="dcard dragons"><div class="dhead">${icon("star","igA")}Today's Tasks <small>${liveCount("today")} left</small></div>`;
+  h+= (TASKS.tabs.today||[]).length ? rowsFor("today","Today's Tasks") : `<div class="tempty">no tasks today</div>`;
   h+=`<div class="tpills">`+TPILLS.map(([k,ic,lb])=>
     `<span class="tpill${openPill===k?" on":""}" onclick="togglePill('${k}')">${ic} ${lb} · ${liveCount(k)}</span>`).join("")+`</div>`;
   for(const [k,,,ln] of TPILLS)
