@@ -516,7 +516,7 @@ body[data-tab="chat"] #askbar{display:none}
 <div id="aurora"></div>
 <div id="keygate"><div style="font-size:19px;font-weight:800">Agent <em style="font-style:normal;color:var(--v)">Alley</em></div><input id="keyin" type="password" placeholder="access key"><button class="b-approve" onclick="saveKey()">Enter</button></div>
 <header>
-  <div class="logo">Agent <em>Alley</em></div>
+  <div class="logo" onclick="goHome()" style="cursor:pointer" title="Back to home">Agent <em>Alley</em></div>
   <span class="gen mono" id="gen"></span>
   <div class="right">
     <button id="bellbtn" class="bell" title="Notifications" onclick="toggleNotif()"><span id="bellbadge" class="bellbadge" style="display:none"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15.5V11a6 6 0 0112 0v4.5l1.5 2.2H4.5zM10 20.5a2 2 0 004 0"/></svg></button>
@@ -1590,6 +1590,18 @@ function beep(){ try{ const ac=new (window.AudioContext||window.webkitAudioConte
   o.frequency.value=880; g.gain.setValueAtTime(.22,ac.currentTime);
   g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.8); o.start(); o.stop(ac.currentTime+.85); }catch(e){} }
 function notify(t){ try{ if(("Notification" in window)&&Notification.permission==="granted") new Notification("Agent Alley",{body:t}); }catch(e){} }
+/* Click the "Agent Alley" logo to return to the home view (Alley tab, cluster at root, chat panel on default split) */
+function goHome(){
+  try{
+    setTab("alley");
+    if(typeof nav === "function") nav({level:"home"});
+    document.documentElement.style.removeProperty("--chatw");
+    localStorage.removeItem("ahq_chatw");
+    document.body.removeAttribute("data-pane");
+    if(typeof applyChatView === "function") applyChatView();
+    window.scrollTo({top:0, behavior:"smooth"});
+  }catch(e){}
+}
 async function dismissAlert(id, ev){ if(ev) ev.stopPropagation();
   ALERTS=ALERTS.filter(a=>a.id!==id); renderAlerts();
   try{ await relay("kvset",{},{key:"alerts",value:ALERTS}); }catch(e){} }
