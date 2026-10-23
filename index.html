@@ -949,7 +949,7 @@ body[data-tab="chat"] #askbar{display:none}
   </div>
   <div id="drag"></div>
   <aside class="tile" id="chat">
-    <div class="ch" id="chathead">Front Office<small>Penny answers here</small></div>
+    <div class="ch" id="chathead">Front Office<small>Emma answers here</small></div>
     <div id="chatlist"></div>
     <div id="msgs"></div>
     <div id="qprev"></div>
@@ -957,7 +957,7 @@ body[data-tab="chat"] #askbar{display:none}
     <form id="chatform" onsubmit="return sendMsg(event)">
       <button type="button" id="attbtn" title="Attach file" onclick="document.getElementById('attfile').click()"></button>
       <input type="file" id="attfile" hidden>
-      <input id="chatin" placeholder="Message Penny…" autocomplete="off"><button type="submit">Send</button>
+      <input id="chatin" placeholder="Message Emma…" autocomplete="off"><button type="submit">Send</button>
     </form>
   </aside>
 </main>
@@ -1097,7 +1097,7 @@ function renderInbox(jobs, stuckAgents){
   box.classList.toggle("hot", n>0);
   const bb=document.getElementById("bnavbadge");
   bb.style.display = n? "flex":"none"; bb.textContent=n;
-  if(!n){ box.innerHTML = `<div class="ibzero">${icon("star")}All clear — agents working, Penny checking.</div>`; return; }
+  if(!n){ box.innerHTML = `<div class="ibzero">${icon("star")}All clear — agents working, Emma checking.</div>`; return; }
   const cards = [
     ...ready.map(j=>`<div class="ibcard"><span class="tag launch">READY TO LAUNCH</span>
       <div class="body"><div class="t">${esc(j.title)}</div><div class="sub">${esc(dl(j.dept))} · ${ago(j.updated)}${j.detail?` — ${esc(j.detail)}`:""}</div></div>
@@ -1364,7 +1364,7 @@ async function decide(id, what){
   const note = what==="send_back" ? (prompt("What needs fixing?")||"") : "";
   if(what==="send_back" && !note) return;
   try{ await relay("queue",{},{kind:"decision",payload:{job_id:id,decision:what,note}});
-    toast(what==="approve"?"✓ Approved — Penny is actioning it":"↩ Sent back with your note"); setTimeout(tick,1600);
+    toast(what==="approve"?"✓ Approved — Emma is actioning it":"↩ Sent back with your note"); setTimeout(tick,1600);
   }catch(e){ toast("Failed — check connection"); }
 }
 
@@ -1969,11 +1969,13 @@ function renderConv(){
   }).join("");
   const last = msgs[msgs.length-1];
   if(last && last.sender==="Devon" && Date.now()-new Date(last.ts).getTime() < 5*60*1000){
-    const nm = chatTarget ? chatTarget.nm : "Penny";
+    const nm = chatTarget ? chatTarget.nm : "Emma";
     document.getElementById("msgs").innerHTML +=
       `<div class="msg typing"><div class="who">${esc(nm)}</div><span class="tdots"><i></i><i></i><i></i></span></div>`;
   }
-  const el=document.getElementById("msgs"); el.scrollTop=el.scrollHeight;
+  const el=document.getElementById("msgs");
+  const wasAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  requestAnimationFrame(()=>{ if(wasAtBottom) el.scrollTop=el.scrollHeight; });
   hydrateAtts();
 }
 function stuckFromWings(wings){
@@ -2513,8 +2515,10 @@ function goHome(){
     window.scrollTo({top:0, behavior:"smooth"});
   }catch(e){}
 }
-async function dismissAlert(id, ev){ if(ev) ev.stopPropagation();
-  ALERTS=ALERTS.filter(a=>a.id!==id); renderAlerts();
+async function dismissAlert(id, ev){ if(ev){ ev.stopPropagation(); ev.preventDefault(); }
+  /* Compare as string so colon-containing IDs like "cs:backlog_v1" match */
+  const idStr = String(id);
+  ALERTS=ALERTS.filter(a=>String(a.id)!==idStr); renderAlerts();
   try{ await relay("kvset",{},{key:"alerts",value:ALERTS}); }catch(e){} }
 /* Icon per kind — compact emoji that still reads at pill-chip size */
 const AL_ICONS = {sales:"📉", ads:"🎯", cs:"💬", cron:"⚙", api:"🔌", infra:"⚡", approval:"✓", timer:"⏰", did:"🤖", info:"·"};
@@ -2558,7 +2562,7 @@ function renderAlerts(){
   const vis = chips.slice(0,5);
   bar.innerHTML = vis.map(c=>
     `<div class="al ${c.cls}" ${c.onclick?`onclick="${c.onclick}"`:""}>
-      <span class="ic">${c.ico}</span>${c.text}${c.id?`<span class="x" onclick="dismissAlert(${c.id},event)" title="Dismiss">✕</span>`:""}
+      <span class="ic">${c.ico}</span>${c.text}${c.id?`<span class="x" onclick="dismissAlert('${esc(String(c.id))}',event); return false" title="Dismiss">✕</span>`:""}
     </div>`
   ).join("");
   bar.classList.toggle("on", vis.length>0);
