@@ -2018,8 +2018,10 @@ async function tick(){
     relay("kvget",{key:"usage"}).then(g=>{ renderUsage(g.value||null); }).catch(()=>{});
     relay("kvget",{key:"kpis"}).then(g=>{ renderKpis(g.value||null); }).catch(()=>renderKpis(null));
     relay("kvget",{key:"decisions"}).then(g=>{ DECISIONS = Array.isArray(g.value) ? g.value : []; renderBellBadge(); if(NOTIF_OPEN) renderNotif(); }).catch(()=>{});
-    /* Agent-hub data blobs. Each key populated by a backend cron (follow-up work). */
+    /* Agent-hub data blobs. Each key populated by a backend cron that skips itself unless this pulse is fresh. */
     relay("kvget",{key:"hub_data"}).then(g=>{ HUB_KV = (g.value && typeof g.value==="object") ? g.value : {}; if(activeAgentHub) renderAgentHub(); }).catch(()=>{});
+    /* Dashboard presence pulse — crons check this before burning tokens/API calls. */
+    relay("kvset",{},{key:"dashboard_pulse",value:{ts:Date.now(),agent:activeAgentHub||null,tab:curTab}}).catch(()=>{});
     relay("kvget",{key:"tasks"}).then(g=>{ TASKS=g.value||null; renderTasks(); renderStrip(); renderTop3(); }).catch(()=>{});
     relay("kvget",{key:"alerts"}).then(g=>{ ALERTS=Array.isArray(g.value)?g.value:[]; renderAlerts(); }).catch(()=>{});
     const st = await relay("kvget",{key:"state"});
