@@ -578,7 +578,7 @@ body[data-tab="chat"] #askbar{display:none}
 #bnav{display:none}
 
 /* ── Morning / Night update modal — DHQ layout, Agent Alley dark chrome ── */
-#dayupdate{position:fixed;inset:0;z-index:60;display:none;background:var(--bg);flex-direction:column}
+#dayupdate{position:fixed;inset:0;z-index:60;display:none;background:var(--bg);flex-direction:column;height:100dvh;height:100vh}
 #dayupdate.on{display:flex;animation:duFade .25s ease-out}
 @keyframes duFade{from{opacity:0}to{opacity:1}}
 #dayupdate .dubar{display:flex;align-items:center;gap:10px;padding:14px 18px;background:rgba(10,10,15,.95);border-bottom:1px solid var(--line);flex:0 0 auto;position:sticky;top:0;z-index:2;backdrop-filter:blur(14px)}
@@ -2435,7 +2435,13 @@ async function renderDayUpdate(mode){
   const rem = document.getElementById("duremind");
   if(rem){
     if(Array.isArray(mantras) && mantras.length){
-      rem.innerHTML = `<div class="duk">🧭 REMINDERS</div>` + mantras.map((m,i)=>`<div class="dumantra c${i%6}">"${esc(typeof m==="string"?m:(m.text||""))}"</div>`).join("");
+      /* DHQ mantra format: {t: text, c: text-color, b: background-color} */
+      rem.innerHTML = `<div class="duk">🧭 REMINDERS</div>` + mantras.map((m,i)=>{
+        const t = typeof m==="string" ? m : (m.t || m.text || "");
+        if(!t) return "";
+        const style = typeof m==="object" ? [m.c?`color:${m.c}`:"", m.b?`background:${m.b};padding:6px 10px;border-radius:8px;margin:2px 0`:""].filter(Boolean).join(";") : "";
+        return `<div class="dumantra c${i%6}"${style?` style="${esc(style)}"`:""}>"${esc(t)}"</div>`;
+      }).join("");
     } else {
       rem.innerHTML = `<div class="duk">🧭 REMINDERS</div><div class="duempty">no reminders set</div>`;
     }
