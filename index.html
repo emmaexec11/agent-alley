@@ -1038,44 +1038,53 @@ function openEmmaChat(){
 }
 
 /* ── Agent data hub — appears in the Alley tab when an agent orb is tapped. ── */
+/* Hub recipes defined BY each specialist (co-designed 2026-10-22):
+   cs_bot (Review/Escalations/Trends), meta_copilot (Today/Cut List/Creative/Pacing),
+   carol (CEO glance/Channel P&L/Fee drag/Anomalies), pitch (Drafts/Pipeline/Campaigns).
+   SAGE spec placeholder until she picks hers. */
 const HUB_SPECS = {
-  carol: {title:"Bookkeeper",   tabs:["Overview","Shopify","P&L"],       tag:"wyld",
+  carol: {title:"Bookkeeper",  tabs:["CEO glance","Channel P&L","Fee drag","Anomalies"], tag:"wyld",
     cards:[
-      {k:"rev_today",   lbl:"Revenue today",    kv:"shopify_today.revenue", fmt:"money"},
-      {k:"orders_today",lbl:"Orders today",     kv:"shopify_today.orders"},
-      {k:"rev_wtd",     lbl:"Revenue WTD",      kv:"shopify_wk.revenue",    fmt:"money"},
-      {k:"rev_mtd",     lbl:"Revenue MTD",      kv:"shopify_mo.revenue",    fmt:"money"},
-      {k:"top_sku",     lbl:"Top SKU this wk",  kv:"shopify_wk.top_sku"},
-      {k:"runway",      lbl:"Cash runway",      placeholder:"—"}
+      {k:"cash_runway", lbl:"Cash runway",        kv:"carol.cash_runway"},
+      {k:"gm_mtd",      lbl:"Gross margin MTD",   kv:"carol.gm_mtd_pct"},
+      {k:"ad_vs_rev",   lbl:"Ad spend / revenue", kv:"carol.ad_vs_rev"},
+      {k:"rev_today",   lbl:"Revenue today",      kv:"shopify_today.revenue", fmt:"money"},
+      {k:"orders_today",lbl:"Orders today",       kv:"shopify_today.orders"},
+      {k:"rev_mtd",     lbl:"Revenue MTD",        kv:"shopify_mo.revenue",    fmt:"money"},
+      {k:"top_sku",     lbl:"Top SKU this wk",    kv:"shopify_wk.top_sku"}
     ]},
-  meta_copilot: {title:"Meta Copilot", tabs:["Today","Pacing","Creative"], tag:"meta",
+  meta_copilot: {title:"Meta Copilot", tabs:["Today","Cut List","Creative Health","Pacing"], tag:"meta",
     cards:[
-      {k:"spend_today", lbl:"Spend today",      kv:"meta_today.spend",     fmt:"money"},
-      {k:"sales_today", lbl:"Sales today",      kv:"meta_today.sales",     fmt:"money"},
-      {k:"cac_today",   lbl:"CAC today",        kv:"meta_today.cac",       fmt:"money"},
-      {k:"roas_today",  lbl:"ROAS today",       kv:"meta_today.roas"},
-      {k:"top_ad",      lbl:"Top creative",     placeholder:"wiring"},
-      {k:"pacing",      lbl:"Daily pacing",     placeholder:"wiring"}
+      {k:"cpa_today",   lbl:"CPA vs $15 target",  kv:"meta_today.cpa"},
+      {k:"spend_vs_bud",lbl:"Spend / budget",     kv:"meta_today.spend_vs_budget"},
+      {k:"purch_today", lbl:"Purchases today",    kv:"meta_today.purchases"},
+      {k:"rev_today",   lbl:"Revenue today",      kv:"meta_today.revenue",   fmt:"money"},
+      {k:"spend_today", lbl:"Spend today",        kv:"meta_today.spend",     fmt:"money"},
+      {k:"cac_7d",      lbl:"CAC 7d rolling",     kv:"meta_today.cac_7d",    fmt:"money"},
+      {k:"cuts",        lbl:"Cut-list candidates",kv:"meta_today.cuts"}
     ]},
-  cs_bot: {title:"Customer Service", tabs:["Inbox","Drafts","Trends"],   tag:"cs",
+  cs_bot: {title:"Customer Service", tabs:["Review queue","Escalations","Trends"], tag:"cs",
     cards:[
-      {k:"open",        lbl:"Open tickets",     kv:"cs.open"},
-      {k:"drafts",      lbl:"Drafts ready",     kv:"cs.drafts"},
-      {k:"responded",   lbl:"Responded today",  kv:"cs.responded_today"},
-      {k:"avg_time",    lbl:"Avg response",     placeholder:"wiring"},
-      {k:"top_issue",   lbl:"Top issue (wk)",   placeholder:"wiring"}
+      {k:"drafts",      lbl:"Drafts to review",   kv:"cs.drafts"},
+      {k:"oldest_draft",lbl:"Oldest draft",       kv:"cs.oldest_draft"},
+      {k:"gorgias_open",lbl:"Gorgias open",       kv:"cs.gorgias_open"},
+      {k:"auto_send",   lbl:"Auto-send status",   kv:"cs.auto_send"},
+      {k:"sent_today",  lbl:"Sent today",         kv:"cs.sent_today"},
+      {k:"approval_rate",lbl:"Approval rate 7d",  kv:"cs.approval_rate"}
     ]},
-  pitch: {title:"Cold Outreach", tabs:["Pipeline","Replies"],
+  pitch: {title:"Cold Outreach", tabs:["Needs you","Pipeline","Campaigns"],
     cards:[
-      {k:"sent_wk",     lbl:"Pitches sent (wk)",placeholder:"wiring"},
-      {k:"replies",     lbl:"Replies (wk)",     placeholder:"wiring"},
-      {k:"meetings",    lbl:"Meetings booked",  placeholder:"wiring"}
+      {k:"drafts_wait", lbl:"Drafts awaiting you",kv:"pitch.drafts_wait"},
+      {k:"sent_wk",     lbl:"Sent this week",     kv:"pitch.sent_wk"},
+      {k:"reply_rate",  lbl:"Reply rate wk",      kv:"pitch.reply_rate"},
+      {k:"live_convo",  lbl:"Live conversations", kv:"pitch.live_convo"},
+      {k:"meetings",    lbl:"Meetings booked",    kv:"pitch.meetings"}
     ]},
   sage: {title:"S.A.G.E", tabs:["Daily","Training","Meals"],
     cards:[
-      {k:"habits",      lbl:"Habits today",     placeholder:"wiring"},
-      {k:"workout",     lbl:"Next workout",     placeholder:"wiring"},
-      {k:"meals",       lbl:"Meals logged",     placeholder:"wiring"}
+      {k:"habits",      lbl:"Habits today",       placeholder:"wiring"},
+      {k:"workout",     lbl:"Next workout",       placeholder:"wiring"},
+      {k:"meals",       lbl:"Meals logged",       placeholder:"wiring"}
     ]}
 };
 let activeAgentHub = null, activeHubTab = 0;
