@@ -327,6 +327,11 @@ body.agent-hub #top3{display:none !important}
 #fleetfilter .ff{background:transparent;border:1px solid var(--line);color:var(--dim);border-radius:999px;padding:5px 18px;font-size:12px;font-weight:600;cursor:pointer;transition:border-color .15s,color .15s,background .15s;font-family:inherit}
 #fleetfilter .ff:hover{color:var(--txt);border-color:var(--line2)}
 #fleetfilter .ff.on{background:rgba(124,92,255,.14);border-color:rgba(124,92,255,.45);color:var(--txt);box-shadow:0 0 10px rgba(124,92,255,.18)}
+#fleetfilter .ff.duquick{padding:5px 11px;font-size:14px}
+#fleetfilter .ff.duquick.morn{border-color:rgba(251,191,36,.35)}
+#fleetfilter .ff.duquick.morn:hover{color:#fcd34d;border-color:rgba(251,191,36,.6)}
+#fleetfilter .ff.duquick.night{border-color:rgba(124,92,255,.35)}
+#fleetfilter .ff.duquick.night:hover{color:#c4b5fd;border-color:rgba(124,92,255,.6)}
 body:not([data-view="home"]) #fleetfilter{display:none}
 .cnode.wingn .orb{width:92px;height:92px}
 .cnode.deptn .orb{width:74px;height:74px}
@@ -711,6 +716,9 @@ body[data-tab="chat"] #askbar{display:none}
         <button class="ff on" data-f="all" onclick="setFleetFilter('all')">All</button>
         <button class="ff" data-f="business" onclick="setFleetFilter('business')">Business</button>
         <button class="ff" data-f="personal" onclick="setFleetFilter('personal')">Personal</button>
+        <span style="flex:1"></span>
+        <button class="ff duquick morn" onclick="openDayUpdate('morn')" title="Morning update">☀️</button>
+        <button class="ff duquick night" onclick="openDayUpdate('night')" title="Night update">🌙</button>
       </div>
       <div id="cluster"><svg id="clines"></svg><div id="cnodes"></div></div>
       <div class="hint" id="chint">tap Emma to chat · tap an agent to open their hub + chat</div>
@@ -1137,7 +1145,7 @@ const HUB_SPECS = {
       {k:"live_convo",  lbl:"Live conversations", kv:"pitch.live_convo"},
       {k:"meetings",    lbl:"Meetings booked",    kv:"pitch.meetings"}
     ]},
-  sage: {title:"S.A.G.E", tabs:["Daily","Training","Meals"], hasRoutines:true,
+  sage: {title:"S.A.G.E", tabs:["Daily","Training","Meals"],
     cards:[
       {k:"habits",      lbl:"Habits today",       placeholder:"wiring"},
       {k:"workout",     lbl:"Next workout",       placeholder:"wiring"},
@@ -1185,11 +1193,6 @@ function renderAgentHub(){
       ${isWip?`<div class="hbsub">wiring soon</div>`:""}
     </div>`;
   }).join("");
-  const routines = spec.hasRoutines ? `
-    <div class="hbmnbtns">
-      <button class="hbmnbtn morn" onclick="openDayUpdate('morn')">☀️ Morning update</button>
-      <button class="hbmnbtn night" onclick="openDayUpdate('night')">🌙 Night update</button>
-    </div>` : "";
   el.innerHTML = `
     <div class="hbhead">
       <button class="hbback" onclick="closeAgentHub()">‹ Alley</button>
@@ -1197,7 +1200,6 @@ function renderAgentHub(){
       <div class="hbtitle">${esc(spec.title)}<small>live hub</small></div>
       <button class="hbmake" onclick="hubMakeProgram()">+ Make a program</button>
     </div>
-    ${routines}
     ${tabsBar}
     <div class="hbgrid">${cards}</div>
     <div class="hbnote">placeholder cards — backend wiring per hub comes next. tap "+ Make a program" to ask Emma to spin up a workflow for this agent.</div>`;
