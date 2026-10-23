@@ -1498,6 +1498,9 @@ function openAgentHub(id, nm){
   const spec = HUB_SPECS[id];
   if(!spec){ closeAgentHub(); return; }
   activeAgentHub = id; activeHubTab = 0;
+  /* Devon's rule 2026-10-23: if coming from Goals/Projects/Tasks tab, snap back to
+     the Alley tab so the hub (which lives INSIDE #alleytab) is actually visible. */
+  setTab("alley");
   document.body.classList.add("agent-hub");
   renderAgentHub();
 }
