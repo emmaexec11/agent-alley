@@ -922,6 +922,17 @@ body[data-tab="chat"] #askbar{display:none}
   #bnav .bn.on{color:var(--txt)}
   #bnav .bn.on svg{opacity:1;filter:drop-shadow(0 0 8px var(--vglow))}
   #bnav .bbadge{position:absolute;top:0;left:calc(50% + 6px);min-width:16px;height:16px;border-radius:8px;background:var(--red);color:#1a0505;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px}
+  /* Full-screen chat on mobile: Telegram-style. Hide bnav/header/strips, chat fills viewport, back-chevron overlays. */
+  body[data-chatopen="1"] #bnav{display:none}
+  body[data-chatopen="1"] header{display:none}
+  body[data-chatopen="1"] #askbar{display:none}
+  body[data-chatopen="1"] #astrip,
+  body[data-chatopen="1"] #alertbar{display:none !important}
+  body[data-chatopen="1"] main{padding:0}
+  body[data-chatopen="1"] #chat{height:100dvh;max-height:100dvh;border-radius:0;border:0;margin:0}
+  body[data-chatopen="1"] #chathead{padding-left:60px}
+  #chatback{display:none;position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:38;background:rgba(26,26,38,.92);border:1px solid var(--line2);width:38px;height:38px;border-radius:19px;align-items:center;justify-content:center;backdrop-filter:blur(14px);color:var(--txt);cursor:pointer;padding:0}
+  body[data-chatopen="1"] #chatback{display:flex}
 }
 @media(min-width:1001px){
   body[data-tab="alley"] #projectstab,body[data-tab="alley"] #taskstab,body[data-tab="alley"] #habitstab,
@@ -996,6 +1007,7 @@ body[data-tab="chat"] #askbar{display:none}
   </div>
   <div id="drag"></div>
   <aside class="tile" id="chat">
+    <button id="chatback" onclick="closeChatFullscreen()" title="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
     <div class="ch" id="chathead">Front Office<small>Emma answers here</small></div>
     <div id="chatlist"></div>
     <div id="msgs"></div>
@@ -1111,10 +1123,27 @@ function setTab(t){
   document.body.dataset.tab = t;
   document.querySelectorAll("#lefttabs .lt").forEach(b=>b.classList.toggle("on", b.dataset.t===t || (t==="chat"&&b.dataset.t==="alley")));
   document.querySelectorAll("#bnav .bn").forEach(b=>b.classList.toggle("on", b.dataset.t===t));
+  /* Mobile: chat tab opens full-screen chat (no header/nav), back button returns to alley. */
+  if(window.innerWidth<=1000){
+    const wasOpen = document.body.dataset.chatopen==="1";
+    const nowOpen = (t==="chat");
+    document.body.dataset.chatopen = nowOpen ? "1" : "0";
+    /* Push a history entry when entering so hardware back closes chat instead of exiting PWA. */
+    if(nowOpen && !wasOpen){ try{ history.pushState({chat:1}, "", "#chat"); }catch(e){} }
+  }
   if(t==="alley") requestAnimationFrame(renderCluster);
   if(t==="chat"){ const el=document.getElementById("msgs"); el.scrollTop=el.scrollHeight; }
   if(t==="habits") renderGoalsPage();
 }
+function closeChatFullscreen(){
+  document.body.dataset.chatopen = "0";
+  setTab("alley");
+  try{ history.replaceState({}, "", "#"); }catch(e){}
+}
+/* Hardware/browser back → exit full-screen chat first, then let browser navigate. */
+window.addEventListener("popstate", ()=>{
+  if(document.body.dataset.chatopen==="1"){ closeChatFullscreen(); }
+});
 
 /* ── top strip: critical-only (today's birthdays / all-day events) ──
    agent statuses live in the cluster + chat views, never up here.

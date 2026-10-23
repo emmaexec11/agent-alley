@@ -1,5 +1,5 @@
 /* Agent Alley service worker — network-first for HTML (no stale cache ever), cache-first for images/fonts only */
-const V = "aa-v4-2026-10-23-mobile-clean-icon";
+const V = "aa-v5-2026-10-23-fullscreen-chat";
 
 self.addEventListener("install", (ev)=>{
   // Don't pre-cache the HTML. Just activate immediately.
