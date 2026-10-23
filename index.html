@@ -651,7 +651,7 @@ body.dragging #chat,body.dragging main{pointer-events:none}
 #scrollbtn.show{display:flex;opacity:1}
 #scrollbtn.hidden{opacity:.3;pointer-events:none}
 /* Telegram-style bubbles: comfortable padding, rounded, text selectable for copy/paste. */
-.msg{max-width:88%;border-radius:16px;padding:10px 14px;font-size:14px;background:var(--s2);border:1px solid var(--line);align-self:flex-start;overflow-wrap:break-word;line-height:1.42;-webkit-user-select:text;user-select:text}
+.msg{max-width:88%;border-radius:16px;padding:10px 14px;font-size:14px;background:var(--s2);border:1px solid var(--line);align-self:flex-start;overflow-wrap:break-word;line-height:1.42;-webkit-user-select:text;user-select:text;min-width:0;display:flex;flex-direction:column}
 .msg.me{align-self:flex-end;background:rgba(124,92,255,.18);border-color:rgba(124,92,255,.35)}
 /* Wider chat panel → more generous bubbles (match Telegram feel on wide view) */
 @media(min-width:1001px){#chat #msgs .msg{font-size:14.5px;max-width:85%}}
@@ -720,10 +720,10 @@ body.dragging #chat,body.dragging main{pointer-events:none}
 .crow .cn .cwhen{margin-left:auto;font-size:10.5px;color:var(--faint);font-weight:400}
 .crow .cprev{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
 .clsec{font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--faint);padding:10px 15px 4px}
-.att{margin-top:8px}
+.att{margin-top:8px;display:flex;flex-direction:column;gap:6px;min-height:0}
 /* Attachment images: fill the bubble width + grow with chat panel (Telegram feel) */
-.att img{max-width:100%;max-height:min(70vh, 520px);border-radius:12px;border:1px solid var(--line2);display:block;cursor:zoom-in}
-.att a{display:inline-flex;align-items:center;gap:6px;color:#b8a3ff;background:var(--s3);border:1px solid var(--line2);border-radius:9px;padding:6px 11px;font-size:12px;text-decoration:none}
+.att img{width:100%;max-height:min(70vh, 520px);height:auto;border-radius:12px;border:1px solid var(--line2);display:block;cursor:zoom-in;object-fit:contain}
+.att a{display:inline-flex;align-items:center;gap:6px;color:#b8a3ff;background:var(--s3);border:1px solid var(--line2);border-radius:9px;padding:6px 11px;font-size:12px;text-decoration:none;width:fit-content}
 #attprev{display:none;align-items:center;gap:8px;margin:0 14px;padding:7px 11px;background:var(--s2);border:1px dashed rgba(124,92,255,.4);border-radius:10px;font-size:12px;color:var(--dim)}
 #attprev .x{cursor:pointer;color:var(--red);font-weight:800;margin-left:auto;padding:0 4px}
 .msg .q{border-left:3px solid var(--v);background:rgba(124,92,255,.08);border-radius:0 6px 6px 0;padding:4px 9px;margin:2px 0 6px;font-size:12px;color:var(--dim);white-space:pre-wrap}
