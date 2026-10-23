@@ -52,8 +52,7 @@ header .mantra{color:var(--faint);font-size:11px;font-style:italic;letter-spacin
 @media(max-width:720px){header .mantra{display:none}}
 
 /* ── Reminders drawer (sticky-note style, side peek tab) ── */
-#remtab{position:fixed;right:0;top:50%;transform:translateY(-50%);background:linear-gradient(135deg,#7C5CFF,#6c4ce0);color:#fff;padding:12px 7px;border-radius:10px 0 0 10px;font-size:11px;font-weight:700;letter-spacing:1.5px;writing-mode:vertical-rl;text-orientation:mixed;cursor:pointer;z-index:30;box-shadow:-2px 2px 14px rgba(124,92,255,.4);user-select:none;transition:padding .15s}
-#remtab:hover{padding:14px 9px}
+#remtab{display:none}
 #remdrawer{position:fixed;right:0;top:0;bottom:0;width:340px;max-width:92vw;background:rgba(15,15,23,.98);backdrop-filter:blur(20px);border-left:1px solid rgba(124,92,255,.4);z-index:60;transform:translateX(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(0,0,0,.5)}
 #remdrawer.on{transform:translateX(0)}
 #remhead{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line)}
@@ -99,7 +98,12 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size
 #notifpanel #nclose:hover{color:var(--red);background:rgba(248,113,113,.1)}
 #notifpanel .nbody{flex:1;overflow-y:auto;padding:14px 16px 24px;display:flex;flex-direction:column;gap:14px}
 .nsec{font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim);padding:2px 2px 6px;border-bottom:1px solid var(--line)}
-.ncard{background:var(--s2);border:1px solid var(--line);border-radius:10px;padding:10px 13px}
+.ncard{position:relative;background:var(--s2);border:1px solid var(--line);border-radius:10px;padding:10px 32px 10px 13px}
+.ncardx{position:absolute;top:7px;right:9px;cursor:pointer;color:var(--faint);font-size:14px;font-weight:800;padding:3px 7px;border-radius:7px;line-height:1}
+.ncardx:hover{color:var(--red);background:rgba(248,113,113,.1)}
+.nctl{display:flex;justify-content:flex-end;margin:-2px 0 6px}
+.nclrall{background:transparent;border:1px solid var(--line2);color:var(--dim);font-size:11px;font-weight:700;letter-spacing:.5px;padding:4px 10px;border-radius:7px;cursor:pointer}
+.nclrall:hover{color:var(--txt);border-color:var(--v)}
 .ncard .nct{font-weight:700;font-size:13px;margin-bottom:4px}
 .ncard .ncd{color:var(--dim);font-size:12px;line-height:1.4}
 .ncard .ncm{color:var(--faint);font-size:10.5px;margin-top:5px;font-family:"JetBrains Mono",monospace}
@@ -884,6 +888,10 @@ body[data-tab="chat"] #askbar{display:none}
 @media(max-width:1000px){
   main{flex-direction:column;padding:12px 12px 86px}
   #astrip{padding:10px 12px 0}
+  #alertbar{padding:8px 12px 0;gap:7px;flex-direction:column}
+  #alertbar .al{width:100%;max-width:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:34px;box-sizing:border-box}
+  #alertbar .al .x{position:absolute;right:10px;top:50%;transform:translateY(-50%);padding:4px 6px;font-size:13px;color:var(--txt);opacity:.75}
+  #alertbar .al .x:active{opacity:1}
   #drag{display:none}
   #lefttabs{display:none}
   #routines{position:static;flex:0 0 auto;max-height:none;margin:0 0 12px;order:5}
@@ -939,6 +947,7 @@ body[data-tab="chat"] #askbar{display:none}
   <span class="mantra">the only thing that matters is doing the work</span>
   <span class="gen mono" id="gen"></span>
   <div class="right">
+    <button id="rembtn" class="bell" title="Reminders" onclick="toggleRem()"><span id="rembadge" class="bellbadge" style="display:none"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.5 1.4 6.5L12 17l-6 3.4 1.4-6.5L2.5 9.4l6.6-.8z"/></svg></button>
     <button id="bellbtn" class="bell" title="Notifications" onclick="toggleNotif()"><span id="bellbadge" class="bellbadge" style="display:none"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15.5V11a6 6 0 0112 0v4.5l1.5 2.2H4.5zM10 20.5a2 2 0 004 0"/></svg></button>
     <span id="statdot" class="livedot"></span><span id="stattxt">connecting…</span>
   </div>
@@ -2626,9 +2635,9 @@ function goHome(){
   }catch(e){}
 }
 async function dismissAlert(id, ev){ if(ev){ ev.stopPropagation(); ev.preventDefault(); }
-  /* Compare as string so colon-containing IDs like "cs:backlog_v1" match */
   const idStr = String(id);
   ALERTS=ALERTS.filter(a=>String(a.id)!==idStr); renderAlerts();
+  if(NOTIF_OPEN) renderNotif();
   try{ await relay("kvset",{},{key:"alerts",value:ALERTS}); }catch(e){} }
 /* Icon per kind — compact emoji that still reads at pill-chip size */
 const AL_ICONS = {sales:"📉", ads:"🎯", cs:"💬", cron:"⚙", api:"🔌", infra:"⚡", approval:"✓", timer:"⏰", did:"🤖", info:"·"};
@@ -2754,7 +2763,19 @@ function _recapCard(r){
 }
 function _alertsBlock(){
   if(!ALERTS || !ALERTS.length) return `<div class="nempty">no active alerts</div>`;
-  return ALERTS.map(a=>`<div class="ncard"><div class="nct">${esc(a.title||a.kind||"Alert")}</div>${a.detail?`<div class="ncd">${esc(a.detail)}</div>`:""}${a.ts?`<div class="ncm">${esc(ago(a.ts))}</div>`:""}</div>`).join("");
+  const head = `<div class="nctl"><button class="nclrall" onclick="dismissAllAlerts()">Clear all</button></div>`;
+  return head + ALERTS.map(a=>{
+    const idAttr = a.id!=null ? `data-aid="${esc(String(a.id))}"` : "";
+    const x = a.id!=null ? `<span class="ncardx" onclick="dismissAlert('${esc(String(a.id))}',event)" title="Dismiss">✕</span>` : "";
+    return `<div class="ncard" ${idAttr}>${x}<div class="nct">${esc(a.title||a.kind||"Alert")}</div>${a.detail?`<div class="ncd">${esc(a.detail)}</div>`:""}${a.ts?`<div class="ncm">${esc(ago(a.ts))}</div>`:""}</div>`;
+  }).join("");
+}
+async function dismissAllAlerts(){
+  const ids = ALERTS.filter(a=>a.id!=null).map(a=>String(a.id));
+  if(!ids.length) return;
+  ALERTS = ALERTS.filter(a=>a.id==null);
+  renderAlerts(); if(NOTIF_OPEN) renderNotif();
+  try{ await relay("kvset",{},{key:"alerts",value:ALERTS}); }catch(e){}
 }
 function _dlogBlock(){
   if(!DECISIONS || !DECISIONS.length) return `<div class="nempty">decision log empty — autonomous calls will stream here</div>`;
