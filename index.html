@@ -639,11 +639,12 @@ body[data-pane="full-chat"] #chat{flex:1;width:auto;min-width:0}
 body.dragging{cursor:col-resize;-webkit-user-select:none;user-select:none}
 body.dragging #chat,body.dragging main{pointer-events:none}
 #chat{flex:0 0 var(--chatw);width:var(--chatw);min-width:0;display:flex;flex-direction:column;position:sticky;top:76px;height:calc(100vh - 100px);min-height:380px}
-#chat .ch{padding:15px 17px 8px;font-size:12.5px;font-weight:700}
+#chat .ch{padding:15px 17px 8px;font-size:12.5px;font-weight:700;position:relative;display:flex;align-items:center;justify-content:space-between}
 #chat .ch small{color:var(--faint);font-weight:400;margin-left:6px}
 .ch svg{width:15px;height:15px;vertical-align:-3px;margin-right:5px;filter:drop-shadow(0 0 5px rgba(124,92,255,.5))}
-#chatback{float:right;cursor:pointer;color:var(--v);font-size:11px;font-weight:600;padding:2px 8px;border:1px solid rgba(124,92,255,.35);border-radius:7px}
-#chatback:hover{background:rgba(124,92,255,.14)}
+#chatback{position:absolute;top:12px;right:14px;cursor:pointer;color:#c4b5fd;font-size:13px;font-weight:700;padding:6px 12px;border:1px solid rgba(124,92,255,.45);border-radius:8px;background:rgba(124,92,255,.08);transition:all .2s;display:flex;align-items:center;gap:6px}
+#chatback:hover{background:rgba(124,92,255,.16);border-color:rgba(124,92,255,.7);color:#fff}
+#chatback svg{width:16px;height:16px;stroke-width:2.5}
 #msgs{flex:1;overflow-y:auto;padding:4px 14px 10px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
 #scrollbtn{position:absolute;bottom:130px;right:24px;width:40px;height:40px;border-radius:50%;background:rgba(124,92,255,.2);border:1.5px solid rgba(124,92,255,.5);color:#c4b5fd;display:none;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:background .2s,border-color .2s,opacity .2s;z-index:10}
 #scrollbtn:hover{background:rgba(124,92,255,.35);border-color:rgba(124,92,255,.7)}
@@ -936,8 +937,8 @@ body[data-tab="chat"] #askbar{display:none}
   body[data-chatopen="1"] main{padding:0}
   body[data-chatopen="1"] #chat{height:100dvh;max-height:100dvh;border-radius:0;border:0;margin:0}
   body[data-chatopen="1"] #chathead{padding-left:60px}
-  #chatback{display:none;position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:38;background:rgba(26,26,38,.92);border:1px solid var(--line2);width:38px;height:38px;border-radius:19px;align-items:center;justify-content:center;backdrop-filter:blur(14px);color:var(--txt);cursor:pointer;padding:0}
-  body[data-chatopen="1"] #chatback{display:flex}
+  #chatback{position:absolute;top:12px;right:12px;display:inline-block}
+  body[data-chatopen="1"] #chatback{display:inline-block}
   /* Keyboard open → hide bottom nav + askbar so chat gets the entire screen. */
   body[data-kbd="1"] #bnav{display:none}
   body[data-kbd="1"] #askbar{display:none}
@@ -1015,8 +1016,10 @@ body[data-tab="chat"] #askbar{display:none}
   </div>
   <div id="drag"></div>
   <aside class="tile" id="chat">
-    <button id="chatback" onclick="closeChatFullscreen()" title="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-    <div class="ch" id="chathead">Front Office<small>Emma answers here</small></div>
+    <div class="ch" id="chathead">
+      Front Office<small>Emma answers here</small>
+      <button id="chatback" onclick="showList()" title="Back to all chats">← All chats</button>
+    </div>
     <div id="chatlist"></div>
     <div id="msgs"></div>
     <div id="scrollbtn" title="Scroll to bottom" onclick="scrollChatToBottom()">↓</div>
@@ -1777,8 +1780,12 @@ function updateChatHead(){
         : "online";
     }
     const sub = `<span class="sdot ${st||"idle"}"></span>${esc(stTxt)}`;
-    h.innerHTML = `<img class="chav" src="avatars/${esc(aid)}.jpg?v=3" alt="" onerror="this.remove()">${esc(nm)}<small>${sub}</small><span id="chatback">‹ all chats</span>`;
-    document.getElementById("chatback").onclick = showList;
+    h.innerHTML = `<img class="chav" src="avatars/${esc(aid)}.jpg?v=3" alt="" onerror="this.remove()">${esc(nm)}<small>${sub}</small>`;
+    const btn = document.getElementById("chatback");
+    if(btn) {
+      btn.textContent = "← All chats";
+      btn.onclick = showList;
+    }
     document.getElementById("chatin").placeholder = chatTarget ? `Message ${chatTarget.nm}…` : "Message Emma…";
   }
 }
