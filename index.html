@@ -2285,7 +2285,10 @@ function _duNow(){ return new Date(); }
 function _duMode(){
   const h = _duNow().getHours();
   if(h>=6 && h<10) return "morn";
-  if(h>=20 && h<24) return "night";
+  /* Devon's rule 2026-10-23: night = HE opens it manually (SAGE button).
+     Auto-pop only kicks in if he hasn't done it by 11pm — then on next sign-in
+     between 23:00 and 04:00 (covers late-night + early-morning catch-up). */
+  if(h>=23 || h<4) return "night";
   return null;
 }
 function openDayUpdate(mode){
