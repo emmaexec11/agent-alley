@@ -577,10 +577,20 @@ body[data-tab="chat"] #askbar{display:none}
 /* ── bottom nav (mobile) ── */
 #bnav{display:none}
 
-/* ── Morning / Night update modal (auto-pops on log-in during windows, also tap-to-open) ── */
-#dayupdate{position:fixed;inset:0;z-index:60;display:none;align-items:flex-start;justify-content:center;padding:28px 16px;overflow-y:auto;background:rgba(10,10,15,.78);backdrop-filter:blur(14px)}
-#dayupdate.on{display:flex;animation:duFade .3s ease-out}
+/* ── Morning / Night update modal — EXACT DHQ template via iframe (Devon's rule 2026-10-23) ── */
+#dayupdate{position:fixed;inset:0;z-index:60;display:none;background:var(--bg)}
+#dayupdate.on{display:flex;flex-direction:column;animation:duFade .25s ease-out}
 @keyframes duFade{from{opacity:0}to{opacity:1}}
+#dayupdate .dubar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(10,10,15,.92);border-bottom:1px solid var(--line);flex:0 0 auto}
+#dayupdate .dubar .dubt{flex:1;font-weight:800;font-size:14px}
+#dayupdate .dubar .dubt small{color:var(--dim);font-weight:500;margin-left:8px;font-size:11px}
+#dayupdate.morn .dubar{border-color:rgba(251,191,36,.4)}
+#dayupdate.morn .dubar .dubt{color:#fcd34d}
+#dayupdate.night .dubar{border-color:rgba(124,92,255,.4)}
+#dayupdate.night .dubar .dubt{color:#c4b5fd}
+#dayupdate .duclose{flex:0 0 auto;background:transparent;border:1px solid var(--line2);color:var(--dim);border-radius:999px;width:34px;height:34px;cursor:pointer;font-size:16px;line-height:1;padding:0;font-family:inherit}
+#dayupdate .duclose:hover{color:var(--txt);border-color:var(--v)}
+#dayupdate .duframe{flex:1;width:100%;border:none;background:#000}
 #dayupdate .duwrap{width:100%;max-width:620px;background:linear-gradient(170deg,#1a1a28,#131320 70%);border:1px solid var(--line2);border-radius:22px;padding:28px 26px 24px;box-shadow:0 24px 80px rgba(0,0,0,.6)}
 #dayupdate.morn .duwrap{background:linear-gradient(170deg,#2a1f14 0%,#1a1626 60%,#131320 100%);border-color:rgba(251,191,36,.4)}
 #dayupdate.night .duwrap{background:linear-gradient(170deg,#141a30 0%,#171527 60%,#131320 100%);border-color:rgba(124,92,255,.4)}
@@ -759,7 +769,13 @@ body[data-tab="chat"] #askbar{display:none}
   <button class="bn" data-t="chat" onclick="setTab('chat')"><span class="bnic"></span>Chat</button>
 </nav>
 <div class="toast" id="toast"></div>
-<div id="dayupdate"><div class="duwrap" id="duwrap"></div></div>
+<div id="dayupdate">
+  <div class="dubar">
+    <span class="dubt" id="dubarlbl">☀️ Morning<small>same template as your DHQ page</small></span>
+    <button class="duclose" onclick="closeDayUpdate()" title="Close">✕</button>
+  </div>
+  <iframe class="duframe" id="duframe" title="Daily update"></iframe>
+</div>
 <div id="quotepop" onmousedown="event.preventDefault()" onclick="quoteFromSelection(event)">Quote</div>
 <script>
 const EP = "https://emmalindsay--b46b3528cd8a11f1b2291607ee4eb77e.web.val.run";
@@ -2293,10 +2309,18 @@ function _duMode(){
   if(h>=23 || h<4) return "night";
   return null;
 }
+/* Devon's EXACT DHQ template loaded as iframe — same page, same data, same state */
+const DU_URLS = {
+  morn:  "https://emmaexec11.github.io/dhq-x7k2/morning.html",
+  night: "https://emmaexec11.github.io/dhq-x7k2/night.html",
+};
 function openDayUpdate(mode){
   mode = mode || _duMode() || "morn";
-  renderDayUpdate(mode);
   const el = document.getElementById("dayupdate");
+  const fr = document.getElementById("duframe");
+  const lbl = document.getElementById("dubarlbl");
+  lbl.innerHTML = mode==="morn" ? "☀️ Morning<small>Devon's routine</small>" : "🌙 Night<small>Devon's wind-down</small>";
+  fr.src = DU_URLS[mode] + "?_t=" + Date.now();
   el.className = "on " + mode;
 }
 function closeDayUpdate(){
@@ -2304,6 +2328,7 @@ function closeDayUpdate(){
   const mode = el.className.includes("morn") ? "morn" : el.className.includes("night") ? "night" : null;
   if(mode) _duMarkSeen(mode);
   el.className = "";
+  document.getElementById("duframe").src = "about:blank";
 }
 function _duPinSave(ev){
   const v = ev.target.value.trim();
