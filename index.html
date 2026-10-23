@@ -221,6 +221,37 @@ button:hover{transform:translateY(-1px)}
 .cnode.hub.cos .sub{font-weight:600;font-size:11.5px;margin-top:10px;color:#6ee7b7;letter-spacing:.2px}
 .cnode.hub.cos.hot .sub{color:#c4b5fd;text-shadow:0 0 10px rgba(124,92,255,.5)}
 
+/* ── Pin-the-day card (one line, editable in place, local storage) ── */
+#dayfocus{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(252,211,77,.07),rgba(124,92,255,.05));border:1px solid rgba(252,211,77,.3);border-radius:12px;padding:9px 14px;margin:4px 0 10px}
+#dayfocus .dftag{font-size:9.5px;font-weight:800;letter-spacing:1.4px;color:#fcd34d;white-space:nowrap;flex:0 0 auto}
+#dayfocus #dfinput{flex:1;min-width:0;background:transparent;border:none;color:var(--txt);font:600 13px Inter;outline:none;padding:3px 0}
+#dayfocus #dfinput::placeholder{color:var(--faint);font-weight:500}
+#dayfocus #dfclear{flex:0 0 auto;color:var(--faint);cursor:pointer;font-size:14px;padding:0 4px;user-select:none;visibility:hidden}
+#dayfocus.has #dfclear{visibility:visible}
+#dayfocus #dfclear:hover{color:var(--red)}
+
+/* ── collapsible KPI strip (Today's Numbers) ── */
+#kpistrip{border:1px solid var(--line);border-radius:12px;background:var(--s1);margin:0 0 10px;overflow:hidden}
+#kpihead{display:flex;align-items:center;gap:7px;padding:9px 14px;font-size:11.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);cursor:pointer;user-select:none}
+#kpihead:hover{color:var(--txt)}
+#kpihead #kpicaret{font-size:11px;color:var(--faint);transition:transform .18s}
+#kpihead small{margin-left:auto;color:var(--faint);font-weight:600;letter-spacing:.3px;text-transform:none;font-size:11px}
+#kpirow{display:none;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;padding:4px 14px 13px}
+#kpistrip.on #kpirow{display:grid}
+#kpistrip.on #kpicaret{transform:rotate(90deg)}
+.kpc{background:var(--s2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;min-width:0}
+.kpc .kplbl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+.kpc .kpval{font-size:17px;font-weight:800;margin-top:3px;font-family:"JetBrains Mono",monospace;color:var(--txt)}
+.kpc .kpsub{font-size:10.5px;color:var(--faint);margin-top:2px}
+.kpc.wyld{border-color:rgba(52,211,153,.3)}
+.kpc.wyld .kpval{color:#6ee7b7}
+.kpc.meta{border-color:rgba(96,165,250,.3)}
+.kpc.meta .kpval{color:#93c5fd}
+.kpc.cs{border-color:rgba(251,191,36,.3)}
+.kpc.cs .kpval{color:#fcd34d}
+.kpc.stale .kpval{opacity:.55}
+.kpnone{color:var(--faint);font-size:12px;padding:4px 0;text-align:center;grid-column:1/-1}
+
 /* ── fleet filter pills (Chief of Staff home) ── */
 #fleetfilter{display:flex;gap:6px;padding:4px 0 8px;justify-content:center}
 #fleetfilter .ff{background:transparent;border:1px solid var(--line);color:var(--dim);border-radius:999px;padding:5px 18px;font-size:12px;font-weight:600;cursor:pointer;transition:border-color .15s,color .15s,background .15s;font-family:inherit}
@@ -280,6 +311,11 @@ body:not([data-view="home"]) #fleetfilter{display:none}
 .proj .latest{font-size:11.5px;color:var(--faint);margin-top:9px}
 
 /* ── chat + drag handle ── */
+/* Full-pane modes: snap one side to zero so the other goes edge-to-edge.
+   Drag handle stays visible on the surviving edge so Devon can pull the hidden pane back. */
+body[data-pane="full-alley"] #chat{display:none}
+body[data-pane="full-chat"] #left,body[data-pane="full-chat"] #routines{display:none}
+body[data-pane="full-chat"] #chat{flex:1;width:auto;min-width:0}
 #drag{flex:0 0 18px;cursor:col-resize;position:relative;touch-action:none;-webkit-user-select:none;user-select:none}
 #drag::before{content:"";position:absolute;left:-6px;right:-6px;top:0;bottom:0}
 #drag::after{content:"";position:absolute;left:7px;top:12%;bottom:12%;width:4px;border-radius:2px;background:var(--line);transition:background .15s}
@@ -453,6 +489,11 @@ body.dragging #chat,body.dragging main{pointer-events:none}
     </div>
     <section class="tile" id="alleytab">
       <div id="crumb"></div>
+      <div id="dayfocus"><span class="dftag">★ TODAY'S ONE THING</span><input id="dfinput" placeholder="what matters most today?" autocomplete="off" maxlength="120"><span id="dfclear" title="clear">✕</span></div>
+      <div id="kpistrip">
+        <div id="kpihead" onclick="toggleKpi()"><span id="kpicaret">▸</span> Today's Numbers<small id="kpihint"></small></div>
+        <div id="kpirow"></div>
+      </div>
       <div id="fleetfilter">
         <button class="ff on" data-f="all" onclick="setFleetFilter('all')">All</button>
         <button class="ff" data-f="business" onclick="setFleetFilter('business')">Business</button>
@@ -797,6 +838,67 @@ function openEmmaChat(){ openAgentChat({id:"penny", title:"Penny"}); }
    Third element = wing for Chief-of-Staff cluster filter (All / Business / Personal). */
 const CREW = [["emma","E.M.M.A","business"],["sage","S.A.G.E","personal"],["pitch","Cold Outreach","business"],
   ["meta_copilot","Meta Copilot","business"],["cs_bot","Naturally Wyld CS","business"],["carol","Bookkeeper","business"]];
+/* ── Pin-the-day: Devon's one-line focus, persisted + synced to agents via kv ── */
+let _dfTimer=null;
+async function _dfSync(v){
+  try{ await relay("kvset",{},{key:"pin_of_day",value:{text:v,set_at:new Date().toISOString()}}); }catch(e){}
+}
+function _dfApply(v){
+  const inp=document.getElementById("dfinput"); const w=document.getElementById("dayfocus");
+  if(inp.value!==v) inp.value=v||"";
+  w.classList.toggle("has", !!v);
+}
+function _dfOnInput(ev){
+  const v=ev.target.value.trim(); _dfApply(v);
+  localStorage.setItem("ahq_dayfocus", v);
+  clearTimeout(_dfTimer); _dfTimer=setTimeout(()=>_dfSync(v), 650);
+}
+function _dfClear(){
+  document.getElementById("dfinput").value=""; _dfApply("");
+  localStorage.setItem("ahq_dayfocus", ""); _dfSync("");
+}
+(function initDayFocus(){
+  const saved = localStorage.getItem("ahq_dayfocus") || "";
+  const inp = document.getElementById("dfinput");
+  if(inp){ _dfApply(saved); inp.addEventListener("input", _dfOnInput);
+    document.getElementById("dfclear").addEventListener("click", _dfClear); }
+  /* Pull server-side value in case Devon set it from another device */
+  relay("kvget",{key:"pin_of_day"}).then(g=>{
+    const v = (g.value && g.value.text) || "";
+    if(v && v !== (localStorage.getItem("ahq_dayfocus")||"")){
+      localStorage.setItem("ahq_dayfocus", v); _dfApply(v);
+    }
+  }).catch(()=>{});
+})();
+
+/* ── KPI strip (collapsible). Reads kv "kpis" (populated by backend cron). ── */
+let KPI_OPEN = localStorage.getItem("ahq_kpi_open")==="1";
+function toggleKpi(){
+  KPI_OPEN=!KPI_OPEN; localStorage.setItem("ahq_kpi_open", KPI_OPEN?"1":"0");
+  document.getElementById("kpistrip").classList.toggle("on", KPI_OPEN);
+}
+function fmtMoney(v){ if(v==null) return "—"; const n=Math.round(v); return "$"+n.toLocaleString(); }
+function fmtNum(v){ return v==null ? "—" : String(v); }
+function renderKpis(k){
+  document.getElementById("kpistrip").classList.toggle("on", KPI_OPEN);
+  const row=document.getElementById("kpirow"); const hint=document.getElementById("kpihint");
+  if(!k || typeof k!=="object"){
+    row.innerHTML = `<div class="kpnone">no data yet — backend cron will populate</div>`;
+    hint.textContent = "awaiting first sync";
+    return;
+  }
+  const staleMin = k.generated ? Math.round((Date.now()-new Date(k.generated).getTime())/60000) : null;
+  const stale = staleMin && staleMin>60 ? " stale" : "";
+  const card = (cls,lbl,val,sub) => `<div class="kpc ${cls}${stale}"><div class="kplbl">${esc(lbl)}</div><div class="kpval">${esc(val)}</div>${sub?`<div class="kpsub">${esc(sub)}</div>`:""}</div>`;
+  const cards = [];
+  if(k.wyld){ cards.push(card("wyld","Wyld revenue", fmtMoney(k.wyld.revenue_today), (k.wyld.orders_today!=null?k.wyld.orders_today+" orders":""))); }
+  if(k.meta){ cards.push(card("meta","Meta spend", fmtMoney(k.meta.spend_today), (k.meta.cac_today!=null?"CAC "+fmtMoney(k.meta.cac_today):""))); }
+  if(k.meta && k.meta.sales_today!=null){ cards.push(card("meta","Meta sales", fmtMoney(k.meta.sales_today), (k.meta.roas_today!=null?"ROAS "+k.meta.roas_today.toFixed(2):""))); }
+  if(k.cs){ cards.push(card("cs","CS open", fmtNum(k.cs.open), (k.cs.drafts!=null?k.cs.drafts+" drafted":""))); }
+  row.innerHTML = cards.length ? cards.join("") : `<div class="kpnone">no numbers yet</div>`;
+  hint.textContent = staleMin!=null ? (staleMin<2?"live":"synced "+staleMin+"m ago") : "";
+}
+
 /* Chief-of-Staff fleet filter (home cluster). Persisted locally. */
 let fleetFilter = localStorage.getItem("ahq_fleet") || "all";
 function setFleetFilter(f){
@@ -1115,31 +1217,46 @@ function stuckFromWings(wings){
   return out;
 }
 
-/* ── resizable chat (desktop) ── */
+/* ── resizable chat (desktop) ── edge-to-edge drag w/ snap-to-full modes.
+   Pane modes: "split" (both visible), "full-alley" (chat hidden), "full-chat" (alley hidden).
+   Snap thresholds: <80px → full-alley, >totalW-240 → full-chat. */
 (function(){
   const saved = localStorage.getItem("ahq_chatw");
   if(saved) document.documentElement.style.setProperty("--chatw", saved+"px");
+  const savedPane = localStorage.getItem("ahq_pane");
+  if(savedPane) document.body.dataset.pane = savedPane;
   const d=document.getElementById("drag");
+  const setPane = (w, totalW) => {
+    const pane = w<80 ? "full-alley" : (w>totalW-240 ? "full-chat" : "split");
+    document.body.dataset.pane = pane;
+    localStorage.setItem("ahq_pane", pane);
+  };
   let on=false;
   const end=()=>{ if(!on)return; on=false; d.classList.remove("on"); document.body.classList.remove("dragging");
-    localStorage.setItem("ahq_chatw", parseInt(getComputedStyle(document.documentElement).getPropertyValue("--chatw"))); renderCluster(); };
+    const w = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--chatw"));
+    localStorage.setItem("ahq_chatw", w);
+    renderCluster(); };
   d.addEventListener("pointerdown", e=>{ e.preventDefault(); on=true; d.classList.add("on");
     document.body.classList.add("dragging"); d.setPointerCapture(e.pointerId); });
   d.addEventListener("pointermove", e=>{
     if(!on) return;
     e.preventDefault();
     const main=document.querySelector("main").getBoundingClientRect();
-    const w=Math.max(280, Math.min(640, main.right-22-e.clientX));
+    const totalW = main.right - main.left;
+    const w=Math.max(0, Math.min(totalW-60, main.right-22-e.clientX));
     document.documentElement.style.setProperty("--chatw", w+"px");
+    setPane(w, totalW);
   });
   d.addEventListener("pointerup", end);
   d.addEventListener("pointercancel", end);
   d.addEventListener("lostpointercapture", end);
-  /* double-click / double-tap resets to default width */
+  /* double-click / double-tap resets to default split width */
   let lastTap=0;
   d.addEventListener("pointerdown", ()=>{ const t=Date.now();
     if(t-lastTap<350){ document.documentElement.style.setProperty("--chatw","350px");
-      localStorage.removeItem("ahq_chatw"); renderCluster(); }
+      document.body.dataset.pane = "split";
+      localStorage.removeItem("ahq_chatw"); localStorage.setItem("ahq_pane","split");
+      renderCluster(); }
     lastTap=t; });
 })();
 
@@ -1444,6 +1561,7 @@ async function tick(){
   try{
     relay("kvget",{key:"recap"}).then(g=>{ renderRecap(g.value||null); }).catch(()=>{});
     relay("kvget",{key:"usage"}).then(g=>{ renderUsage(g.value||null); }).catch(()=>{});
+    relay("kvget",{key:"kpis"}).then(g=>{ renderKpis(g.value||null); }).catch(()=>renderKpis(null));
     relay("kvget",{key:"tasks"}).then(g=>{ TASKS=g.value||null; renderTasks(); renderStrip(); renderTop3(); }).catch(()=>{});
     relay("kvget",{key:"alerts"}).then(g=>{ ALERTS=Array.isArray(g.value)?g.value:[]; renderAlerts(); }).catch(()=>{});
     const st = await relay("kvget",{key:"state"});
