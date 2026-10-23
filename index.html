@@ -26,6 +26,13 @@
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--txt);font:14px/1.5 Inter,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
 .mono{font-family:"JetBrains Mono",monospace}
+/* ── Futuristic scrollbars throughout — violet glow, thin, matches Agent Alley chrome ── */
+*::-webkit-scrollbar{width:8px;height:8px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(124,92,255,.45),rgba(167,139,250,.3));border-radius:999px;border:1.5px solid transparent;background-clip:padding-box;box-shadow:0 0 6px rgba(124,92,255,.15)}
+*::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,rgba(124,92,255,.75),rgba(167,139,250,.5));background-clip:padding-box;box-shadow:0 0 10px rgba(124,92,255,.35)}
+*::-webkit-scrollbar-corner{background:transparent}
+*{scrollbar-width:thin;scrollbar-color:rgba(124,92,255,.45) transparent}
 
 /* aurora */
 #aurora{position:fixed;top:-220px;left:50%;transform:translateX(-50%);width:1100px;height:520px;pointer-events:none;z-index:0;filter:blur(110px);opacity:.5}
@@ -90,17 +97,33 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size
 .chip .x:hover{color:var(--red)}
 
 /* ── alert bar ── */
-#alertbar{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:10px 22px 0;display:none;gap:8px;flex-wrap:wrap}
+#alertbar{position:relative;z-index:1;max-width:1540px;margin:0 auto;padding:10px 22px 0;display:none;gap:9px;flex-wrap:wrap;align-items:center}
 #alertbar.on{display:flex}
-.al{display:flex;align-items:center;gap:8px;border-radius:99px;padding:6px 13px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--line2);background:rgba(16,16,24,.85);white-space:nowrap;transition:transform .15s}
-.al:hover{transform:translateY(-1px)}
-.al .cnt{font-family:"JetBrains Mono",monospace;font-weight:700}
-.al.timer{border-color:rgba(251,191,36,.5);color:#fde68a}
-.al.timer.soon{border-color:rgba(248,113,113,.7);color:#fecaca;animation:pulse 1.1s infinite}
-.al.approval{border-color:rgba(124,92,255,.5);color:#c4b5fd}
-.al.info{color:var(--dim)}
-.al .x{color:var(--faint);font-weight:800;padding:0 2px}
+/* Futuristic chip — glass base + gradient border + inner glow per severity */
+.al{position:relative;display:flex;align-items:center;gap:9px;border-radius:999px;padding:7px 15px 7px 13px;font-size:12px;font-weight:700;letter-spacing:.2px;cursor:pointer;white-space:nowrap;transition:transform .18s,box-shadow .18s,border-color .18s;background:linear-gradient(180deg,rgba(22,22,34,.95),rgba(16,16,24,.95));backdrop-filter:blur(14px);border:1px solid var(--line2);color:var(--txt);overflow:hidden}
+.al::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0}
+.al:hover{transform:translateY(-1px);border-color:var(--v);box-shadow:0 4px 18px rgba(0,0,0,.4),0 0 14px rgba(124,92,255,.2)}
+.al .ic{font-size:14px;line-height:1}
+.al .cnt{font-family:"JetBrains Mono",monospace;font-weight:800;font-size:11.5px}
+.al .x{color:var(--faint);font-weight:800;padding:0 2px 0 4px;transition:color .15s}
 .al .x:hover{color:var(--red)}
+/* severity tiers — each gets its own left-stripe + border + glow */
+.al.critical{border-color:rgba(248,113,113,.55);color:#fecaca;box-shadow:0 0 18px rgba(248,113,113,.25),inset 0 0 24px rgba(248,113,113,.08);animation:critPulse 1.3s ease-in-out infinite}
+.al.critical::before{background:linear-gradient(180deg,#f87171,#dc2626);box-shadow:0 0 10px rgba(248,113,113,.7)}
+.al.critical .ic{color:#f87171;filter:drop-shadow(0 0 6px rgba(248,113,113,.6))}
+@keyframes critPulse{0%,100%{box-shadow:0 0 18px rgba(248,113,113,.25),inset 0 0 24px rgba(248,113,113,.08)}50%{box-shadow:0 0 28px rgba(248,113,113,.45),inset 0 0 24px rgba(248,113,113,.14)}}
+.al.timer,.al.warn{border-color:rgba(251,191,36,.5);color:#fde68a;box-shadow:0 0 14px rgba(251,191,36,.18)}
+.al.timer::before,.al.warn::before{background:linear-gradient(180deg,#fbbf24,#f59e0b);box-shadow:0 0 8px rgba(251,191,36,.5)}
+.al.timer.soon{border-color:rgba(248,113,113,.7);color:#fecaca;animation:critPulse 1.1s ease-in-out infinite}
+.al.timer.soon::before{background:linear-gradient(180deg,#f87171,#dc2626)}
+.al.approval{border-color:rgba(124,92,255,.5);color:#c4b5fd;box-shadow:0 0 14px rgba(124,92,255,.2)}
+.al.approval::before{background:linear-gradient(180deg,#a78bfa,#7C5CFF);box-shadow:0 0 8px rgba(124,92,255,.6)}
+.al.approval .ic{color:#c4b5fd;filter:drop-shadow(0 0 5px rgba(124,92,255,.5))}
+.al.did{border-color:rgba(52,211,153,.35);color:#6ee7b7;box-shadow:0 0 10px rgba(52,211,153,.15);opacity:.9}
+.al.did::before{background:linear-gradient(180deg,#34d399,#10b981)}
+.al.did .ic{color:#6ee7b7}
+.al.info{border-color:var(--line2);color:var(--dim);opacity:.85}
+.al.info::before{background:var(--faint)}
 
 /* ── Tasks tab (DHQ-style day cards + list pills) ── */
 #taskstab{padding:16px;display:flex;flex-direction:column;gap:14px}
@@ -2490,30 +2513,51 @@ function goHome(){
 async function dismissAlert(id, ev){ if(ev) ev.stopPropagation();
   ALERTS=ALERTS.filter(a=>a.id!==id); renderAlerts();
   try{ await relay("kvset",{},{key:"alerts",value:ALERTS}); }catch(e){} }
+/* Icon per kind — compact emoji that still reads at pill-chip size */
+const AL_ICONS = {sales:"📉", ads:"🎯", cs:"💬", cron:"⚙", api:"🔌", infra:"⚡", approval:"✓", timer:"⏰", did:"🤖", info:"·"};
+function _alIcon(k){ return AL_ICONS[k] || AL_ICONS.info; }
 function renderAlerts(){
   const bar=document.getElementById("alertbar");
   const now=Date.now()/1000;
   const fired=JSON.parse(localStorage.getItem("ahq_fired")||"{}");
   const chips=[];
   for(const a of ALERTS){
+    /* Timer-style alarms (set via hq_lib add_alert) */
     if(a.type==="timer" && a.fire_at){
       const left=a.fire_at-now;
       if(left < -600) continue;
       if(left<=600 && !fired["w"+a.id]){ fired["w"+a.id]=1; beep(); notify(`10 min — ${a.label}`); }
       if(left<=0 && !fired["f"+a.id]){ fired["f"+a.id]=1; beep(); setTimeout(beep,450); setTimeout(beep,900); notify(`⏰ ${a.label}`); }
-      chips.push(`<div class="al timer ${left<=600?"soon":""}" onclick="dismissAlert(${a.id})" title="Click to dismiss">⏰ ${esc(a.label)} <span class="cnt">${left<=0?"now":fmtLeft(left)}</span><span class="x">✕</span></div>`);
-    } else {
-      const go = a.project_id?`openProjectChat(${a.project_id})`:"setTab('alley')";
-      chips.push(`<div class="al ${a.type==="approval"?"approval":"info"}" onclick="${go}">${a.type==="approval"?"✓":"·"} ${esc(a.label)}<span class="x" onclick="dismissAlert(${a.id},event)">✕</span></div>`);
+      chips.push({cls:"timer"+(left<=600?" soon":""), ico:_alIcon("timer"),
+        text:`${esc(a.label)} <span class="cnt">${left<=0?"now":fmtLeft(left)}</span>`,
+        onclick:`dismissAlert(${a.id})`});
+      continue;
     }
+    /* Watchlist alerts (passive monitor cron writes severity + kind) */
+    const sev = (a.severity || "info").toLowerCase();
+    const kind = (a.kind || a.type || "info").toLowerCase();
+    const cls = sev==="critical" ? "critical" : sev==="warn" ? "warn" : sev==="did" ? "did" : a.type==="approval" ? "approval" : "info";
+    const ico = _alIcon(kind in AL_ICONS ? kind : (cls==="critical"?"infra":"info"));
+    const title = esc(a.title || a.label || "alert");
+    const detail = a.detail ? `<small style="color:var(--faint);font-weight:500;margin-left:4px">${esc(a.detail).slice(0,60)}</small>` : "";
+    const go = a.action_url ? `window.location.href='${esc(a.action_url)}'` : a.project_id ? `openProjectChat(${a.project_id})` : "setTab('alley')";
+    chips.push({cls, ico, text: title+detail, onclick: go, id: a.id});
   }
+  /* Ready-for-approval jobs become approval chips */
   for(const j of LASTJOBS.filter(j=>j.stage==="ready")){
     const go = j.project_id?`openProjectChat(${j.project_id})`:"setTab('alley')";
-    chips.push(`<div class="al approval" onclick="${go}" title="Needs your approval">✓ ${esc(j.title)}</div>`);
+    chips.push({cls:"approval", ico:_alIcon("approval"), text:esc(j.title), onclick:go});
   }
+  /* Sort: critical first, then warn, then timer-soon, then rest */
+  const prio = {critical:0, warn:1, timer:2, approval:3, did:4, info:5};
+  chips.sort((a,b) => (prio[a.cls.split(" ")[0]]||9) - (prio[b.cls.split(" ")[0]]||9));
   localStorage.setItem("ahq_fired", JSON.stringify(fired));
-  const vis=chips.slice(0,4);
-  bar.innerHTML=vis.join("");
+  const vis = chips.slice(0,5);
+  bar.innerHTML = vis.map(c=>
+    `<div class="al ${c.cls}" ${c.onclick?`onclick="${c.onclick}"`:""}>
+      <span class="ic">${c.ico}</span>${c.text}${c.id?`<span class="x" onclick="dismissAlert(${c.id},event)" title="Dismiss">✕</span>`:""}
+    </div>`
+  ).join("");
   bar.classList.toggle("on", vis.length>0);
   if(ALERTS.some(a=>a.type==="timer") && ("Notification" in window) && Notification.permission==="default")
     Notification.requestPermission();
