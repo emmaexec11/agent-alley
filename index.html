@@ -577,20 +577,70 @@ body[data-tab="chat"] #askbar{display:none}
 /* ── bottom nav (mobile) ── */
 #bnav{display:none}
 
-/* ── Morning / Night update modal — EXACT DHQ template via iframe (Devon's rule 2026-10-23) ── */
-#dayupdate{position:fixed;inset:0;z-index:60;display:none;background:var(--bg)}
-#dayupdate.on{display:flex;flex-direction:column;animation:duFade .25s ease-out}
+/* ── Morning / Night update modal — DHQ layout, Agent Alley dark chrome ── */
+#dayupdate{position:fixed;inset:0;z-index:60;display:none;background:var(--bg);flex-direction:column}
+#dayupdate.on{display:flex;animation:duFade .25s ease-out}
 @keyframes duFade{from{opacity:0}to{opacity:1}}
-#dayupdate .dubar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(10,10,15,.92);border-bottom:1px solid var(--line);flex:0 0 auto}
-#dayupdate .dubar .dubt{flex:1;font-weight:800;font-size:14px}
-#dayupdate .dubar .dubt small{color:var(--dim);font-weight:500;margin-left:8px;font-size:11px}
+#dayupdate .dubar{display:flex;align-items:center;gap:10px;padding:14px 18px;background:rgba(10,10,15,.95);border-bottom:1px solid var(--line);flex:0 0 auto;position:sticky;top:0;z-index:2;backdrop-filter:blur(14px)}
+#dayupdate .dubar .dubt{flex:1;font-weight:800;font-size:15px}
 #dayupdate.morn .dubar{border-color:rgba(251,191,36,.4)}
 #dayupdate.morn .dubar .dubt{color:#fcd34d}
 #dayupdate.night .dubar{border-color:rgba(124,92,255,.4)}
 #dayupdate.night .dubar .dubt{color:#c4b5fd}
 #dayupdate .duclose{flex:0 0 auto;background:transparent;border:1px solid var(--line2);color:var(--dim);border-radius:999px;width:34px;height:34px;cursor:pointer;font-size:16px;line-height:1;padding:0;font-family:inherit}
 #dayupdate .duclose:hover{color:var(--txt);border-color:var(--v)}
-#dayupdate .duframe{flex:1;width:100%;border:none;background:#000}
+#dayupdate .duscroll{flex:1;overflow-y:auto;padding:18px 18px 48px;max-width:720px;margin:0 auto;width:100%}
+#dayupdate .duhero{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+#dayupdate .duhero .duicon{font-size:46px;line-height:1}
+#dayupdate .duhero h1{font-size:34px;font-weight:800;letter-spacing:-.5px}
+#dayupdate.morn .duhero h1{background:linear-gradient(100deg,#fde68a,#f59e0b);-webkit-background-clip:text;background-clip:text;color:transparent}
+#dayupdate.night .duhero h1{background:linear-gradient(100deg,#c4b5fd,#7C5CFF);-webkit-background-clip:text;background-clip:text;color:transparent}
+#dayupdate .duhero .dudate{color:var(--dim);font-size:13px;font-weight:500;margin-top:4px}
+#dayupdate .dusec{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+#dayupdate .dusec.pin{border-color:rgba(251,191,36,.35);background:color-mix(in srgb,#fbbf24 4%,var(--s1))}
+#dayupdate.night .dusec.pin{border-color:rgba(124,92,255,.35);background:color-mix(in srgb,#7C5CFF 4%,var(--s1))}
+#dayupdate .dusec.remind{border-color:rgba(252,211,77,.3);background:color-mix(in srgb,#fcd34d 3%,var(--s1))}
+#dayupdate .dusec.cal{border-color:rgba(74,222,128,.3)}
+#dayupdate .dusec.drag{border-color:rgba(251,191,36,.3)}
+#dayupdate .dusec.recap{border-color:rgba(124,92,255,.35)}
+#dayupdate .duk{font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+#dayupdate .dusec.pin .duk{color:#fcd34d}
+#dayupdate.night .dusec.pin .duk{color:#c4b5fd}
+#dayupdate .dusec.remind .duk{color:#fcd34d}
+#dayupdate .dusec.cal .duk{color:#6ee7b7}
+#dayupdate .dusec.drag .duk{color:#fcd34d}
+#dayupdate .dusec.recap .duk{color:#c4b5fd}
+#dayupdate .dupininp{width:100%;background:transparent;border:none;outline:none;color:var(--txt);font:700 15px Inter;padding:4px 0}
+#dayupdate .dupininp::placeholder{color:var(--faint);font-weight:500}
+#dayupdate .dumantra{padding:8px 2px;font-size:14.5px;font-weight:600;line-height:1.35;color:var(--txt);border-top:1px solid var(--line)}
+#dayupdate .dumantra:first-child{border-top:none;padding-top:4px}
+#dayupdate .dumantra.c0{color:#fcd34d}
+#dayupdate .dumantra.c1{color:#6ee7b7}
+#dayupdate .dumantra.c2{color:#fca5a5}
+#dayupdate .dumantra.c3{color:#c4b5fd}
+#dayupdate .dumantra.c4{color:#67e8f9}
+#dayupdate .dumantra.c5{color:#f9a8d4}
+#dayupdate .duevrow{display:flex;align-items:baseline;gap:14px;padding:7px 2px;font-size:14px}
+#dayupdate .duevrow .duevt{flex:0 0 60px;color:#6ee7b7;font-family:"JetBrains Mono",monospace;font-size:11.5px;font-weight:700}
+#dayupdate.night .duevrow .duevt{color:#c4b5fd}
+#dayupdate .duevrow .duevn{flex:1;color:var(--txt)}
+#dayupdate .duddrow{display:flex;align-items:center;gap:12px;padding:8px 2px;font-size:14px;cursor:pointer}
+#dayupdate .duddrow .duddchk{flex:0 0 20px;width:20px;height:20px;border-radius:50%;border:1.8px solid rgba(251,191,36,.5);display:flex;align-items:center;justify-content:center;font-size:11px;color:#1a1405}
+#dayupdate .duddrow.ck .duddchk{background:#fbbf24;border-color:#fbbf24}
+#dayupdate .duddrow.ck .duddt{text-decoration:line-through;color:var(--faint)}
+#dayupdate .dustar{color:#fcd34d;font-size:12px}
+#dayupdate .duchips{display:flex;gap:7px;flex-wrap:wrap}
+#dayupdate .duchip{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid var(--line2);background:rgba(255,255,255,.03);color:var(--dim)}
+#dayupdate .duchip.done{color:#6ee7b7;border-color:rgba(74,222,128,.35)}
+#dayupdate .duchip.wrn{color:#fcd34d;border-color:rgba(251,191,36,.35)}
+#dayupdate .duempty{color:var(--faint);font-size:12.5px;padding:4px 2px}
+#dayupdate .durline{display:flex;gap:8px;padding:5px 2px;font-size:13px;line-height:1.4;color:var(--dim)}
+#dayupdate .durline .durico{flex:0 0 14px;text-align:center;font-weight:800}
+#dayupdate .durline.done{color:#6ee7b7}
+#dayupdate .durline.stuck{color:#fcd34d}
+#dayupdate .duwake{display:flex;flex-direction:column;gap:10px}
+#dayupdate .duwakebtn{background:linear-gradient(120deg,#fbbf24,#f59e0b);color:#1a1405;border:none;border-radius:11px;padding:12px 18px;font:800 14px Inter;cursor:pointer;font-family:inherit;letter-spacing:.3px}
+#dayupdate .dunote{color:var(--faint);font-size:11.5px;line-height:1.4}
 #dayupdate .duwrap{width:100%;max-width:620px;background:linear-gradient(170deg,#1a1a28,#131320 70%);border:1px solid var(--line2);border-radius:22px;padding:28px 26px 24px;box-shadow:0 24px 80px rgba(0,0,0,.6)}
 #dayupdate.morn .duwrap{background:linear-gradient(170deg,#2a1f14 0%,#1a1626 60%,#131320 100%);border-color:rgba(251,191,36,.4)}
 #dayupdate.night .duwrap{background:linear-gradient(170deg,#141a30 0%,#171527 60%,#131320 100%);border-color:rgba(124,92,255,.4)}
@@ -771,10 +821,10 @@ body[data-tab="chat"] #askbar{display:none}
 <div class="toast" id="toast"></div>
 <div id="dayupdate">
   <div class="dubar">
-    <span class="dubt" id="dubarlbl">☀️ Morning<small>same template as your DHQ page</small></span>
+    <span class="dubt" id="dubarlbl">☀️ Morning</span>
     <button class="duclose" onclick="closeDayUpdate()" title="Close">✕</button>
   </div>
-  <iframe class="duframe" id="duframe" title="Daily update"></iframe>
+  <div class="duscroll" id="duscroll"></div>
 </div>
 <div id="quotepop" onmousedown="event.preventDefault()" onclick="quoteFromSelection(event)">Quote</div>
 <script>
@@ -2309,27 +2359,89 @@ function _duMode(){
   if(h>=23 || h<4) return "night";
   return null;
 }
-/* Devon's EXACT DHQ template loaded as iframe — same page, same data, same state */
-const DU_URLS = {
-  morn:  "https://emmaexec11.github.io/dhq-x7k2/morning.html",
-  night: "https://emmaexec11.github.io/dhq-x7k2/night.html",
-};
+/* DHQ layout, dashboard look — matches Devon's morning.html/night.html order of sections
+   but renders in Agent Alley's native dark chrome. Pulls DHQ relay kv for mantras + pin. */
+const DQ_RELAY = DQEP, DQ_KEY = DQK;
+async function _dqKvGet(key){
+  try{
+    const r = await fetch(`${DQ_RELAY}/?k=${DQ_KEY}&action=kvget&key=${encodeURIComponent(key)}`);
+    const j = await r.json(); return j.value;
+  }catch(e){ return null; }
+}
 function openDayUpdate(mode){
   mode = mode || _duMode() || "morn";
   const el = document.getElementById("dayupdate");
-  const fr = document.getElementById("duframe");
   const lbl = document.getElementById("dubarlbl");
-  lbl.innerHTML = mode==="morn" ? "☀️ Morning<small>Devon's routine</small>" : "🌙 Night<small>Devon's wind-down</small>";
-  fr.src = DU_URLS[mode] + "?_t=" + Date.now();
+  lbl.textContent = mode==="morn" ? "☀️ Morning" : "🌙 Night";
   el.className = "on " + mode;
+  renderDayUpdate(mode);
 }
 function closeDayUpdate(){
   const el = document.getElementById("dayupdate");
   const mode = el.className.includes("morn") ? "morn" : el.className.includes("night") ? "night" : null;
   if(mode) _duMarkSeen(mode);
   el.className = "";
-  document.getElementById("duframe").src = "about:blank";
 }
+async function renderDayUpdate(mode){
+  const w = document.getElementById("duscroll");
+  const now = _duNow();
+  const dateLbl = now.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"});
+  const td = TASKS && TASKS.today;
+  const up = TASKS && TASKS.upcoming || [];
+  const dragons = (TASKS && TASKS.tabs && TASKS.tabs.today) || [];
+  const pinLocal = localStorage.getItem("ahq_dayfocus") || "";
+  const recap = window._lastRecap || null;
+  const liveEvents = (td && td.events || []).filter(e=>!e.all_day);
+  const alldayEvents = (td && td.events || []).filter(e=>e.all_day);
+  /* Shell render first so the modal appears instantly, DHQ data fills in */
+  const sections = [];
+  sections.push(`<div class="duhero"><div class="duicon">${mode==="morn"?"☀️":"🌙"}</div><div><h1>${mode==="morn"?"Morning":"Night"}</h1><div class="dudate">${esc(dateLbl)}</div></div></div>`);
+  /* Pin / Today's #1 */
+  const pinLabel = mode==="morn" ? "🎯 TODAY'S #1" : "★ TOMORROW'S #1";
+  sections.push(`<div class="dusec pin"><div class="duk">${pinLabel}</div><input class="dupininp" id="dupininp" placeholder="${mode==="morn"?"what matters most today?":"what will matter tomorrow?"}" value="${esc(pinLocal)}" oninput="_duPinSave(event)"></div>`);
+  /* Reminders — placeholder, filled from DHQ kv async */
+  sections.push(`<div class="dusec remind" id="duremind"><div class="duk">🧭 REMINDERS</div><div class="duempty">loading…</div></div>`);
+  /* All-day events (morning only, if any) */
+  if(mode==="morn" && alldayEvents.length){
+    sections.push(`<div class="dusec cal"><div class="duk">📅 ALL DAY</div>${alldayEvents.map(e=>`<div class="duempty" style="color:var(--txt);font-weight:600;padding:4px 2px">${esc(e.title)}</div>`).join("")}</div>`);
+  }
+  /* Calendar — Today (morning) or Tomorrow (night) */
+  if(mode==="morn"){
+    sections.push(`<div class="dusec cal"><div class="duk">📅 TODAY</div>${liveEvents.length ? liveEvents.map(e=>`<div class="duevrow"><span class="duevt">${esc(e.time)}</span><span class="duevn">${esc(e.title)}</span></div>`).join("") : `<div class="duempty">nothing scheduled</div>`}</div>`);
+    sections.push(`<div class="dusec" style="border-color:rgba(251,191,36,.35)"><div class="duk" style="color:#fcd34d">☀️ WAKE ANCHOR</div><div class="duwake"><button class="duwakebtn" onclick="_duWakeConfirm(this)">☀️ I'm up</button><div class="dunote">10 min outside before 9am · same wake time beats more sleep</div></div></div>`);
+  } else {
+    const tomEvs = up.length ? (up[0].events || []).filter(e=>!e.all_day) : [];
+    sections.push(`<div class="dusec cal"><div class="duk">🌅 TOMORROW</div>${tomEvs.length ? tomEvs.map(e=>`<div class="duevrow"><span class="duevt">${esc(e.time)}</span><span class="duevn">${esc(e.title)}</span></div>`).join("") : `<div class="duempty">tomorrow is clear</div>`}</div>`);
+  }
+  /* Daily Dragons */
+  sections.push(`<div class="dusec drag"><div class="duk">🐉 DAILY DRAGONS ${dragons.length?`<span style="color:var(--faint);font-weight:600;letter-spacing:0;text-transform:none;font-size:11px">· ${dragons.length} to slay</span>`:""}</div>${dragons.length ? dragons.slice(0,10).map(t=>{
+    const done = (TPEND[t.id]||{}).done != null ? TPEND[t.id].done : false;
+    const star = (TPEND[t.id]||{}).star != null ? TPEND[t.id].star : !!t.star;
+    return `<div class="duddrow ${done?"ck":""}"><span class="duddchk">${done?"✓":""}</span><span class="duddt">${esc(t.title)}</span>${star?`<span class="dustar">★</span>`:""}</div>`;
+  }).join("") : `<div class="duempty">nothing starred for today</div>`}</div>`);
+  /* Night-only: recap */
+  if(mode==="night"){
+    const c = (recap && recap.counts) || {};
+    sections.push(`<div class="dusec recap"><div class="duk">✓ TODAY'S RECAP</div><div class="duchips" style="margin-bottom:10px"><span class="duchip done">${c.done||0} done</span><span class="duchip">${c.moved||0} moving</span>${c.stuck?`<span class="duchip wrn">${c.stuck} stuck</span>`:""}${recap && recap.goals!=null?`<span class="duchip">goals ${recap.goals}%</span>`:""}</div>${recap && recap.lines ? recap.lines.slice(0,8).map(l=>{
+      const done = l.startsWith("✓"), stuck = l.startsWith("⚠");
+      const ico = done?"✓":stuck?"⚠":"→"; const cls = done?"done":stuck?"stuck":"mov";
+      const txt = l.replace(/^[✓⚠→\s]+/,"").replace(/\s—\s(approved|in progress|queued|ready|working|checking)\s*$/i,"");
+      return `<div class="durline ${cls}"><span class="durico">${ico}</span>${esc(txt)}</div>`;
+    }).join("") : `<div class="duempty">no recap yet · nightly job runs at 9:15pm</div>`}</div>`);
+  }
+  w.innerHTML = sections.join("");
+  /* Fill reminders async from DHQ kv */
+  const mantras = await _dqKvGet("mantras");
+  const rem = document.getElementById("duremind");
+  if(rem){
+    if(Array.isArray(mantras) && mantras.length){
+      rem.innerHTML = `<div class="duk">🧭 REMINDERS</div>` + mantras.map((m,i)=>`<div class="dumantra c${i%6}">"${esc(typeof m==="string"?m:(m.text||""))}"</div>`).join("");
+    } else {
+      rem.innerHTML = `<div class="duk">🧭 REMINDERS</div><div class="duempty">no reminders set</div>`;
+    }
+  }
+}
+function _duWakeConfirm(btn){ btn.textContent = "☀️ nice — you're up"; btn.style.opacity="0.6"; btn.disabled=true; }
 function _duPinSave(ev){
   const v = ev.target.value.trim();
   localStorage.setItem("ahq_dayfocus", v);
