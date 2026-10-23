@@ -133,8 +133,8 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size
 .tkr.starred .tstar{opacity:1;color:#fcd34d}
 .tkr .tka:hover{color:var(--txt);background:rgba(255,255,255,.07)}
 .tkr .tstar:hover{color:#fcd34d}
-.tkr .tdragh{flex:0 0 10px;color:var(--faint);cursor:grab;opacity:0;font-size:12px;letter-spacing:1px;line-height:1}
-.tkr:hover .tdragh{opacity:.5}
+.tkr .tdragh{flex:0 0 14px;color:var(--faint);cursor:grab;opacity:.35;font-size:14px;letter-spacing:1px;line-height:1}
+.tkr:hover .tdragh{opacity:.75;color:#c4b5fd}
 .tkr .tdragh:active{cursor:grabbing}
 .tkmenu{position:absolute;right:36px;top:34px;background:var(--s2);border:1px solid var(--line2);border-radius:10px;padding:4px;z-index:5;box-shadow:0 8px 24px rgba(0,0,0,.5);display:flex;flex-direction:column;min-width:150px}
 .tkmenu button{background:transparent;border:none;color:var(--txt);text-align:left;padding:7px 12px;font:500 12.5px Inter;border-radius:6px;cursor:pointer;font-family:inherit}
@@ -1662,7 +1662,10 @@ async function tAddKey(ev, pillKey){
   const inp = ev.target; const title = inp.value.trim(); if(!title) return;
   inp.value = ""; inp.blur();
   const def = TPILLS.find(p=>p[0]===pillKey); if(!def) return;
-  dq("taskadd",{title, lid: DQLISTS[def[3]]});
+  const due = _dueForPill(pillKey);
+  const payload = {title, lid: DQLISTS[def[3]]};
+  if(due) payload.due = due;
+  dq("taskadd", payload);
   _askToast("added to " + def[2]);
 }
 /* ── drag-and-drop between pills ── */
@@ -1685,6 +1688,24 @@ function tDragOver(ev, pillKey){
   ev.currentTarget.classList.add("drophot");
 }
 function tDragLeave(ev){ ev.currentTarget.classList.remove("drophot"); }
+/* Compute an RFC3339 due date for the pill we're dropping on.
+   Today → today, Tomorrow → tomorrow, Week → coming Sunday, Month → end of month, Someday → clear.
+   This way "drop on Tomorrow" also sets due=tomorrow so the Daily Dragons sync picks it up at 5am. */
+function _dueForPill(pillKey){
+  const d = new Date(); d.setHours(0,0,0,0);
+  const toISO = x => x.toISOString().replace(/\.\d{3}Z$/, ".000Z");
+  if(pillKey==="today") return toISO(d);
+  if(pillKey==="tomorrow"){ d.setDate(d.getDate()+1); return toISO(d); }
+  if(pillKey==="week"){ /* this Sunday or next if today is Sunday */
+    const dow = d.getDay(); const add = dow===0 ? 7 : (7 - dow);
+    d.setDate(d.getDate()+add); return toISO(d);
+  }
+  if(pillKey==="month"){ /* last day of this month */
+    const nxt = new Date(d.getFullYear(), d.getMonth()+1, 0); return toISO(nxt);
+  }
+  if(pillKey==="some") return "";  /* empty string clears due */
+  return undefined;  /* unknown → leave untouched */
+}
 function tDrop(ev, pillKey){
   ev.preventDefault();
   const id = _tDragId; const fromLid = _tDragFromLid;
@@ -1692,9 +1713,19 @@ function tDrop(ev, pillKey){
   if(!id) return;
   const def = TPILLS.find(p=>p[0]===pillKey); if(!def) return;
   const toLid = DQLISTS[def[3]];
-  if(!toLid || toLid===fromLid){ return; }
+  if(!toLid) return;
   const t = TROWS.find(x=>x.id===id);
-  dq("taskmove",{id, lid:fromLid, to:toLid, title: t?t.title:""});
+  const due = _dueForPill(pillKey);
+  if(toLid === fromLid){
+    /* Same list — just update the due date in place (useful when dragging within Today etc) */
+    if(due !== undefined){
+      dq("taskedit",{id, lid:fromLid, title: t?t.title:"", due});
+      _askToast("due date updated");
+      renderTasks();
+    }
+    return;
+  }
+  dq("taskmove",{id, lid:fromLid, to:toLid, title: t?t.title:"", due});
   tpAdd(id, {gone:true});
   _askToast("moved to " + def[2]);
   renderTasks();
