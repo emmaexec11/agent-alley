@@ -580,9 +580,12 @@ body.dragging #chat,body.dragging main{pointer-events:none}
 .ch svg{width:15px;height:15px;vertical-align:-3px;margin-right:5px;filter:drop-shadow(0 0 5px rgba(124,92,255,.5))}
 #chatback{float:right;cursor:pointer;color:var(--v);font-size:11px;font-weight:600;padding:2px 8px;border:1px solid rgba(124,92,255,.35);border-radius:7px}
 #chatback:hover{background:rgba(124,92,255,.14)}
-#msgs{flex:1;overflow-y:auto;padding:4px 14px 10px;display:flex;flex-direction:column;gap:8px}
-.msg{max-width:88%;border-radius:13px;padding:8px 12px;font-size:13px;background:var(--s2);border:1px solid var(--line);align-self:flex-start;overflow-wrap:break-word}
-.msg.me{align-self:flex-end;background:rgba(124,92,255,.14);border-color:rgba(124,92,255,.3)}
+#msgs{flex:1;overflow-y:auto;padding:4px 14px 10px;display:flex;flex-direction:column;gap:10px}
+/* Telegram-style bubbles: comfortable padding, rounded, text selectable for copy/paste. */
+.msg{max-width:88%;border-radius:16px;padding:10px 14px;font-size:14px;background:var(--s2);border:1px solid var(--line);align-self:flex-start;overflow-wrap:break-word;line-height:1.42;-webkit-user-select:text;user-select:text}
+.msg.me{align-self:flex-end;background:rgba(124,92,255,.18);border-color:rgba(124,92,255,.35)}
+/* Wider chat panel → more generous bubbles (match Telegram feel on wide view) */
+@media(min-width:1001px){#chat #msgs .msg{font-size:14.5px;max-width:85%}}
 .msg .who{font-size:10.5px;font-weight:700;color:var(--dim);margin-bottom:2px}
 .msg .who .when{float:right;color:var(--faint);font-weight:400;margin-left:10px}
 /* ── chat list (Telegram-style) ── */
@@ -647,8 +650,9 @@ body.dragging #chat,body.dragging main{pointer-events:none}
 .crow .cn .cwhen{margin-left:auto;font-size:10.5px;color:var(--faint);font-weight:400}
 .crow .cprev{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
 .clsec{font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--faint);padding:10px 15px 4px}
-.att{margin-top:6px}
-.att img{max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--line2);display:block}
+.att{margin-top:8px}
+/* Attachment images: fill the bubble width + grow with chat panel (Telegram feel) */
+.att img{max-width:100%;max-height:min(70vh, 520px);border-radius:12px;border:1px solid var(--line2);display:block;cursor:zoom-in}
 .att a{display:inline-flex;align-items:center;gap:6px;color:#b8a3ff;background:var(--s3);border:1px solid var(--line2);border-radius:9px;padding:6px 11px;font-size:12px;text-decoration:none}
 #attprev{display:none;align-items:center;gap:8px;margin:0 14px;padding:7px 11px;background:var(--s2);border:1px dashed rgba(124,92,255,.4);border-radius:10px;font-size:12px;color:var(--dim)}
 #attprev .x{cursor:pointer;color:var(--red);font-weight:800;margin-left:auto;padding:0 4px}
@@ -2876,6 +2880,10 @@ async function renderDayUpdate(mode){
     const star = (TPEND[t.id]||{}).star != null ? TPEND[t.id].star : !!t.star;
     return `<div class="duddrow ${done?"ck":""}"><span class="duddchk">${done?"✓":""}</span><span class="duddt">${esc(t.title)}</span>${star?`<span class="dustar">★</span>`:""}</div>`;
   }).join("") : `<div class="duempty">nothing starred for today</div>`}</div>`);
+  /* Habits — flat list of every goal item across all categories, tappable circle per row.
+     Shell renders empty; _loadDayUpdateHabits() fills it async (uses GOALS_STATE if primed,
+     else fetches goals2 + today's habit marks). State is shared with Goals tab + render.py. */
+  sections.push(`<div class="dusec"><div class="duk">${icon("star", ig)} HABITS</div><div id="duhabits"><div class="duempty">loading habits…</div></div></div>`);
   /* Night-only: recap */
   if(mode==="night"){
     const c = (recap && recap.counts) || {};
@@ -2902,8 +2910,74 @@ async function renderDayUpdate(mode){
       rem.innerHTML = `<div class="duk">${icon("life_ops", ig)} REMINDERS</div><div class="duempty">no reminders set</div>`;
     }
   }
+  /* Fill habits async — flat list of every goal item, tap circle to cycle state. */
+  _loadDayUpdateHabits();
 }
 function _duWakeConfirm(btn){ btn.textContent = "☀️ nice — you're up"; btn.style.opacity="0.6"; btn.disabled=true; }
+
+/* Load goal defs + today's habit marks if not already in GOALS_STATE, then render habits
+   section of the day-update modal. State is shared with Goals tab so taps sync both ways. */
+async function _loadDayUpdateHabits(){
+  const host = document.getElementById("duhabits");
+  if(!host) return;
+  if(!GOALS_STATE.defs){
+    /* Need defs + at least today's hits so done-circles reflect reality. */
+    const now = new Date();
+    const start = new Date(now); start.setDate(now.getDate() - 7);
+    const [defs, rows] = await Promise.all([
+      _dqKvGet("goals2"),
+      _dqHabitRange(_gIso(start), _gIso(now))
+    ]);
+    GOALS_STATE.defs = defs || { cats: [] };
+    (rows || []).forEach(r => {
+      if(!r.done) return;
+      if(r.habit && (r.habit.indexOf("G.")===0 || r.habit.indexOf("S.")===0)){
+        GOALS_STATE.days[r.day] = GOALS_STATE.days[r.day] || {};
+        GOALS_STATE.days[r.day][r.habit] = 1;
+      }
+    });
+  }
+  _rerenderDayUpdateHabits();
+}
+
+/* Repaint ONLY the modal habits list. Called optimistically from _gCycleHabit on tap,
+   so morning/night modal + Goals tab stay in sync without triggering a modal rebuild. */
+function _rerenderDayUpdateHabits(){
+  const host = document.getElementById("duhabits");
+  if(!host) return;
+  const cats = (GOALS_STATE.defs && GOALS_STATE.defs.cats) || [];
+  const today = _gToday();
+  /* Flatten: show every required item across every category, cat icon prefix. */
+  const rows = [];
+  cats.forEach(cat => {
+    (cat.items||[]).forEach(it => {
+      if(it.opt) return;  /* skip optional/lag items — habits = required dominoes only */
+      rows.push({cat, it});
+    });
+  });
+  if(!rows.length){
+    host.innerHTML = `<div class="duempty">no goals set — add some in the Goals tab</div>`;
+    return;
+  }
+  host.innerHTML = rows.map(({cat, it}) => {
+    const done = _gIsDone(cat.id, it.id, today);
+    const skip = _gIsSkip(cat.id, it.id, today);
+    const state = done ? "done" : (skip ? "skip" : "");
+    const mark = done ? "✓" : (skip ? "s" : "");
+    return `<div class="duhrow ${state}" data-c="${esc(cat.id)}" data-i="${esc(it.id)}">
+      <span class="duhchk">${mark}</span>
+      <span class="duhic">${esc(cat.icon||"🎯")}</span>
+      <span class="duht">${esc(it.name||it.id)}</span>
+    </div>`;
+  }).join("");
+  /* Wire taps — same 3-state cycle as heatmap, same optimistic UX. */
+  host.querySelectorAll(".duhrow").forEach(el => {
+    el.onclick = async () => {
+      const cid = el.getAttribute("data-c"), iid = el.getAttribute("data-i");
+      await _gCycleHabit(cid, iid, _gToday(), /*cycleFull=*/true);
+    };
+  });
+}
 
 /* ── Goals tab (DHQ goals2 kv — full feature parity with render.py's night-goals widget)
    Writes go to the same keys render.py uses (G.{cid}.{iid}, S.{cid}.{iid}) so toggles here
@@ -2920,6 +2994,57 @@ function _gk(c, i){ return "G." + c + "." + i; }
 function _gskk(c, i){ return "S." + c + "." + i; }
 function _gIsSkip(c, i, k){ const row = GOALS_STATE.days[k]; return !!(row && row[_gskk(c,i)]); }
 function _gIsDone(c, i, k){ const row = GOALS_STATE.days[k]; return !!(row && row[_gk(c,i)]); }
+
+/* Shared habit-cycle helper used by Goals tab (cell + item circle) AND modal habits list.
+   cycleFull=true → 3-state (empty → done → skip → clear). cycleFull=false → 2-state (empty⇄done).
+   Optimistic UX: update local state + redraw IMMEDIATELY, then POST. On error, revert + redraw. */
+async function _gCycleHabit(cid, iid, dd, cycleFull){
+  const K1 = _gk(cid, iid), K2 = _gskk(cid, iid);
+  GOALS_STATE.days[dd] = GOALS_STATE.days[dd] || {};
+  const row = GOALS_STATE.days[dd];
+  const prev = { K1: row[K1] || 0, K2: row[K2] || 0 };
+  const writes = []; /* [{habit, done}] queued for network */
+
+  if(row[K1]){
+    /* currently done */
+    if(cycleFull){
+      /* done → skip. Block two-in-a-row skips (render.py line 959). */
+      if(_gIsSkip(cid, iid, _gAddD(dd, -1)) || _gIsSkip(cid, iid, _gAddD(dd, 1))){
+        alert("Can't skip two days in a row — day before or after is already skipped.");
+        row[K1] = 0;
+        writes.push({habit:K1, done:0});
+      } else {
+        row[K1] = 0; row[K2] = 1;
+        writes.push({habit:K1, done:0}, {habit:K2, done:1});
+      }
+    } else {
+      /* 2-state: done → empty */
+      row[K1] = 0;
+      writes.push({habit:K1, done:0});
+    }
+  } else if(row[K2] && cycleFull){
+    /* skip → clear (only in full cycle) */
+    row[K2] = 0;
+    writes.push({habit:K2, done:0});
+  } else {
+    /* empty → done (clear any lingering skip too in 2-state mode) */
+    if(!cycleFull && row[K2]){ row[K2] = 0; writes.push({habit:K2, done:0}); }
+    row[K1] = 1;
+    writes.push({habit:K1, done:1});
+  }
+
+  /* Optimistic repaint — Goals tab + both modals share the same state. */
+  _gDraw();
+  _rerenderDayUpdateHabits();
+
+  try {
+    await Promise.all(writes.map(w => _dqHabitSet(dd, w.habit, w.done)));
+  } catch(e){
+    row[K1] = prev.K1; row[K2] = prev.K2;
+    _gDraw(); _rerenderDayUpdateHabits();
+    toast("save failed — reverted");
+  }
+}
 
 /* Period = this week (Mon–Sun) by default, or this month if per==="mo". */
 function _gPeriod(it){
@@ -3156,7 +3281,8 @@ function _gWireEvents(){
     };
   });
 
-  /* Big cat circle → mark all items in cat done/undone for today. Mirrors render.py line 877. */
+  /* Big cat circle → mark all items in cat done/undone for today. Mirrors render.py line 877.
+     Optimistic: flip local state + redraw IMMEDIATELY, then fire network. On failure, revert + toast. */
   page.querySelectorAll("[data-act=toggleall]").forEach(el => {
     el.onclick = async (ev) => {
       ev.stopPropagation();
@@ -3166,28 +3292,31 @@ function _gWireEvents(){
       const allOn = cat.items.length > 0 && cat.items.every(it => _gIsDone(cid, it.id, today));
       const want = allOn ? 0 : 1;
       GOALS_STATE.days[today] = GOALS_STATE.days[today] || {};
-      const promises = [];
+      const prev = {};
       cat.items.forEach(it => {
+        prev[it.id] = GOALS_STATE.days[today][_gk(cid, it.id)] || 0;
         GOALS_STATE.days[today][_gk(cid, it.id)] = want;
-        promises.push(_dqHabitSet(today, _gk(cid, it.id), want));
       });
       _gDraw();
-      await Promise.all(promises);
+      _rerenderDayUpdateHabits();
+      try {
+        await Promise.all(cat.items.map(it => _dqHabitSet(today, _gk(cid, it.id), want)));
+      } catch(e){
+        cat.items.forEach(it => { GOALS_STATE.days[today][_gk(cid, it.id)] = prev[it.id]; });
+        _gDraw(); _rerenderDayUpdateHabits();
+        toast("save failed — reverted");
+      }
     };
   });
 
-  /* Item circle → toggle today's done. */
+  /* Item circle → cycle today's state (empty → done → skip → clear). Shared helper handles
+     optimistic UI + rollback. Cat-tab item circles are 2-state (empty⇄done) for simpler UX;
+     full 3-state cycling is only on heatmap cells + modal rows. */
   page.querySelectorAll("[data-act=toggleitem]").forEach(el => {
     el.onclick = async (ev) => {
       ev.stopPropagation();
       const cid = el.getAttribute("data-c"), iid = el.getAttribute("data-i");
-      const today = _gToday();
-      GOALS_STATE.days[today] = GOALS_STATE.days[today] || {};
-      const cur = GOALS_STATE.days[today][_gk(cid, iid)] ? 1 : 0;
-      const nv = cur ? 0 : 1;
-      GOALS_STATE.days[today][_gk(cid, iid)] = nv;
-      _gDraw();
-      await _dqHabitSet(today, _gk(cid, iid), nv);
+      await _gCycleHabit(cid, iid, _gToday(), /*cycleFull=*/false);
     };
   });
 
@@ -3202,36 +3331,15 @@ function _gWireEvents(){
     };
   });
 
-  /* Heatmap cell → 3-state cycle (empty → done → skip → clear). Mirrors render.py line 948. */
+  /* Heatmap cell → 3-state cycle (empty → done → skip → clear). Mirrors render.py line 948.
+     Devon 2026-10-23: previous code awaited the fetch BEFORE redraw, so taps felt dead on
+     mobile. Fixed via _gCycleHabit which updates state + redraws SYNCHRONOUSLY, then posts. */
   page.querySelectorAll(".gcell").forEach(el => {
     el.onclick = async (ev) => {
       ev.stopPropagation();
       if(el.classList.contains("gc-fut")) return;
       const cid = el.getAttribute("data-c"), iid = el.getAttribute("data-i"), dd = el.getAttribute("data-d");
-      const K1 = _gk(cid, iid), K2 = _gskk(cid, iid);
-      GOALS_STATE.days[dd] = GOALS_STATE.days[dd] || {};
-      if(GOALS_STATE.days[dd][K1]){
-        /* done → skip. Block two-in-a-row skips (render.py line 959). */
-        if(_gIsSkip(cid, iid, _gAddD(dd, -1)) || _gIsSkip(cid, iid, _gAddD(dd, 1))){
-          alert("Can't skip two days in a row — day before or after is already skipped.");
-          GOALS_STATE.days[dd][K1] = 0;
-          await _dqHabitSet(dd, K1, 0);
-        } else {
-          GOALS_STATE.days[dd][K1] = 0;
-          GOALS_STATE.days[dd][K2] = 1;
-          await _dqHabitSet(dd, K1, 0);
-          await _dqHabitSet(dd, K2, 1);
-        }
-      } else if(GOALS_STATE.days[dd][K2]){
-        /* skip → clear */
-        GOALS_STATE.days[dd][K2] = 0;
-        await _dqHabitSet(dd, K2, 0);
-      } else {
-        /* empty → done */
-        GOALS_STATE.days[dd][K1] = 1;
-        await _dqHabitSet(dd, K1, 1);
-      }
-      _gDraw();
+      await _gCycleHabit(cid, iid, dd, /*cycleFull=*/true);
     };
   });
 
