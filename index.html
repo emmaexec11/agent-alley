@@ -2021,11 +2021,17 @@ async function hydrateAtts(){
     el.dataset.done="1";
     const k=el.dataset.k, n=el.dataset.n;
     try{
-      if(!ATT_CACHE[k]){ const r=await relay("kvget",{key:k}); ATT_CACHE[k]=r.value||r; }
-      const v=ATT_CACHE[k];
-      if(v && v.data && String(v.type||"").startsWith("image/")) el.innerHTML=`<img src="${v.data}" alt="${esc(n)}">`;
-      else if(v && v.data) el.innerHTML=`<a href="${v.data}" download="${esc(n)}">${icon("clip")} ${esc(n)}</a>`;
-      else el.textContent="(attachment unavailable)";
+      /* Check if k is a data URL (embedded image) */
+      if(k && k.startsWith("data:")){
+        el.innerHTML=`<img src="${esc(k)}" alt="${esc(n)}">`;
+      } else {
+        /* Legacy: fetch from relay KV */
+        if(!ATT_CACHE[k]){ const r=await relay("kvget",{key:k}); ATT_CACHE[k]=r.value||r; }
+        const v=ATT_CACHE[k];
+        if(v && v.data && String(v.type||"").startsWith("image/")) el.innerHTML=`<img src="${v.data}" alt="${esc(n)}">`;
+        else if(v && v.data) el.innerHTML=`<a href="${v.data}" download="${esc(n)}">${icon("clip")} ${esc(n)}</a>`;
+        else el.textContent="(attachment unavailable)";
+      }
     }catch(e){ el.textContent="(attachment unavailable)"; }
   }
 }
@@ -2040,9 +2046,8 @@ async function sendMsg(ev){
       clearQuote();
     }
     if(pendingFile){
-      const key="file:"+Date.now();
-      await relay("kvset",{},{key, value:pendingFile});
-      t = `[[file|${key}|${pendingFile.name}]]` + (t?` ${t}`:"");
+      /* Embed image data directly so agents can see it */
+      t = `[[file|${esc(pendingFile.data)}|${esc(pendingFile.name)}]]` + (t?` ${t}`:"");
       clearAtt();
     }
     const text = chatTarget ? `@${chatTarget.id} ${t}` : t;
