@@ -572,6 +572,51 @@ body[data-tab="chat"] #askbar{display:none}
 /* ── bottom nav (mobile) ── */
 #bnav{display:none}
 
+/* ── Morning / Night update modal (auto-pops on log-in during windows, also tap-to-open) ── */
+#dayupdate{position:fixed;inset:0;z-index:60;display:none;align-items:flex-start;justify-content:center;padding:28px 16px;overflow-y:auto;background:rgba(10,10,15,.78);backdrop-filter:blur(14px)}
+#dayupdate.on{display:flex;animation:duFade .3s ease-out}
+@keyframes duFade{from{opacity:0}to{opacity:1}}
+#dayupdate .duwrap{width:100%;max-width:620px;background:linear-gradient(170deg,#1a1a28,#131320 70%);border:1px solid var(--line2);border-radius:22px;padding:28px 26px 24px;box-shadow:0 24px 80px rgba(0,0,0,.6)}
+#dayupdate.morn .duwrap{background:linear-gradient(170deg,#2a1f14 0%,#1a1626 60%,#131320 100%);border-color:rgba(251,191,36,.4)}
+#dayupdate.night .duwrap{background:linear-gradient(170deg,#141a30 0%,#171527 60%,#131320 100%);border-color:rgba(124,92,255,.4)}
+#dayupdate .duhead{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
+#dayupdate .duhead .duicon{font-size:36px;line-height:1;flex:0 0 auto;margin-top:2px}
+#dayupdate .duhead .dutit{flex:1;min-width:0}
+#dayupdate .duhead .dutit h2{font-size:22px;font-weight:800;letter-spacing:-.3px;margin-bottom:3px}
+#dayupdate .duhead .dutit .dudate{color:var(--dim);font-size:12.5px;font-weight:500}
+#dayupdate .duhead .duclose{flex:0 0 auto;background:transparent;border:1px solid var(--line2);color:var(--dim);border-radius:999px;width:34px;height:34px;cursor:pointer;font-size:16px;line-height:1;padding:0;transition:color .15s,border-color .15s;font-family:inherit}
+#dayupdate .duhead .duclose:hover{color:var(--txt);border-color:var(--v)}
+#dayupdate .dusec{margin-bottom:18px}
+#dayupdate .dusec .duh{font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim);margin-bottom:8px;display:flex;align-items:center;gap:7px}
+#dayupdate .duevs .evrow{padding:7px 2px;font-size:14px;color:var(--txt)}
+#dayupdate .duevs .evrow .evt{font-weight:700;color:#6ee7b7;min-width:72px}
+#dayupdate.night .duevs .evrow .evt{color:#c4b5fd}
+#dayupdate .dudragons .ddrow{display:flex;align-items:center;gap:11px;padding:7px 2px;font-size:14px}
+#dayupdate .dudragons .ddrow .ddchk{flex:0 0 20px;width:20px;height:20px;border-radius:50%;border:1.8px solid rgba(251,191,36,.55);display:flex;align-items:center;justify-content:center;font-size:11px;color:#1a1405;transition:background .15s;cursor:pointer}
+#dayupdate .dudragons .ddrow.ck .ddchk{background:#fbbf24;border-color:#fbbf24}
+#dayupdate .dudragons .ddrow.ck .ddt{text-decoration:line-through;color:var(--faint)}
+#dayupdate .duchips{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+#dayupdate .duchip{background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600}
+#dayupdate .duchip.done{color:#6ee7b7;border-color:rgba(74,222,128,.35)}
+#dayupdate .duchip.wrn{color:#fcd34d;border-color:rgba(251,191,36,.4)}
+#dayupdate .dupin{display:flex;align-items:center;gap:10px;background:rgba(252,211,77,.08);border:1px solid rgba(252,211,77,.3);border-radius:12px;padding:11px 14px;margin-top:4px}
+#dayupdate.night .dupin{background:rgba(124,92,255,.08);border-color:rgba(124,92,255,.3)}
+#dayupdate .dupin .dupinl{font-size:9.5px;font-weight:800;letter-spacing:1.3px;color:#fcd34d;flex:0 0 auto}
+#dayupdate.night .dupin .dupinl{color:#c4b5fd}
+#dayupdate .dupin input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--txt);font:600 13.5px Inter;padding:3px 0}
+#dayupdate .duempty{color:var(--faint);font-size:12.5px;padding:3px 2px}
+#dayupdate .dubtns{display:flex;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+#dayupdate .dubtns .dubtn{flex:1;background:linear-gradient(120deg,#8b6cff,#6c4ce0);color:#fff;border:none;border-radius:11px;padding:12px 18px;font:800 13.5px Inter;cursor:pointer;font-family:inherit}
+#dayupdate.morn .dubtns .dubtn{background:linear-gradient(120deg,#fbbf24,#f59e0b);color:#1a1405}
+#dayupdate .dubtns .dubtn.ghost{background:transparent;border:1px solid var(--line2);color:var(--dim)}
+#dayupdate .dubtns .dubtn.ghost:hover{color:var(--txt);border-color:var(--v)}
+/* Personal-hub quick-access buttons for morning/night */
+.hbmnbtns{display:flex;gap:8px;margin:-4px 0 14px}
+.hbmnbtns .hbmnbtn{flex:1;background:var(--s2);border:1px solid var(--line2);color:var(--txt);border-radius:11px;padding:10px 14px;font:700 12.5px Inter;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;justify-content:center}
+.hbmnbtns .hbmnbtn:hover{border-color:var(--v)}
+.hbmnbtns .hbmnbtn.morn{border-color:rgba(251,191,36,.4);color:#fcd34d}
+.hbmnbtns .hbmnbtn.night{border-color:rgba(124,92,255,.4);color:#c4b5fd}
+
 #keygate{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:50}
 #keygate input{background:var(--s2);border:1px solid var(--line2);border-radius:10px;padding:11px 15px;color:var(--txt);width:290px;font:14px Inter}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--s3);border:1px solid rgba(124,92,255,.4);padding:10px 18px;border-radius:11px;font-size:13px;display:none;z-index:40;box-shadow:0 0 24px var(--vglow)}
@@ -706,6 +751,7 @@ body[data-tab="chat"] #askbar{display:none}
   <button class="bn" data-t="chat" onclick="setTab('chat')"><span class="bnic"></span>Chat</button>
 </nav>
 <div class="toast" id="toast"></div>
+<div id="dayupdate"><div class="duwrap" id="duwrap"></div></div>
 <div id="quotepop" onmousedown="event.preventDefault()" onclick="quoteFromSelection(event)">Quote</div>
 <script>
 const EP = "https://emmalindsay--b46b3528cd8a11f1b2291607ee4eb77e.web.val.run";
@@ -1091,7 +1137,7 @@ const HUB_SPECS = {
       {k:"live_convo",  lbl:"Live conversations", kv:"pitch.live_convo"},
       {k:"meetings",    lbl:"Meetings booked",    kv:"pitch.meetings"}
     ]},
-  sage: {title:"S.A.G.E", tabs:["Daily","Training","Meals"],
+  sage: {title:"S.A.G.E", tabs:["Daily","Training","Meals"], hasRoutines:true,
     cards:[
       {k:"habits",      lbl:"Habits today",       placeholder:"wiring"},
       {k:"workout",     lbl:"Next workout",       placeholder:"wiring"},
@@ -1139,6 +1185,11 @@ function renderAgentHub(){
       ${isWip?`<div class="hbsub">wiring soon</div>`:""}
     </div>`;
   }).join("");
+  const routines = spec.hasRoutines ? `
+    <div class="hbmnbtns">
+      <button class="hbmnbtn morn" onclick="openDayUpdate('morn')">☀️ Morning update</button>
+      <button class="hbmnbtn night" onclick="openDayUpdate('night')">🌙 Night update</button>
+    </div>` : "";
   el.innerHTML = `
     <div class="hbhead">
       <button class="hbback" onclick="closeAgentHub()">‹ Alley</button>
@@ -1146,6 +1197,7 @@ function renderAgentHub(){
       <div class="hbtitle">${esc(spec.title)}<small>live hub</small></div>
       <button class="hbmake" onclick="hubMakeProgram()">+ Make a program</button>
     </div>
+    ${routines}
     ${tabsBar}
     <div class="hbgrid">${cards}</div>
     <div class="hbnote">placeholder cards — backend wiring per hub comes next. tap "+ Make a program" to ask Emma to spin up a workflow for this agent.</div>`;
@@ -2219,6 +2271,141 @@ document.addEventListener("keydown", (e)=>{
 document.querySelectorAll("#fleetfilter .ff").forEach(b=>b.classList.toggle("on", b.dataset.f===fleetFilter));
 let rsz; window.addEventListener("resize", ()=>{ clearTimeout(rsz); rsz=setTimeout(renderCluster, 150); });
 applyChatView(); setTab(curTab); tick(); setInterval(tick, 20000);
+
+/* ── Morning / Night update modal ──
+   Pops over the dashboard on first open of the day inside the window.
+   Morning (6-10am): plan the day — events, dragons, pin-of-day, note from Emma.
+   Night (8-11:30pm): reflect — today's recap, tomorrow's events, pin for tomorrow.
+   Dismiss state per calendar date in localStorage. Also tap-to-open anytime
+   from the Personal hub buttons. */
+function _duTodayKey(mode){ const d=new Date(); return `ahq_du_${mode}_${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+function _duSeen(mode){ return !!localStorage.getItem(_duTodayKey(mode)); }
+function _duMarkSeen(mode){ localStorage.setItem(_duTodayKey(mode), String(Date.now())); }
+function _duNow(){ return new Date(); }
+function _duMode(){
+  const h = _duNow().getHours();
+  if(h>=6 && h<10) return "morn";
+  if(h>=20 && h<24) return "night";
+  return null;
+}
+function openDayUpdate(mode){
+  mode = mode || _duMode() || "morn";
+  renderDayUpdate(mode);
+  const el = document.getElementById("dayupdate");
+  el.className = "on " + mode;
+}
+function closeDayUpdate(){
+  const el = document.getElementById("dayupdate");
+  const mode = el.className.includes("morn") ? "morn" : el.className.includes("night") ? "night" : null;
+  if(mode) _duMarkSeen(mode);
+  el.className = "";
+}
+function _duPinSave(ev){
+  const v = ev.target.value.trim();
+  localStorage.setItem("ahq_dayfocus", v);
+  _dfSync(v);
+  const inp = document.getElementById("dfinput"); if(inp) _dfApply(v);
+}
+function renderDayUpdate(mode){
+  const w = document.getElementById("duwrap");
+  const now = _duNow();
+  const dateLbl = now.toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric"});
+  const td = TASKS && TASKS.today;
+  const up = TASKS && TASKS.upcoming || [];
+  const dragons = TASKS && TASKS.tabs && TASKS.tabs.today || [];
+  const pin = localStorage.getItem("ahq_dayfocus") || "";
+  const recap = window._lastRecap || null;
+  const liveEvents = (td && td.events || []).filter(e=>!e.all_day);
+  const alldayEvents = (td && td.events || []).filter(e=>e.all_day);
+
+  if(mode === "morn"){
+    w.innerHTML = `
+      <div class="duhead">
+        <div class="duicon">☀️</div>
+        <div class="dutit"><h2>Good morning, Devon</h2><div class="dudate">${esc(dateLbl)}</div></div>
+        <button class="duclose" onclick="closeDayUpdate()" title="Close">✕</button>
+      </div>
+
+      <div class="dusec">
+        <div class="duh">★ TODAY'S ONE THING</div>
+        <div class="dupin"><span class="dupinl">PIN</span><input id="dupinin" placeholder="what matters most today?" value="${esc(pin)}" oninput="_duPinSave(event)"></div>
+      </div>
+
+      ${alldayEvents.length?`<div class="dusec"><div class="duh">📅 ALL DAY</div>${alldayEvents.map(e=>`<div class="duempty" style="color:var(--txt);font-weight:600;padding:4px 2px">${esc(e.title)}</div>`).join("")}</div>`:""}
+
+      <div class="dusec">
+        <div class="duh">🕐 TODAY'S CALENDAR</div>
+        <div class="duevs">
+          ${liveEvents.length ? liveEvents.map(e=>`<div class="evrow"><span class="evt">${esc(e.time)}</span>  ${esc(e.title)}</div>`).join("") : `<div class="duempty">no scheduled events</div>`}
+        </div>
+      </div>
+
+      <div class="dusec">
+        <div class="duh">🐉 DAILY DRAGONS <small style="color:var(--faint);font-weight:600;letter-spacing:0;text-transform:none;margin-left:6px">${dragons.length} to slay</small></div>
+        <div class="dudragons">
+          ${dragons.length ? dragons.slice(0,8).map(t=>{
+            const done = (TPEND[t.id]||{}).done != null ? TPEND[t.id].done : false;
+            return `<div class="ddrow ${done?"ck":""}"><span class="ddchk">${done?"✓":""}</span><span class="ddt">${esc(t.title)}</span></div>`;
+          }).join("") : `<div class="duempty">nothing starred for today</div>`}
+        </div>
+      </div>
+
+      <div class="dubtns">
+        <button class="dubtn" onclick="closeDayUpdate()">Start the day</button>
+        <button class="dubtn ghost" onclick="closeDayUpdate(); setTab('tasks')">All tasks</button>
+      </div>`;
+  } else {
+    const tomorrowEvents = up.length ? (up[0].events||[]).filter(e=>!e.all_day) : [];
+    const tomorrowLbl = up.length ? up[0].label : "tomorrow";
+    const c = (recap && recap.counts) || {};
+    const unfinishedDragons = dragons.filter(t=>!((TPEND[t.id]||{}).done));
+    w.innerHTML = `
+      <div class="duhead">
+        <div class="duicon">🌙</div>
+        <div class="dutit"><h2>End of day, Devon</h2><div class="dudate">${esc(dateLbl)}</div></div>
+        <button class="duclose" onclick="closeDayUpdate()" title="Close">✕</button>
+      </div>
+
+      <div class="dusec">
+        <div class="duh">✓ TODAY'S RECAP</div>
+        <div class="duchips">
+          <span class="duchip done">${c.done||0} done</span>
+          <span class="duchip">${c.moved||0} moving</span>
+          ${c.stuck?`<span class="duchip wrn">${c.stuck} stuck</span>`:""}
+          ${recap && recap.goals!=null ? `<span class="duchip">goals ${recap.goals}%</span>`:""}
+        </div>
+        ${recap && recap.lines ? recap.lines.slice(0,6).map(l=>_recapLine(l)).join("") : `<div class="duempty" style="margin-top:8px">no recap yet — nightly job runs at 9:15pm</div>`}
+      </div>
+
+      <div class="dusec">
+        <div class="duh">🐉 UNFINISHED DRAGONS</div>
+        ${unfinishedDragons.length ? `<div class="dudragons">${unfinishedDragons.slice(0,6).map(t=>`<div class="ddrow"><span class="ddchk"></span><span class="ddt">${esc(t.title)}</span></div>`).join("")}</div>` : `<div class="duempty">all dragons slain today 🎉</div>`}
+      </div>
+
+      <div class="dusec">
+        <div class="duh">🌅 TOMORROW</div>
+        <div class="duevs">
+          ${tomorrowEvents.length ? tomorrowEvents.map(e=>`<div class="evrow"><span class="evt">${esc(e.time)}</span>  ${esc(e.title)}</div>`).join("") : `<div class="duempty">${esc(tomorrowLbl)} is clear</div>`}
+        </div>
+      </div>
+
+      <div class="dusec">
+        <div class="duh">★ TOMORROW'S ONE THING</div>
+        <div class="dupin"><span class="dupinl">PIN</span><input id="dupinin" placeholder="what will matter tomorrow?" value="${esc(pin)}" oninput="_duPinSave(event)"></div>
+      </div>
+
+      <div class="dubtns">
+        <button class="dubtn" onclick="closeDayUpdate()">Wind down</button>
+      </div>`;
+  }
+}
+/* Auto-pop on load if we're inside the window + haven't dismissed today */
+function _duAutoPop(){
+  const mode = _duMode();
+  if(mode && !_duSeen(mode)) openDayUpdate(mode);
+}
+/* Trigger once after key is present + first tick has populated state */
+setTimeout(_duAutoPop, 2800);
 
 /* ── Push / instant notifications ──
    Two layers: (1) long-poll already keeps the chat live when the tab is open.
