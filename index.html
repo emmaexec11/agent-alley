@@ -402,9 +402,16 @@ body.agent-hub #agenthub{display:block}
 .ppill.on{background:rgba(124,92,255,.14);border-color:rgba(124,92,255,.5);color:var(--txt);box-shadow:0 0 12px rgba(124,92,255,.18)}
 .ppill small{font-weight:700;font-size:11px;color:var(--faint);background:rgba(255,255,255,.06);padding:1px 7px;border-radius:999px}
 .ppill.on small{color:#c4b5fd;background:rgba(124,92,255,.22)}
+.ppill.drophot{background:rgba(74,222,128,.18);border-color:rgba(74,222,128,.6);color:#6ee7b7;transform:scale(1.04)}
 .plist{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
-.pr{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--s1);border:1px solid var(--line);border-left:3px solid var(--line);border-radius:10px;cursor:pointer;transition:border-color .15s,background .12s}
+.pr{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--s1);border:1px solid var(--line);border-left:3px solid var(--line);border-radius:10px;cursor:pointer;transition:border-color .15s,background .12s,opacity .18s;position:relative;user-select:none}
 .pr:hover{border-color:var(--line2);background:var(--s2)}
+.pr.dragging{opacity:.45}
+.pr.pdone .pt{color:var(--dim)}
+.pr .pdoneck{position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:20px;height:20px;border-radius:50%;background:#34d399;color:#05260f;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 10px rgba(52,211,153,.5)}
+.pr .pdragh{flex:0 0 14px;color:var(--faint);cursor:grab;opacity:.4;font-size:14px;letter-spacing:1px;line-height:1}
+.pr:hover .pdragh{opacity:.75;color:#c4b5fd}
+.pr .pdragh:active{cursor:grabbing}
 .pr .prmain{flex:1;min-width:0}
 .pr .pt{font-weight:700;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pr .psub{font-size:11.5px;color:var(--dim);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1103,27 +1110,43 @@ function _pStageText(p, jobs){
 function renderProjects(projects, jobs){
   if(!projects) return;
   const wrap = document.getElementById("projwrap");
+  /* Done pile auto-ages out: hide launched/parked projects older than 7 days (keeps the Done pill lean). */
+  const SEVEN_D = 7 * 24 * 3600 * 1000;
+  const _recent = p => {
+    if(!["launched","parked"].includes(p.status)) return true;
+    const t = p.updated || p.created || null;
+    if(!t) return true;
+    return (Date.now() - new Date(t).getTime()) < SEVEN_D;
+  };
+  const activeProjects = projects.filter(_recent);
   /* Pills + counts */
-  const counts = Object.fromEntries(PPILLS.map(p=>[p.k, projects.filter(x=>p.statuses.includes(x.status)).length]));
+  const counts = Object.fromEntries(PPILLS.map(p=>[p.k, activeProjects.filter(x=>p.statuses.includes(x.status)).length]));
   const pills = `<div class="ppills">`+PPILLS.map(p=>
-    `<button class="ppill${activeProjPill===p.k?" on":""}" data-k="${p.k}" onclick="setProjPill('${p.k}')">${p.ico} ${esc(p.lbl)}<small>${counts[p.k]||0}</small></button>`
+    `<button class="ppill${activeProjPill===p.k?" on":""}" data-k="${p.k}" data-pstatus="${p.statuses[0]}"
+       ondragover="pDragOver(event,'${p.k}')" ondragleave="pDragLeave(event)" ondrop="pDrop(event,'${p.k}')"
+       onclick="setProjPill('${p.k}')">${p.ico} ${esc(p.lbl)}<small>${counts[p.k]||0}</small></button>`
   ).join("")+`</div>`;
   /* Rows for active pill */
   const activeDef = PPILLS.find(p=>p.k===activeProjPill) || PPILLS[0];
-  const list = projects.filter(p=>activeDef.statuses.includes(p.status));
+  const list = activeProjects.filter(p=>activeDef.statuses.includes(p.status));
   const rows = list.length ? list.map(p=>{
     const pj = jobs.filter(j=>j.project_id===p.id);
     const latest = pj[0];
     const wc = wingClr(p.wing||"business").c;
     const stageText = _pStageText(p, jobs);
     const needsMe = activeDef.k==="ready";
-    return `<div class="pr" style="border-left-color:${wc}" onclick="openProjectChat(${p.id})">
+    const isDone = ["launched","parked"].includes(p.status);
+    return `<div class="pr${isDone?" pdone":""}" style="border-left-color:${wc}" data-pid="${p.id}"
+        draggable="true" ondragstart="pDragStart(event,${p.id},'${esc(p.status)}')" ondragend="pDragEnd(event)"
+        onclick="openProjectChat(${p.id})">
+      ${isDone?`<span class="pdoneck" title="Accomplished">✓</span>`:""}
       <div class="prmain">
         <div class="pt">${esc(p.title)}</div>
         <div class="psub"><span class="pdept">${esc(dl(p.dept))}</span> · <span class="pstage">${esc(stageText)}</span>${latest?` · <span class="pwhen">${esc(ago(latest.updated))}</span>`:""}</div>
       </div>
       <div class="practs" onclick="event.stopPropagation()">
         ${needsMe ? `<button class="b-approve" title="Launch" onclick="finishProject(${p.id},event)">✓ Launch</button>` : ""}
+        <span class="pdragh" title="Drag to another pill">⋮⋮</span>
       </div>
     </div>`;
   }).join("") : `<div class="prempty">nothing in ${esc(activeDef.lbl)}</div>`;
@@ -1137,6 +1160,35 @@ function renderProjects(projects, jobs){
   wrap.innerHTML = pills + `<div class="plist">${rows}</div>` + add;
 }
 function pAddFocus(){ const i=document.getElementById("pradin"); if(i) i.focus(); }
+/* ── Project drag between pills ── */
+let _pDragId = null, _pDragStatus = null;
+function pDragStart(ev, pid, status){
+  _pDragId = pid; _pDragStatus = status;
+  ev.dataTransfer.effectAllowed = "move";
+  try{ ev.dataTransfer.setData("text/plain", String(pid)); }catch(e){}
+  ev.currentTarget.classList.add("dragging");
+}
+function pDragEnd(ev){
+  ev.currentTarget.classList.remove("dragging");
+  document.querySelectorAll(".ppill.drophot").forEach(p=>p.classList.remove("drophot"));
+  _pDragId = null; _pDragStatus = null;
+}
+function pDragOver(ev, pillK){ if(!_pDragId) return; ev.preventDefault(); ev.dataTransfer.dropEffect="move"; ev.currentTarget.classList.add("drophot"); }
+function pDragLeave(ev){ ev.currentTarget.classList.remove("drophot"); }
+async function pDrop(ev, pillK){
+  ev.preventDefault();
+  const pid = _pDragId; const from = _pDragStatus;
+  ev.currentTarget.classList.remove("drophot");
+  if(!pid) return;
+  const def = PPILLS.find(p=>p.k===pillK); if(!def) return;
+  const toStatus = def.statuses[0];
+  if(from === toStatus){ return; }
+  try{
+    await relay("queue",{},{kind:"set_project_status", payload:{project_id:pid, status:toStatus}});
+    _askToast("moved to " + def.lbl);
+    setTimeout(tick, 2500);
+  }catch(e){ _askToast("move failed"); }
+}
 async function pAddKey(ev){
   if(ev.key!=="Enter") return;
   const inp = ev.target; const title = inp.value.trim(); if(!title) return;
