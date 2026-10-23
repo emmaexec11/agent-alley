@@ -1032,7 +1032,13 @@ function _saveDismissedChips(set){ localStorage.setItem(_todayKey(), JSON.string
 function dismissStripChip(key, ev){ if(ev){ ev.stopPropagation(); ev.preventDefault(); }
   const d=_getDismissedChips(); d.add(key); _saveDismissedChips(d); renderStrip(); }
 function renderStrip(){
-  const evs = (TASKS && TASKS.today && TASKS.today.events) ? TASKS.today.events.filter(e=>e.all_day && e.title && e.title.trim()) : [];
+  const evs = (TASKS && TASKS.today && TASKS.today.events) ? TASKS.today.events.filter(e=>{
+    if(!e.all_day) return false;
+    const t = (e.title||"").trim();
+    if(!t) return false;
+    if(/^\(?\s*untitled\s*\)?$/i.test(t)) return false;
+    return true;
+  }) : [];
   const dismissed = _getDismissedChips();
   const parts = evs.filter(e=>!dismissed.has(e.title)).map(e=>{
     const bday = /birthday/i.test(e.title);
@@ -2130,7 +2136,15 @@ setInterval(renderRoutines, 30000);
 function renderTop3(){
   const el=document.getElementById("top3");
   if(!TASKS||!TASKS.tabs||!TASKS.tabs.today){ el.classList.remove("on"); return; }
-  const live = (TASKS.tabs.today||[]).filter(t=>!(TPEND[t.id]&&(TPEND[t.id].done||TPEND[t.id].gone)));
+  /* Devon's rule 2026-10-23: don't vanish a just-checked task — show the ✓ for ~8s so he
+     SEES it cleared. After that it swaps out. Still filter long-stale done + gone. */
+  const now = Date.now();
+  const live = (TASKS.tabs.today||[]).filter(t=>{
+    const p = TPEND[t.id] || {};
+    if(p.gone) return false;
+    if(p.done && (now - (p.t||0) > 8000)) return false;
+    return true;
+  });
   if(!live.length){ el.classList.remove("on"); return; }
   const ranked = [...live].sort((a,b)=>{
     const sa=pendStar(a)?1:0, sb=pendStar(b)?1:0;
@@ -2176,6 +2190,9 @@ function t3Toggle(i){
   tpAdd(t.id,{done});
   dq(done?"taskdone":"taskundo",{id:t.id,lid:t.lid,title:t.title});
   renderTop3(); renderTasks();
+  /* After 8s, re-render to sweep the just-done row out of top3 if still there */
+  if(done) setTimeout(()=>{ renderTop3(); renderTasks(); }, 8200);
+  _askToast(done ? "✓ marked done — tap again to undo" : "undone");
 }
 function renderTasks(){
   const el=document.getElementById("taskstab");
@@ -2384,13 +2401,15 @@ function tMore(ri, ev){
   /* close on outside click */
   setTimeout(()=>document.addEventListener("click", function cl(){ m.remove(); document.removeEventListener("click", cl); }, {once:true}), 10);
 }
-function tToggle(ri){
+function tToggle(ri, ev){
+  if(ev) ev.stopPropagation();
   const t=TROWS[ri]; if(!t||!t.id) return;
   const p=TPEND[t.id]||{};
   const done=!(p.done!=null?p.done:false);
   tpAdd(t.id,{done});
   dq(done?"taskdone":"taskundo",{id:t.id,lid:t.lid,title:t.title});
-  renderTasks();
+  renderTasks(); renderTop3();
+  _askToast(done ? "✓ cleared — tap again to undo" : "undone");
 }
 function tStar(ri,ev){ ev.stopPropagation();
   const t=TROWS[ri]; if(!t||!t.id) return;
@@ -2919,8 +2938,27 @@ function _gWeekHits(cid, it){
   }
   return n;
 }
+/* Days elapsed in current period (inclusive of today). Mon=1 … Sun=7 for weekly. */
+function _gDaysElapsed(it){
+  const p = _gPeriod(it); const now = new Date();
+  const start = new Date(p.start); start.setHours(0,0,0,0);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.min(p.len, Math.max(1, Math.floor((today - start) / 86400000) + 1));
+}
+/* "Start at 100%" formula (Devon 2026-10-23): Devon doesn't want red % on fresh weeks.
+   Instead of hits/min, we check: given remaining days this period, can he still hit the
+   target? If yes → 100%. If no → actual hits/min %. This keeps the week green until it's
+   mathematically impossible, then shows the real gap. Mirrors "it's not a miss until you
+   can't recover" — no guilt-trip for Monday morning with 0 hits on a 3/wk goal. */
 function _gItemPct(cid, it){
   const m = it.min || 1, hits = _gWeekHits(cid, it);
+  if(hits >= m) return 100;
+  const elapsed = _gDaysElapsed(it);
+  const p = _gPeriod(it);
+  const daysLeft = p.len - elapsed;         /* days still available after today */
+  const needed = m - hits;                   /* hits still needed to reach min */
+  if(needed <= daysLeft + 1) return 100;    /* still on track incl. today; +1 = today also countable */
+  /* Can't recover — show real gap against proration to-date */
   return Math.round(hits * 100 / m);
 }
 function _gCatPct(cat){
